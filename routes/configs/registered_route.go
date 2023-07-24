@@ -1,7 +1,10 @@
 package configs
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/nathanieiav/project-skripsi/routes"
+)
 
-func (router routerGroup) RegisteredRoute(rg *gin.RouterGroup) {
-
+func (routerGroup routerGroup) RegisteredRoute(rg *gin.RouterGroup) {
+	routes.UserRoute(rg)
 }

@@ -28,20 +28,16 @@ func DBConfiguration() string {
 }
 
 func DBConnection() error {
-	var db = DB
-
 	masterDSN := DBConfiguration()
 	var err error
 
-	db, err = gorm.Open(postgres.Open(masterDSN), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(masterDSN), &gorm.Config{})
 
 	if err != nil {
 		return err
 	}
 
-	err = db.AutoMigrate(migrationModels...)
-
-	DB = db
+	err = DB.AutoMigrate(migrationModels...)
 
 	return err
 }

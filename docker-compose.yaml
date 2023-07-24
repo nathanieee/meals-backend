@@ -1,0 +1,41 @@
+version: "3.9"
+
+networks:
+  skripsi_network:
+    name: skripsi_network
+
+services:
+  skripsi_db:
+    container_name: skripsi_pg_container
+    image: postgres:alpine
+    ports:
+      - "${MASTER_DB_PORT}:5432"
+    environment:
+      - POSTGRES_USER=${MASTER_DB_USER}
+      - POSTGRES_PASSWORD=${MASTER_DB_PASSWORD}
+      - POSTGRES_DB=${MASTER_DB_NAME}
+    volumes:
+      - skripsi_pg_volume:/var/lib/postgresql/data/
+    networks:
+      - skripsi_network
+    restart: always
+
+  skripsi_server:
+    container_name: skripsi_go_container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    networks:
+      - skripsi_network
+    depends_on:
+      - skripsi_db
+    links:
+      - skripsi_db:skripsi_db
+    volumes:
+      - .:/app:rw,cached
+    restart: always
+
+volumes:
+  skripsi_pg_volume:
