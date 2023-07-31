@@ -26,7 +26,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
+      - "${HTTP_PORT}:${HTTP_PORT}"
     networks:
       - skbackend_network
     depends_on:

@@ -16,14 +16,12 @@ RUN apk update \
 
 RUN go install github.com/cosmtrek/air@latest
 RUN go install github.com/go-delve/delve/cmd/dlv@latest
-RUN go install github.com/swaggo/swag/cmd/swag@v1.8.12
 RUN go install github.com/vektra/mockery/v2@latest
-RUN go install github.com/google/wire/cmd/wire@latest
 
 COPY go.mod go.sum ./
 RUN go mod download
 
 EXPOSE 7070
+EXPOSE 2345
 
-# Run the air command in the directory where our code will live
 ENTRYPOINT ["air", "-c", ".air.toml"]
