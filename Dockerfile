@@ -1,11 +1,5 @@
-FROM golang:alpine
+FROM golang:1.20-alpine
 WORKDIR /app
-
-COPY go.mod go.sum ./
-
-RUN go mod download
-
-COPY . .
 
 ENV GO111MODULE="on"
 ENV GOOS="linux"
@@ -25,6 +19,9 @@ RUN go install github.com/go-delve/delve/cmd/dlv@latest
 RUN go install github.com/swaggo/swag/cmd/swag@v1.8.12
 RUN go install github.com/vektra/mockery/v2@latest
 RUN go install github.com/google/wire/cmd/wire@latest
+
+COPY go.mod go.sum ./
+RUN go mod download
 
 EXPOSE 7070
 

@@ -2,7 +2,7 @@ package configs
 
 import (
 	"github.com/gin-gonic/gin"
-	middleware "github.com/nathanieiav/project-skripsi/routes/middlewares"
+	middleware "github.com/nathanieiav/project-skbackend/routes/middlewares"
 	"github.com/spf13/viper"
 )
 

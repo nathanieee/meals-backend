@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/nathanieiav/project-skripsi/controllers"
+	"github.com/nathanieiav/project-skbackend/controllers"
 )
 
 func UserRoute(rg *gin.RouterGroup) {

@@ -3,7 +3,7 @@ package configs
 import (
 	"fmt"
 
-	"github.com/nathanieiav/project-skripsi/models"
+	"github.com/nathanieiav/project-skbackend/models"
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -31,7 +31,7 @@ func DBConnection() error {
 	masterDSN := DBConfiguration()
 	var err error
 
-	DB, err = gorm.Open(postgres.Open(masterDSN), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(masterDSN))
 
 	if err != nil {
 		return err

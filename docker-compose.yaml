@@ -1,13 +1,13 @@
 version: "3.9"
 
 networks:
-  skripsi_network:
-    name: skripsi_network
+  skbackend_network:
+    name: skbackend_network
 
 services:
-  skripsi_db:
-    container_name: skripsi_pg_container
-    image: postgres:alpine
+  skbackend_db:
+    container_name: skbackend_pg_container
+    image: postgres:13-alpine
     ports:
       - "${MASTER_DB_PORT}:5432"
     environment:
@@ -15,27 +15,25 @@ services:
       - POSTGRES_PASSWORD=${MASTER_DB_PASSWORD}
       - POSTGRES_DB=${MASTER_DB_NAME}
     volumes:
-      - skripsi_pg_volume:/var/lib/postgresql/data/
+      - skbackend_pg_volume:/var/lib/postgresql/data/
     networks:
-      - skripsi_network
+      - skbackend_network
     restart: always
 
-  skripsi_server:
-    container_name: skripsi_go_container
+  skbackend_server:
+    container_name: skbackend_go_container
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
     networks:
-      - skripsi_network
+      - skbackend_network
     depends_on:
-      - skripsi_db
-    links:
-      - skripsi_db:skripsi_db
+      - skbackend_db
     volumes:
       - .:/app:rw,cached
     restart: always
 
 volumes:
-  skripsi_pg_volume:
+  skbackend_pg_volume:

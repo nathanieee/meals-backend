@@ -1,4 +1,4 @@
-module github.com/nathanieiav/project-skripsi
+module github.com/nathanieiav/project-skbackend
 
 go 1.20
 

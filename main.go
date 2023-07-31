@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/nathanieiav/project-skripsi/configs"
-	routesConfig "github.com/nathanieiav/project-skripsi/routes/configs"
+	"github.com/nathanieiav/project-skbackend/configs"
+	routesConfig "github.com/nathanieiav/project-skbackend/routes/configs"
 	"github.com/spf13/viper"
 )
 
