@@ -90,5 +90,13 @@ func (db DB) GetDbConnectionUrl() string {
 func (db DB) AutoMigrate(gdb *gorm.DB) error {
 	return gdb.AutoMigrate(
 		&models.User{},
+		&models.Level{},
+		&models.Role{},
 	)
+}
+
+func (db DB) AutoSeed(gdb *gorm.DB) error {
+	err := SeedAdminCredentials(gdb)
+
+	return err
 }

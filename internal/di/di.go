@@ -2,24 +2,31 @@ package di
 
 import (
 	"project-skbackend/configs"
-	userRepo "project-skbackend/internal/repositories/user"
-	userService "project-skbackend/internal/services/user"
+	urepo "project-skbackend/internal/repositories/user"
+	ausvc "project-skbackend/internal/services/auth"
+	usvc "project-skbackend/internal/services/user"
 
 	"gorm.io/gorm"
 )
 
 type DependencyInjection struct {
-	UserService *userService.UserService
+	UserService *usvc.UserService
+	AuthService *ausvc.AuthService
 }
 
 func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjection {
 
-	/* --------------------------- setup user service --------------------------- */
+	/* ------------------------------ USER SERVICE ------------------------------ */
 
-	userRepo := userRepo.NewUserRepo(db)
-	userService := userService.NewUserService(userRepo)
+	urepo := urepo.NewUserRepo(db)
+	usvc := usvc.NewUserService(urepo)
+
+	/* ------------------------------ AUTH SERVICE ------------------------------ */
+
+	ausvc := ausvc.NewAuthService(urepo, cfg)
 
 	return &DependencyInjection{
-		UserService: userService,
+		UserService: usvc,
+		AuthService: ausvc,
 	}
 }
