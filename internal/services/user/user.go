@@ -2,24 +2,25 @@ package user
 
 import (
 	"encoding/json"
-	"fmt"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories"
 	"project-skbackend/packages/utils"
+
+	"gorm.io/gorm"
 )
 
 type UserService struct {
-	userRepo repositories.IUserRepo
+	ur repositories.IUserRepo
 }
 
-func NewUserService(userRepo repositories.IUserRepo) *UserService {
-	return &UserService{userRepo: userRepo}
+func NewUserService(ur repositories.IUserRepo) *UserService {
+	return &UserService{ur: ur}
 }
 
-func (u *UserService) CreateUser(req requests.CreateUserRequest) (*responses.UserResponse, error) {
-	var userResponse *responses.UserResponse
+func (us *UserService) CreateUser(req requests.CreateUserRequest) (*responses.UserResponse, error) {
+	var ures *responses.UserResponse
 
 	hashedPassword, err := utils.EncryptPassword(req.Password)
 	if err != nil {
@@ -31,22 +32,22 @@ func (u *UserService) CreateUser(req requests.CreateUserRequest) (*responses.Use
 		Email:    req.Email,
 		Password: string(hashedPassword),
 	}
-	user, err = u.userRepo.Store(user)
+	user, err = us.ur.Store(user)
 	if err != nil {
 		return nil, err
 	}
 
 	marshaledUser, _ := json.Marshal(user)
-	err = json.Unmarshal(marshaledUser, &userResponse)
+	err = json.Unmarshal(marshaledUser, &ures)
 	if err != nil {
-		fmt.Println("err", err)
+		return nil, err
 	}
 
-	return userResponse, err
+	return ures, err
 }
 
-func (u *UserService) GetUser(id uint) (*responses.UserResponse, error) {
-	user, err := u.userRepo.FindById(id)
+func (us *UserService) GetUser(uid uint) (*responses.UserResponse, error) {
+	user, err := us.ur.FindByID(uid)
 	if err != nil {
 		return nil, err
 	}
@@ -54,22 +55,23 @@ func (u *UserService) GetUser(id uint) (*responses.UserResponse, error) {
 	return user, err
 }
 
-func (u *UserService) GetUsers(paginationReq models.Pagination) (*models.Pagination, error) {
-	users, err := u.userRepo.FindAll(paginationReq)
+func (us *UserService) GetUsers(paginationReq models.Pagination) (*models.Pagination, error) {
+	users, err := us.ur.FindAll(paginationReq)
 	if err != nil {
 		return nil, err
 	}
 	return users, nil
 }
 
-func (u *UserService) DeleteUser(id uint) error {
+func (us *UserService) DeleteUser(uid uint) error {
 	userModel := models.User{
-		ID: id,
+		Model: gorm.Model{ID: uid},
 	}
-	err := u.userRepo.DeleteUser(userModel)
+
+	err := us.ur.DeleteUser(userModel)
 	if err != nil {
 		return err
 	}
 
-	return err
+	return nil
 }

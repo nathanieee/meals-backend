@@ -1,14 +1,21 @@
 package consttypes
 
+type (
+	Level uint
+	Role  string
+)
+
 const (
 	/* ------------------------------- USER LEVEL ------------------------------- */
-	USER  uint = 1
-	ADMIN uint = 2
+
+	ADMIN Level = 1
+	USER  Level = 2
 
 	/* -------------------------------- USER ROLE ------------------------------- */
-	CAREGIVER     string = "Caregiver"
-	MEMBER        string = "Member"
-	PARTNER       string = "Partner"
-	PATRON        string = "Patron"
-	ADMINISTRATOR string = "Administrator"
+
+	CAREGIVER     Role = "Caregiver"
+	MEMBER        Role = "Member"
+	PARTNER       Role = "Partner"
+	PATRON        Role = "Patron"
+	ADMINISTRATOR Role = "Administrator"
 )

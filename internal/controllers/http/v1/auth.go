@@ -26,7 +26,7 @@ func newAuthRoutes(handler *gin.RouterGroup, cfg *configs.Config, as services.IA
 		h.POST("login", r.login)
 		h.POST("register", r.register)
 
-		verifyGroup := h.Group("verify").Use(middlewares.JWTAuthMiddleware(cfg, consttypes.USER))
+		verifyGroup := h.Group("verify").Use(middlewares.JWTAuthMiddleware(cfg, uint(consttypes.USER)))
 		{
 			verifyGroup.POST("", r.verifyToken)
 			verifyGroup.POST("send", r.sendVerifyEmail)

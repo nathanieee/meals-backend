@@ -96,7 +96,9 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 }
 
 func (db DB) AutoSeed(gdb *gorm.DB) error {
-	err := SeedAdminCredentials(gdb)
+	SeedUserLevel(gdb)
+	SeedUserRole(gdb)
+	SeedAdminCredentials(gdb)
 
-	return err
+	return nil
 }

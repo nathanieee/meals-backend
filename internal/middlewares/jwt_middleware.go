@@ -57,7 +57,7 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 			return
 		}
 
-		if !slices.Contains(allowedLevel, parsedToken.User.Role.LevelID) || (time.Now().Unix() >= parsedToken.Expire) {
+		if !slices.Contains(allowedLevel, uint(parsedToken.User.Role.LevelID)) || (time.Now().Unix() >= parsedToken.Expire) {
 			utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
 				Message: "Invalid token",
 				Debug:   nil,

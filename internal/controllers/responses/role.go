@@ -3,7 +3,7 @@ package responses
 import "project-skbackend/internal/models"
 
 type (
-	UserResponse struct {
-		models.User
+	RoleResponse struct {
+		models.Role
 	}
 )

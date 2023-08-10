@@ -71,7 +71,7 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 		FullName: req.FullName,
 		Email:    req.Email,
 		Password: hashedPassword,
-		RoleID:   consttypes.USER,
+		RoleID:   uint(consttypes.USER),
 	}
 
 	userModel, err := a.userRepo.Store(userCreate)
@@ -142,7 +142,7 @@ func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
 }
 
 func (a *AuthService) SendResetPasswordEmail(id uint, token string) error {
-	user, err := a.userRepo.FindById(id)
+	user, err := a.userRepo.FindByID(id)
 	if err != nil {
 		return err
 	}
@@ -170,7 +170,7 @@ func (a *AuthService) SendResetPasswordEmail(id uint, token string) error {
 }
 
 func (a *AuthService) SendVerificationEmail(id uint, token int) error {
-	user, err := a.userRepo.FindById(id)
+	user, err := a.userRepo.FindByID(id)
 	if err != nil {
 		return err
 	}
@@ -233,7 +233,7 @@ func (a *AuthService) RefreshAuthToken(refreshToken string) (*responses.UserResp
 		return nil, nil, err
 	}
 
-	user, err := a.userRepo.FindById(parsedToken.User.ID)
+	user, err := a.userRepo.FindByID(parsedToken.User.ID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil, utils.ErrUserNotFound
