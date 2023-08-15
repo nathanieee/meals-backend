@@ -12,8 +12,6 @@ type (
 		Email              string      `json:"email" example:"email@email.com"`
 		RoleID             uint        `json:"roleID" gorm:"not null" example:"1"`
 		Role               models.Role `json:"-"`
-		Country            string      `json:"country" example:"country"`
-		CountryCode        uint        `json:"countryCode" example:"62"`
 		ConfirmationSentAt time.Time   `json:"confirmationSentAt"`
 		ConfirmedAt        time.Time   `json:"confirmedAt"`
 		CreatedAt          time.Time   `json:"createdAt,omitempty" example:"2023-01-01T15:01:00+00:00"`

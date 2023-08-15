@@ -10,7 +10,6 @@ type (
 		FullName string `json:"fullName" binding:"required" example:"Full Name"`
 		Email    string `json:"email" binding:"required,email" example:"email@email.com"`
 		Password string `json:"password" binding:"required" example:"password123"`
-		Country  string `json:"country" binding:"required" example:"indonesia"`
 	}
 
 	VerifyTokenRequest struct {
