@@ -16,12 +16,13 @@ import (
 )
 
 type userRoutes struct {
-	s   services.IUserService
+	us  services.IUserService
+	ms  services.IMailService
 	cfg *configs.Config
 }
 
-func newUserRoutes(h *gin.RouterGroup, db *gorm.DB, s services.IUserService, cfg *configs.Config) {
-	r := &userRoutes{s: s, cfg: cfg}
+func newUserRoutes(h *gin.RouterGroup, db *gorm.DB, cfg *configs.Config, us services.IUserService, ms services.IMailService) {
+	r := &userRoutes{us: us, cfg: cfg, ms: ms}
 
 	adminGroup := h.Group("users")
 	{
@@ -51,7 +52,7 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := r.s.CreateUser(req)
+	user, err := r.us.CreateUser(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utils.ErrorResponse(ctx, http.StatusConflict, utils.ErrorRes{
@@ -78,7 +79,7 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 func (r *userRoutes) getUser(ctx *gin.Context) {
 	paginationReq := utils.GeneratePaginationFromRequest(ctx, models.User{})
 
-	users, err := r.s.GetUsers(paginationReq)
+	users, err := r.us.GetUsers(paginationReq)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
 			Message: "User not found",
@@ -115,7 +116,7 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := r.s.GetUser(loggedInUser.ID)
+	user, err := r.us.GetUser(loggedInUser.ID)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
 			Message: "User not found",
@@ -161,7 +162,7 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 		return
 	}
 
-	err := r.s.DeleteUser(loggedInUser.ID)
+	err := r.us.DeleteUser(loggedInUser.ID)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
 			Message: "Something went wrong",

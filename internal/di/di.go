@@ -7,6 +7,7 @@ import (
 	urepo "project-skbackend/internal/repositories/user"
 	ausvc "project-skbackend/internal/services/auth"
 	lsvc "project-skbackend/internal/services/level"
+	msvc "project-skbackend/internal/services/mail"
 	rsvc "project-skbackend/internal/services/role"
 	usvc "project-skbackend/internal/services/user"
 
@@ -18,25 +19,30 @@ type DependencyInjection struct {
 	AuthService  *ausvc.AuthService
 	RoleService  *rsvc.RoleService
 	LevelService *lsvc.LevelService
+	MailService  *msvc.MailService
 }
 
 func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjection {
 
-	/* ------------------------------ USER SERVICE ------------------------------ */
+	/* ------------------------------ user service ------------------------------ */
 
 	urepo := urepo.NewUserRepo(db)
 	usvc := usvc.NewUserService(urepo)
 
-	/* ------------------------------ AUTH SERVICE ------------------------------ */
+	/* ------------------------------ mail service ------------------------------ */
 
-	ausvc := ausvc.NewAuthService(urepo, cfg)
+	msvc := msvc.NewMailService(cfg)
 
-	/* ------------------------------ ROLE SERVICE ------------------------------ */
+	/* ------------------------------ auth service ------------------------------ */
+
+	ausvc := ausvc.NewAuthService(urepo, cfg, msvc)
+
+	/* ------------------------------ role service ------------------------------ */
 
 	rrepo := rrepo.NewRoleRepo(db)
 	rsvc := rsvc.NewRoleService(rrepo)
 
-	/* ------------------------------ LEVEL SERVICE ----------------------------- */
+	/* ------------------------------ level service ----------------------------- */
 
 	lrepo := lrepo.NewLevelRepo(db)
 	lsvc := lsvc.NewLevelService(lrepo)
@@ -46,5 +52,6 @@ func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjecti
 		AuthService:  ausvc,
 		RoleService:  rsvc,
 		LevelService: lsvc,
+		MailService:  msvc,
 	}
 }

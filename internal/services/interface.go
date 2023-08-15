@@ -22,7 +22,7 @@ type (
 		ResetPassword(req requests.ResetPasswordRequest) error
 		SendVerificationEmail(id uint, token int) error
 		VerifyToken(req requests.VerifyTokenRequest) error
-		SendResetPasswordEmail(id uint, token string) error
+		SendResetPasswordEmail(id uint, token int) error
 		RefreshAuthToken(token string) (*responses.UserResponse, *utils.TokenHeader, error)
 	}
 
@@ -38,5 +38,9 @@ type (
 		GetRole(rid uint) (*responses.RoleResponse, error)
 		GetRoles(p models.Pagination) (*models.Pagination, error)
 		DeleteRole(rid uint) error
+	}
+
+	IMailService interface {
+		SendVerificationEmail(req requests.SendEmailRequest) error
 	}
 )

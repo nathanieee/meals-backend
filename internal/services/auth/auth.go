@@ -2,14 +2,15 @@ package auth
 
 import (
 	"encoding/json"
-	"fmt"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories"
+	"project-skbackend/internal/services"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,16 +19,17 @@ import (
 )
 
 type AuthService struct {
-	cfg      *configs.Config
-	userRepo repositories.IUserRepo
+	cfg *configs.Config
+	ur  repositories.IUserRepo
+	ms  services.IMailService
 }
 
-func NewAuthService(userRepo repositories.IUserRepo, cfg *configs.Config) *AuthService {
-	return &AuthService{userRepo: userRepo, cfg: cfg}
+func NewAuthService(ur repositories.IUserRepo, cfg *configs.Config, ms services.IMailService) *AuthService {
+	return &AuthService{ur: ur, cfg: cfg, ms: ms}
 }
 
 func (a *AuthService) Login(req requests.LoginRequest) (*responses.UserResponse, *utils.TokenHeader, error) {
-	user, err := a.userRepo.FindByEmail(req.Email)
+	user, err := a.ur.FindByEmail(req.Email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil, utils.ErrUserNotFound
@@ -53,7 +55,7 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 	var user *responses.UserResponse
 	req.Email = strings.ToLower(req.Email)
 
-	user, err := a.userRepo.FindByEmail(req.Email)
+	user, err := a.ur.FindByEmail(req.Email)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, nil, utils.ErrUserNotFound
 	}
@@ -74,7 +76,7 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 		RoleID:   uint(consttypes.USER),
 	}
 
-	userModel, err := a.userRepo.Store(userCreate)
+	userModel, err := a.ur.Store(userCreate)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -94,12 +96,12 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 }
 
 func (a *AuthService) ForgotPassword(req requests.ForgotPasswordRequest) error {
-	user, err := a.userRepo.FindByEmail(req.Email)
+	user, err := a.ur.FindByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return utils.ErrUserNotFound
 	}
 
-	token := utils.GenerateRandomStringToken(16)
+	token := utils.GenerateRandomToken()
 
 	err = a.SendResetPasswordEmail(user.ID, token)
 	if err != nil {
@@ -110,7 +112,7 @@ func (a *AuthService) ForgotPassword(req requests.ForgotPasswordRequest) error {
 }
 
 func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
-	user, err := a.userRepo.FindByEmail(req.Email)
+	user, err := a.ur.FindByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return utils.ErrUserNotFound
 	}
@@ -133,7 +135,7 @@ func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
 		ResetPasswordToken: "",
 	}
 
-	_, err = a.userRepo.Update(userUpdate, user.ID)
+	_, err = a.ur.Update(userUpdate, user.ID)
 	if err != nil {
 		return err
 	}
@@ -141,8 +143,8 @@ func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
 	return nil
 }
 
-func (a *AuthService) SendResetPasswordEmail(id uint, token string) error {
-	user, err := a.userRepo.FindByID(id)
+func (a *AuthService) SendResetPasswordEmail(id uint, token int) error {
+	user, err := a.ur.FindByID(id)
 	if err != nil {
 		return err
 	}
@@ -152,25 +154,33 @@ func (a *AuthService) SendResetPasswordEmail(id uint, token string) error {
 	}
 
 	userUpdate := models.User{
-		ResetPasswordToken:  token,
+		ResetPasswordToken:  strconv.Itoa(token),
 		ResetPasswordSentAt: time.Now().UTC(),
 	}
 
-	_, err = a.userRepo.Update(userUpdate, user.ID)
+	_, err = a.ur.Update(userUpdate, user.ID)
 	if err != nil {
 		return err
 	}
 
-	// TODO DELETE THIS IN THE FUTURE BECAUSE THE TOKEN WILL BE SENT TO THE EMAIL
-	fmt.Println(token)
+	emdata := requests.SendEmailRequest{
+		Template: "email_verification.html",
+		Subject:  "Reset Password",
+		Name:     user.FullName,
+		Email:    user.Email,
+		Token:    token,
+	}
 
-	// TODO ADD AN EMAIL SENDING SERVICE HERE
+	err = a.ms.SendVerificationEmail(emdata)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func (a *AuthService) SendVerificationEmail(id uint, token int) error {
-	user, err := a.userRepo.FindByID(id)
+	user, err := a.ur.FindByID(id)
 	if err != nil {
 		return err
 	}
@@ -184,21 +194,29 @@ func (a *AuthService) SendVerificationEmail(id uint, token int) error {
 		ConfirmationSentAt: time.Now().UTC(),
 	}
 
-	_, err = a.userRepo.Update(userUpdate, user.ID)
+	_, err = a.ur.Update(userUpdate, user.ID)
 	if err != nil {
 		return err
 	}
 
-	// TODO DELETE THIS IN THE FUTURE BECAUSE THE TOKEN WILL BE SENT TO THE EMAIL
-	fmt.Println(token)
+	emdata := requests.SendEmailRequest{
+		Template: "email_verification.html",
+		Subject:  "Reset Password",
+		Name:     user.FullName,
+		Email:    user.Email,
+		Token:    token,
+	}
 
-	// TODO ADD AN EMAIL SENDING SERVICE HERE
+	err = a.ms.SendVerificationEmail(emdata)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func (a *AuthService) VerifyToken(req requests.VerifyTokenRequest) error {
-	user, err := a.userRepo.FindByEmail(req.Email)
+	user, err := a.ur.FindByEmail(req.Email)
 	if err != nil {
 		return err
 	}
@@ -219,7 +237,7 @@ func (a *AuthService) VerifyToken(req requests.VerifyTokenRequest) error {
 		ConfirmedAt: time.Now().UTC(),
 	}
 
-	_, err = a.userRepo.Update(userUpdate, user.ID)
+	_, err = a.ur.Update(userUpdate, user.ID)
 	if err != nil {
 		return err
 	}
@@ -233,7 +251,7 @@ func (a *AuthService) RefreshAuthToken(refreshToken string) (*responses.UserResp
 		return nil, nil, err
 	}
 
-	user, err := a.userRepo.FindByID(parsedToken.User.ID)
+	user, err := a.ur.FindByID(parsedToken.User.ID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil, utils.ErrUserNotFound
