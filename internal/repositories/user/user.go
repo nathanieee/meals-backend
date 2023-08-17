@@ -39,7 +39,7 @@ func (ur *UserRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
 	var users []models.User
 	var usersResponse []responses.UserResponse
 
-	result := ur.db.Model(&users).Select("users.id as id, full_name, email, password, user_level, reset_password_token, reset_password_sent_at, confirmation_token, confirmed_at, confirmation_sent_at, users.created_at as created_at, users.updated_at as updated_at")
+	result := ur.db.Model(&users).Select("users.id as id, full_name, email, password, reset_password_token, reset_password_sent_at, confirmation_token, confirmed_at, confirmation_sent_at, users.created_at as created_at, users.updated_at as updated_at")
 
 	if p.Search != "" {
 		result = result.Where("full_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search)).Or("email LIKE ?", fmt.Sprintf("%%%s%%", p.Search))
@@ -61,7 +61,7 @@ func (ur *UserRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
 
 func (ur *UserRepo) FindByID(uid uint) (*responses.UserResponse, error) {
 	var u *responses.UserResponse
-	err := ur.db.Model(&models.User{}).Select("users.id as id, full_name, email, password, user_level, count(distinct(scenarios.id)) as scenario_count, reset_password_token, reset_password_sent_at, confirmation_token, confirmed_at, confirmation_sent_at, refresh_token, refresh_token_expiration, users.created_at as created_at, users.updated_at as updated_at").Group("users.id").Where("scenarios.deleted_at is null").First(&u, uid).Error
+	err := ur.db.Model(&models.User{}).Select("users.id as id, full_name, email, password, reset_password_token, reset_password_sent_at, confirmation_token, confirmed_at, confirmation_sent_at, refresh_token, refresh_token_expiration, users.created_at as created_at, users.updated_at as updated_at").Group("users.id").First(&u, uid).Error
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (ur *UserRepo) FindByID(uid uint) (*responses.UserResponse, error) {
 
 func (ur *UserRepo) FindByEmail(email string) (*responses.UserResponse, error) {
 	var u *responses.UserResponse
-	err := ur.db.Model(&models.User{}).Select("users.id as id, full_name, email, password, user_level, reset_password_token, reset_password_sent_at, confirmation_token, confirmed_at, confirmation_sent_at, users.created_at as created_at, users.updated_at as updated_at").Where("email = ?", email).Group("users.id").Take(&u).Error
+	err := ur.db.Model(&models.User{}).Select("users.id as id, full_name, email, password, reset_password_token, reset_password_sent_at, confirmation_token, confirmed_at, confirmation_sent_at, users.created_at as created_at, users.updated_at as updated_at").Where("email = ?", email).Group("users.id").Take(&u).Error
 	if err != nil {
 		return nil, err
 	}

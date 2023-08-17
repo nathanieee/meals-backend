@@ -8,6 +8,7 @@ import (
 	"project-skbackend/internal/repositories/role"
 	"project-skbackend/internal/repositories/user"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils"
 
 	"gorm.io/gorm"
 )
@@ -89,6 +90,12 @@ func SeedAdminCredentials(db *gorm.DB) error {
 			}
 
 			for _, admin := range admins {
+				hashedPassword, err := utils.EncryptPassword(admin.Password)
+				if err != nil {
+					return err
+				}
+				admin.Password = hashedPassword
+
 				urepo.Store(&admin)
 			}
 		}
