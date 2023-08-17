@@ -26,6 +26,11 @@ func Run(cfg *configs.Config) {
 		fmt.Errorf("app - Run - migrate: %w", err)
 	}
 
+	err = cfg.DB.AutoSeed(db)
+	if err != nil {
+		fmt.Errorf("app - Run - seed: %w", err)
+	}
+
 	di := di.NewDependencyInjection(db, cfg)
 	handler := gin.New()
 	v1.NewRouter(handler, db, cfg, di)

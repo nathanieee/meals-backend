@@ -15,6 +15,7 @@ type (
 		App
 		HTTP
 		DB
+		Mail
 	}
 
 	App struct {
@@ -35,13 +36,21 @@ type (
 	}
 
 	DB struct {
-		PoolMax      int    `env:"MASTER_DB_POOL_MAX"`
-		Host         string `env:"MASTER_DB_HOST"`
-		User         string `env:"MASTER_DB_USER"`
-		Password     string `env:"MASTER_DB_PASSWORD"`
-		DatabaseName string `env:"MASTER_DB_NAME"`
-		Port         string `env:"MASTER_DB_PORT"`
-		SslMode      string `env:"MASTER_SSL_MODE"`
+		PoolMax      int    `env:"DB_POOL_MAX"`
+		Host         string `env:"DB_HOST"`
+		User         string `env:"DB_USER"`
+		Password     string `env:"DB_PASSWORD"`
+		DatabaseName string `env:"DB_NAME"`
+		Port         string `env:"DB_PORT"`
+		SslMode      string `env:"SSL_MODE"`
+	}
+
+	Mail struct {
+		From              string `env:"MAIL_FROM"`
+		Password          string `env:"MAIL_PASSWORD"`
+		SMTPHost          string `env:"SMTP_HOST"`
+		SMTPPort          string `env:"SMTP_PORT"`
+		TemplateDirectory string `env:"TEMPLATE_DIRECTORY"`
 	}
 )
 
@@ -90,5 +99,15 @@ func (db DB) GetDbConnectionUrl() string {
 func (db DB) AutoMigrate(gdb *gorm.DB) error {
 	return gdb.AutoMigrate(
 		&models.User{},
+		&models.Level{},
+		&models.Role{},
 	)
+}
+
+func (db DB) AutoSeed(gdb *gorm.DB) error {
+	SeedUserLevel(gdb)
+	SeedUserRole(gdb)
+	SeedAdminCredentials(gdb)
+
+	return nil
 }
