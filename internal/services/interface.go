@@ -26,20 +26,6 @@ type (
 		RefreshAuthToken(token string) (*responses.UserResponse, *utils.TokenHeader, error)
 	}
 
-	ILevelService interface {
-		CreateLevel(req requests.CreateLevelRequest) (*responses.LevelResponse, error)
-		GetLevel(lid uint) (*responses.LevelResponse, error)
-		GetLevels(p models.Pagination) (*models.Pagination, error)
-		DeleteLevel(lid uint) error
-	}
-
-	IRoleService interface {
-		CreateRole(req requests.CreateRoleRequest) (*responses.RoleResponse, error)
-		GetRole(rid uint) (*responses.RoleResponse, error)
-		GetRoles(p models.Pagination) (*models.Pagination, error)
-		DeleteRole(rid uint) error
-	}
-
 	IMailService interface {
 		SendVerificationEmail(req requests.SendEmailRequest) error
 	}

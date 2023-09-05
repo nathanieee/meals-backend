@@ -153,11 +153,11 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 		return
 	}
 
-	if loggedInUser.Role.LevelID == consttypes.ADMIN {
+	if loggedInUser.Role == consttypes.UL_ADMINISTRATOR {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
 			Message: "Something went wrong",
 			Debug:   nil,
-			Errors:  "Admin Level can't be deleted",
+			Errors:  "Admin role can't be deleted",
 		})
 		return
 	}
