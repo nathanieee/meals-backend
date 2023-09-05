@@ -73,7 +73,7 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 		FullName: req.FullName,
 		Email:    req.Email,
 		Password: hashedPassword,
-		RoleID:   uint(consttypes.USER),
+		Role:     consttypes.UL_USER,
 	}
 
 	userModel, err := a.ur.Store(userCreate)

@@ -5,9 +5,7 @@ import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
-	"project-skbackend/internal/middlewares"
 	"project-skbackend/internal/services"
-	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +24,7 @@ func newAuthRoutes(handler *gin.RouterGroup, cfg *configs.Config, as services.IA
 		h.POST("login", r.login)
 		h.POST("register", r.register)
 
-		verifyGroup := h.Group("verify").Use(middlewares.JWTAuthMiddleware(cfg, uint(consttypes.USER)))
+		verifyGroup := h.Group("verify")
 		{
 			verifyGroup.POST("", r.verifyToken)
 			verifyGroup.POST("send", r.sendVerifyEmail)
