@@ -1,0 +1,22 @@
+name: Build and test everytime PR made on main, staging and dev branch
+on:
+  pull_request:
+    branches:
+      - main
+      - stg
+      - dev
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.20.x'
+      - name: Install Dependencies
+        run: go get ./cmd/app
+      - name: Build App
+        run: go build -v ./...
+      - name: Unit Test with Go CLI
+        run: go test ./...
