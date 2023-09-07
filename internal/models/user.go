@@ -13,7 +13,7 @@ type (
 		Password               string              `json:"-" gorm:"size:255;not null;" binding:"required" example:"password"`
 		FullName               string              `json:"fullName" gorm:"not null" example:"user name"`
 		Email                  string              `json:"email" gorm:"not null;unique" example:"email@email.com"`
-		Role                   consttypes.UserRole `json:"role" gorm:"not null" example:"1"`
+		Role                   consttypes.UserRole `json:"role" gorm:"not null" example:"1" default:"0"`
 		ResetPasswordToken     string              `json:"-"`
 		ResetPasswordSentAt    time.Time           `json:"-"`
 		ConfirmationToken      int                 `json:"-"`
