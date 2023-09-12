@@ -64,7 +64,6 @@ func (r *authRoutes) login(ctx *gin.Context) {
 
 	res := responses.AuthResponse{
 		ID:                 user.ID,
-		FullName:           user.FullName,
 		Email:              user.Email,
 		Role:               user.Role,
 		ConfirmationSentAt: user.ConfirmationSentAt,
@@ -109,7 +108,6 @@ func (r *authRoutes) register(ctx *gin.Context) {
 
 	res := responses.AuthResponse{
 		ID:                 user.ID,
-		FullName:           user.FullName,
 		Email:              user.Email,
 		Role:               user.Role,
 		ConfirmationSentAt: user.ConfirmationSentAt,
@@ -278,7 +276,6 @@ func (r *authRoutes) refreshAuthToken(ctx *gin.Context) {
 
 	res := responses.AuthResponse{
 		ID:          user.ID,
-		FullName:    user.FullName,
 		Email:       user.Email,
 		Role:        user.Role,
 		ConfirmedAt: user.ConfirmedAt,

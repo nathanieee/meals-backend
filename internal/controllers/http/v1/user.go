@@ -153,7 +153,7 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 		return
 	}
 
-	if loggedInUser.Role == consttypes.UL_ADMINISTRATOR {
+	if loggedInUser.Role == consttypes.UR_ADMINISTRATOR {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
 			Message: "Something went wrong",
 			Debug:   nil,

@@ -1,5 +1,5 @@
 # Binaries for programs and plugins
-.env
+*.env
 *.exe
 *.exe~
 *.dll
@@ -20,8 +20,6 @@ vendor/
 tmp/
 docs/
 docs/docs.go
-docs/swagger.json
-docs/swagger.yaml
 tests/integration/.sequence
 volume
 .sequence/

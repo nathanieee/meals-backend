@@ -7,6 +7,7 @@ import (
 	"project-skbackend/internal/repositories/pagination"
 	"project-skbackend/packages/consttypes"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +28,7 @@ func (ur *UserRepo) Store(u *models.User) (*models.User, error) {
 	return u, nil
 }
 
-func (ur *UserRepo) Update(u models.User, uid uint) (*models.User, error) {
+func (ur *UserRepo) Update(u models.User, uid uuid.UUID) (*models.User, error) {
 	err := ur.db.Model(&u).Where("id = ?", uid).Updates(u).Error
 	if err != nil {
 		return nil, err
@@ -59,7 +60,7 @@ func (ur *UserRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
 	return &p, nil
 }
 
-func (ur *UserRepo) FindByID(uid uint) (*responses.UserResponse, error) {
+func (ur *UserRepo) FindByID(uid uuid.UUID) (*responses.UserResponse, error) {
 	var u *responses.UserResponse
 	err := ur.db.Model(&models.User{}).Select("users.id as id, full_name, email, password, reset_password_token, reset_password_sent_at, confirmation_token, confirmed_at, confirmation_sent_at, refresh_token, refresh_token_expiration, users.created_at as created_at, users.updated_at as updated_at").Group("users.id").First(&u, uid).Error
 	if err != nil {

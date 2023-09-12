@@ -99,6 +99,26 @@ func (db DB) GetDbConnectionUrl() string {
 func (db DB) AutoMigrate(gdb *gorm.DB) error {
 	return gdb.AutoMigrate(
 		&models.User{},
+		&models.UserImage{},
+		&models.Address{},
+		&models.Admin{},
+		&models.Allergy{},
+		&models.Caregiver{},
+		&models.Donation{},
+		&models.FoodCategory{},
+		&models.Illness{},
+		&models.Image{},
+		&models.Meal{},
+		&models.MealAllergy{},
+		&models.MealIllness{},
+		&models.MealImage{},
+		&models.Member{},
+		&models.MemberAllergy{},
+		&models.MemberIllness{},
+		&models.Organization{},
+		&models.Partner{},
+		&models.Patron{},
+		&models.Rating{},
 	)
 }
 

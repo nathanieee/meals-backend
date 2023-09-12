@@ -5,10 +5,11 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
+	"project-skbackend/internal/models/helper"
 	"project-skbackend/internal/repositories"
 	"project-skbackend/packages/utils"
 
-	"gorm.io/gorm"
+	"github.com/google/uuid"
 )
 
 type UserService struct {
@@ -28,7 +29,6 @@ func (us *UserService) CreateUser(req requests.CreateUserRequest) (*responses.Us
 	}
 
 	user := &models.User{
-		FullName: req.Name,
 		Email:    req.Email,
 		Password: string(hashedPassword),
 	}
@@ -46,7 +46,7 @@ func (us *UserService) CreateUser(req requests.CreateUserRequest) (*responses.Us
 	return ures, err
 }
 
-func (us *UserService) GetUser(uid uint) (*responses.UserResponse, error) {
+func (us *UserService) GetUser(uid uuid.UUID) (*responses.UserResponse, error) {
 	user, err := us.ur.FindByID(uid)
 	if err != nil {
 		return nil, err
@@ -63,9 +63,9 @@ func (us *UserService) GetUsers(paginationReq models.Pagination) (*models.Pagina
 	return users, nil
 }
 
-func (us *UserService) DeleteUser(uid uint) error {
+func (us *UserService) DeleteUser(uid uuid.UUID) error {
 	userModel := models.User{
-		Model: gorm.Model{ID: uid},
+		Model: helper.Model{ID: uid},
 	}
 
 	err := us.ur.DeleteUser(userModel)

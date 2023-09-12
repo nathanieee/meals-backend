@@ -5,14 +5,16 @@ import (
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
 	"project-skbackend/packages/utils"
+
+	"github.com/google/uuid"
 )
 
 type (
 	IUserService interface {
 		CreateUser(req requests.CreateUserRequest) (*responses.UserResponse, error)
-		GetUser(id uint) (*responses.UserResponse, error)
+		GetUser(id uuid.UUID) (*responses.UserResponse, error)
 		GetUsers(paginationReq models.Pagination) (*models.Pagination, error)
-		DeleteUser(id uint) error
+		DeleteUser(id uuid.UUID) error
 	}
 
 	IAuthService interface {
@@ -20,9 +22,9 @@ type (
 		Register(req requests.RegisterRequest) (*responses.UserResponse, *utils.TokenHeader, error)
 		ForgotPassword(req requests.ForgotPasswordRequest) error
 		ResetPassword(req requests.ResetPasswordRequest) error
-		SendVerificationEmail(id uint, token int) error
+		SendVerificationEmail(id uuid.UUID, token int) error
 		VerifyToken(req requests.VerifyTokenRequest) error
-		SendResetPasswordEmail(id uint, token int) error
+		SendResetPasswordEmail(id uuid.UUID, token int) error
 		RefreshAuthToken(token string) (*responses.UserResponse, *utils.TokenHeader, error)
 	}
 

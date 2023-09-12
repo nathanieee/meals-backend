@@ -20,8 +20,7 @@ func SeedAdminCredentials(db *gorm.DB) error {
 				{
 					Email:    os.Getenv("ADMIN_EMAIL"),
 					Password: os.Getenv("ADMIN_PASSWORD"),
-					FullName: os.Getenv("ADMIN_FULLNAME"),
-					Role:     consttypes.UL_ADMINISTRATOR,
+					Role:     consttypes.UR_ADMINISTRATOR,
 				},
 			}
 

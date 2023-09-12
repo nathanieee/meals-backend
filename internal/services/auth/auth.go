@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -70,10 +71,9 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 	}
 
 	userCreate := &models.User{
-		FullName: req.FullName,
 		Email:    req.Email,
 		Password: hashedPassword,
-		Role:     consttypes.UL_USER,
+		Role:     consttypes.UR_USER,
 	}
 
 	userModel, err := a.ur.Store(userCreate)
@@ -143,7 +143,7 @@ func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
 	return nil
 }
 
-func (a *AuthService) SendResetPasswordEmail(id uint, token int) error {
+func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 	user, err := a.ur.FindByID(id)
 	if err != nil {
 		return err
@@ -166,7 +166,6 @@ func (a *AuthService) SendResetPasswordEmail(id uint, token int) error {
 	emdata := requests.SendEmailRequest{
 		Template: "email_verification.html",
 		Subject:  "Reset Password",
-		Name:     user.FullName,
 		Email:    user.Email,
 		Token:    token,
 	}
@@ -179,7 +178,7 @@ func (a *AuthService) SendResetPasswordEmail(id uint, token int) error {
 	return nil
 }
 
-func (a *AuthService) SendVerificationEmail(id uint, token int) error {
+func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
 	user, err := a.ur.FindByID(id)
 	if err != nil {
 		return err
@@ -202,7 +201,6 @@ func (a *AuthService) SendVerificationEmail(id uint, token int) error {
 	emdata := requests.SendEmailRequest{
 		Template: "email_verification.html",
 		Subject:  "Reset Password",
-		Name:     user.FullName,
 		Email:    user.Email,
 		Token:    token,
 	}
