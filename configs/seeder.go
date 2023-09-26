@@ -4,34 +4,41 @@ import (
 	"errors"
 	"os"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/repositories/user"
+	"project-skbackend/internal/repositories/admin"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils"
+	"time"
 
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
 func SeedAdminCredentials(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.User{}) {
 		if err := db.First(&models.User{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			urepo := user.NewUserRepo(db)
+			gotime, _ := time.Parse(consttypes.DATEFORMAT, "2000-10-20")
+			date := datatypes.Date(gotime)
 
-			admins := []models.User{
+			arepo := admin.NewAdminRepo(db)
+
+			admins := []models.Admin{
 				{
-					Email:    os.Getenv("ADMIN_EMAIL"),
-					Password: os.Getenv("ADMIN_PASSWORD"),
-					Role:     consttypes.UR_ADMINISTRATOR,
+					User: models.User{
+						Email:    os.Getenv("ADMIN_EMAIL"),
+						Password: os.Getenv("ADMIN_PASSWORD"),
+						Role:     consttypes.UR_ADMINISTRATOR,
+					},
+					FirstName:   "John",
+					LastName:    "Doe",
+					Gender:      consttypes.G_MALE,
+					DateOfBirth: date,
 				},
 			}
 
 			for _, admin := range admins {
-				hashedPassword, err := utils.EncryptPassword(admin.Password)
+				_, err := arepo.Create(&admin)
 				if err != nil {
 					return err
 				}
-				admin.Password = hashedPassword
-
-				urepo.Store(&admin)
 			}
 		}
 	}

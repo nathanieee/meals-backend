@@ -1,12 +1,12 @@
 version: "3.9"
 
 networks:
-  skbackend_network:
-    name: skbackend_network
+  meals-backend-network:
+    name: meals-backend-network
 
 services:
-  skbackend_db:
-    container_name: skbackend_pg_container
+  meals-db:
+    container_name: meals-pg-container
     image: postgres:13-alpine
     ports:
       - "${DB_PORT}:5432"
@@ -15,25 +15,25 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
     volumes:
-      - skbackend_pg_volume:/var/lib/postgresql/data/
+      - meals-pg-volume:/var/lib/postgresql/data/
     networks:
-      - skbackend_network
+      - meals-backend-network
     restart: always
 
-  skbackend_server:
-    container_name: skbackend_go_container
+  meals-server:
+    container_name: meals-go-container
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "${HTTP_PORT}:${HTTP_PORT}"
     networks:
-      - skbackend_network
+      - meals-backend-network
     depends_on:
-      - skbackend_db
+      - meals-db
     volumes:
       - .:/app:rw,cached
     restart: always
 
 volumes:
-  skbackend_pg_volume:
+  meals-pg-volume:

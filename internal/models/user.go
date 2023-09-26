@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type (
@@ -16,7 +17,7 @@ type (
 		UserImage              *UserImage          `json:"userImage,omitempty"`
 		Email                  string              `json:"email" gorm:"not null;unique" example:"email@email.com"`
 		Role                   consttypes.UserRole `json:"role" gorm:"not null" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4" default:"0"`
-		ResetPasswordToken     string              `json:"-"`
+		ResetPasswordToken     int                 `json:"-"`
 		ResetPasswordSentAt    time.Time           `json:"-"`
 		ConfirmationToken      int                 `json:"-"`
 		ConfirmedAt            time.Time           `json:"confirmedAt"`
@@ -32,3 +33,21 @@ type (
 		Image   Image     `json:"image"`
 	}
 )
+
+func (u *User) hashPasswordIfNeeded() error {
+	hash, err := helper.HashPassword(u.Password)
+	if err != nil {
+		return err
+	}
+
+	u.Password = hash
+	return nil
+}
+
+func (u *User) BeforeCreate(tx *gorm.DB) error {
+	return u.hashPasswordIfNeeded()
+}
+
+func (u *User) BeforeUpdate(tx *gorm.DB) error {
+	return u.hashPasswordIfNeeded()
+}

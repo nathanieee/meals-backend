@@ -10,7 +10,6 @@ import (
 	"project-skbackend/internal/services"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils"
-	"strconv"
 	"strings"
 	"time"
 
@@ -65,18 +64,13 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 		return nil, nil, utils.ErrUserAlreadyExist
 	}
 
-	hashedPassword, err := utils.EncryptPassword(req.Password)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	userCreate := &models.User{
 		Email:    req.Email,
-		Password: hashedPassword,
+		Password: req.Password,
 		Role:     consttypes.UR_USER,
 	}
 
-	userModel, err := a.ur.Store(userCreate)
+	userModel, err := a.ur.Create(userCreate)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -125,14 +119,9 @@ func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
 		return utils.ErrTokenExpired
 	}
 
-	hashedPassword, err := utils.EncryptPassword(req.Password)
-	if err != nil {
-		return err
-	}
-
 	userUpdate := models.User{
-		Password:           hashedPassword,
-		ResetPasswordToken: "",
+		Password:           req.Password,
+		ResetPasswordToken: 0,
 	}
 
 	_, err = a.ur.Update(userUpdate, user.ID)
@@ -154,7 +143,7 @@ func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 	}
 
 	userUpdate := models.User{
-		ResetPasswordToken:  strconv.Itoa(token),
+		ResetPasswordToken:  token,
 		ResetPasswordSentAt: time.Now().UTC(),
 	}
 
@@ -163,14 +152,14 @@ func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 		return err
 	}
 
-	emdata := requests.SendEmailRequest{
+	emreq := requests.SendEmailRequest{
 		Template: "email_verification.html",
 		Subject:  "Reset Password",
 		Email:    user.Email,
 		Token:    token,
 	}
 
-	err = a.ms.SendVerificationEmail(emdata)
+	err = a.ms.SendVerificationEmail(emreq)
 	if err != nil {
 		return err
 	}
@@ -198,14 +187,14 @@ func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
 		return err
 	}
 
-	emdata := requests.SendEmailRequest{
+	emreq := requests.SendEmailRequest{
 		Template: "email_verification.html",
 		Subject:  "Reset Password",
 		Email:    user.Email,
 		Token:    token,
 	}
 
-	err = a.ms.SendVerificationEmail(emdata)
+	err = a.ms.SendVerificationEmail(emreq)
 	if err != nil {
 		return err
 	}

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type TokenClaims struct {
@@ -70,16 +69,6 @@ func ParseToken(tokenString string, secret string) (*TokenClaims, error) {
 	return nil, errors.New("token invalid")
 }
 
-func EncryptPassword(password string) (string, error) {
-	//turn password into hash
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-
-	return string(hashedPassword), err
-}
-
 func GenerateRandomStringToken(length int) string {
 	rand.Seed(time.Now().UnixNano())
 	b := make([]byte, length)
@@ -92,8 +81,8 @@ func GenerateRandomStringToken(length int) string {
 }
 
 func GenerateRandomToken() int {
-	min := 1000
-	max := 9999
+	min := 10000000
+	max := 99999999
 	// set seed
 	rand.Seed(time.Now().UnixNano())
 	// generate random number between 1000 - 9999

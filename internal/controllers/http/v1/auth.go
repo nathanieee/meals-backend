@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
@@ -204,6 +205,7 @@ func (r *authRoutes) forgotPassword(ctx *gin.Context) {
 		})
 		return
 	}
+	fmt.Println("testis")
 
 	err = r.as.ForgotPassword(req)
 	if err != nil {

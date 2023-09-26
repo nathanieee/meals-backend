@@ -11,10 +11,10 @@ import (
 
 type (
 	IUserService interface {
-		CreateUser(req requests.CreateUserRequest) (*responses.UserResponse, error)
-		GetUser(id uuid.UUID) (*responses.UserResponse, error)
-		GetUsers(paginationReq models.Pagination) (*models.Pagination, error)
-		DeleteUser(id uuid.UUID) error
+		Create(req requests.CreateUserRequest) (*responses.UserResponse, error)
+		FindByID(id uuid.UUID) (*responses.UserResponse, error)
+		FindAll(paginationReq models.Pagination) (*models.Pagination, error)
+		Delete(id uuid.UUID) error
 	}
 
 	IAuthService interface {

@@ -25,7 +25,7 @@ type (
 		Email           string `json:"email" binding:"required,email"`
 		Password        string `json:"password" binding:"required"`
 		ConfirmPassword string `json:"confirmPassword" binding:"required,eqfield=Password"`
-		Token           string `json:"token" binding:"required"`
+		Token           int    `json:"token" binding:"required"`
 	}
 
 	ResetPasswordRedirectRequest struct {

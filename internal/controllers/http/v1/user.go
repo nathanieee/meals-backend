@@ -52,7 +52,7 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := r.us.CreateUser(req)
+	user, err := r.us.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utils.ErrorResponse(ctx, http.StatusConflict, utils.ErrorRes{
@@ -79,7 +79,7 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 func (r *userRoutes) getUser(ctx *gin.Context) {
 	paginationReq := utils.GeneratePaginationFromRequest(ctx, models.User{})
 
-	users, err := r.us.GetUsers(paginationReq)
+	users, err := r.us.FindAll(paginationReq)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
 			Message: "User not found",
@@ -116,7 +116,7 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := r.us.GetUser(loggedInUser.ID)
+	user, err := r.us.FindByID(loggedInUser.ID)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
 			Message: "User not found",
@@ -162,7 +162,7 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 		return
 	}
 
-	err := r.us.DeleteUser(loggedInUser.ID)
+	err := r.us.Delete(loggedInUser.ID)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
 			Message: "Something went wrong",
