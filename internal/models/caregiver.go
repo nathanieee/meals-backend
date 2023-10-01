@@ -3,9 +3,9 @@ package models
 import (
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
+	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/datatypes"
 )
 
 type (
@@ -16,6 +16,6 @@ type (
 		Gender      consttypes.Gender `json:"gender" gorm:"not null" binding:"required" example:"Male"`
 		FirstName   string            `json:"firstName" gorm:"not null" binding:"required" example:"Jonathan"`
 		LastName    string            `json:"lastName" gorm:"not null" binding:"required" example:"Vince"`
-		DateOfBirth datatypes.Date    `json:"date" gorm:"not null" binding:"required"` // TODO - add an example on the dateofbirth based on what format is the date
+		DateOfBirth time.Time         `json:"date" gorm:"not null" binding:"required" example:"2000-10-20"`
 	}
 )

@@ -45,21 +45,22 @@ func (r *authRoutes) login(ctx *gin.Context) {
 	if err != nil {
 		ve := utils.ValidationResponse(err)
 
-		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
-			Message: "Invalid request",
-			Debug:   nil,
-			Errors:  ve,
-		})
+		utils.GeneralInputRequired(
+			"login",
+			ctx,
+			ve,
+		)
 		return
 	}
 
 	user, token, err := r.as.Login(req)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-			Message: "Something went wrong",
-			Debug:   err,
-			Errors:  err.Error(),
-		})
+
+		utils.GeneralInternalServerError(
+			"login",
+			ctx,
+			err.Error(),
+		)
 		return
 	}
 

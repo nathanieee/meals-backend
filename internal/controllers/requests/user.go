@@ -1,9 +1,11 @@
 package requests
 
+import "project-skbackend/packages/consttypes"
+
 type (
 	CreateUserRequest struct {
-		Name     string `json:"name" binding:"required" example:"user name"`
-		Email    string `json:"email" binding:"required" example:"email@email.com"`
-		Password string `json:"password" binding:"required" example:"password123"`
+		Email    string              `json:"email" binding:"required" example:"email@email.com"`
+		Role     consttypes.UserRole `json:"role" default:"0" example:"0"`
+		Password string              `json:"-" binding:"required" example:"password"`
 	}
 )

@@ -3,13 +3,12 @@ package requests
 type (
 	LoginRequest struct {
 		Email    string `json:"email" binding:"required,email" example:"email@email.com"`
-		Password string `json:"password" binding:"required" example:"password123"`
+		Password string `json:"password" binding:"required" example:"password"`
 	}
 
 	RegisterRequest struct {
-		FullName string `json:"fullName" binding:"required" example:"Full Name"`
 		Email    string `json:"email" binding:"required,email" example:"email@email.com"`
-		Password string `json:"password" binding:"required" example:"password123"`
+		Password string `json:"password" binding:"required" example:"password"`
 	}
 
 	VerifyTokenRequest struct {

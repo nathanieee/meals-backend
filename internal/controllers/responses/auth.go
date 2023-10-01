@@ -10,7 +10,6 @@ import (
 type (
 	AuthResponse struct {
 		ID                 uuid.UUID           `json:"id"`
-		FullName           string              `json:"fullName" example:"user name"`
 		Email              string              `json:"email" example:"email@email.com"`
 		Role               consttypes.UserRole `json:"role" gorm:"not null" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
 		ConfirmationSentAt time.Time           `json:"confirmationSentAt"`

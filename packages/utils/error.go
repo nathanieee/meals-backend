@@ -1,6 +1,12 @@
 package utils
 
-import "errors"
+import (
+	"errors"
+	"net/http"
+	"project-skbackend/packages/custom"
+
+	"github.com/gin-gonic/gin"
+)
 
 var (
 	// General
@@ -28,3 +34,19 @@ var (
 	ErrSendEmailResetRequest        = errors.New("you already requested a reset password email in less than 5 minutes")
 	ErrSendEmailVerificationRequest = errors.New("you already requested a verification message in less than 5 minutes")
 )
+
+func GeneralInputRequired(m custom.V_STRING, c *gin.Context, e any) {
+	ErrorResponse(c, http.StatusBadRequest, ErrorRes{
+		Message: string(m.SuffixSpaceCheck()) + "input required",
+		Debug:   nil,
+		Errors:  e,
+	})
+}
+
+func GeneralInternalServerError(m custom.V_STRING, c *gin.Context, e any) {
+	ErrorResponse(c, http.StatusInternalServerError, ErrorRes{
+		Message: string(m.SuffixSpaceCheck()) + "internal server error",
+		Debug:   nil,
+		Errors:  e,
+	})
+}

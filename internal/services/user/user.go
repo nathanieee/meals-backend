@@ -25,6 +25,7 @@ func (us *UserService) Create(req requests.CreateUserRequest) (*responses.UserRe
 	user := &models.User{
 		Email:    req.Email,
 		Password: req.Password,
+		Role:     req.Role,
 	}
 	user, err := us.ur.Create(user)
 	if err != nil {
