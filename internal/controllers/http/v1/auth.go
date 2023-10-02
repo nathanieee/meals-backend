@@ -17,7 +17,11 @@ type authRoutes struct {
 	as  services.IAuthService
 }
 
-func newAuthRoutes(handler *gin.RouterGroup, cfg *configs.Config, as services.IAuthService) {
+func newAuthRoutes(
+	handler *gin.RouterGroup,
+	cfg *configs.Config,
+	as services.IAuthService,
+) {
 	r := &authRoutes{as: as, cfg: cfg}
 
 	h := handler.Group("auth")
@@ -38,7 +42,9 @@ func newAuthRoutes(handler *gin.RouterGroup, cfg *configs.Config, as services.IA
 	}
 }
 
-func (r *authRoutes) login(ctx *gin.Context) {
+func (r *authRoutes) login(
+	ctx *gin.Context,
+) {
 	var req requests.LoginRequest
 
 	err := ctx.ShouldBindJSON(&req)
@@ -83,7 +89,9 @@ func (r *authRoutes) login(ctx *gin.Context) {
 	})
 }
 
-func (r *authRoutes) register(ctx *gin.Context) {
+func (r *authRoutes) register(
+	ctx *gin.Context,
+) {
 	var req requests.RegisterRequest
 
 	err := ctx.ShouldBindJSON(&req)
@@ -127,7 +135,9 @@ func (r *authRoutes) register(ctx *gin.Context) {
 	})
 }
 
-func (r *authRoutes) sendVerifyEmail(ctx *gin.Context) {
+func (r *authRoutes) sendVerifyEmail(
+	ctx *gin.Context,
+) {
 	ctxUser, exists := ctx.Get("user")
 	if !exists {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
@@ -165,7 +175,9 @@ func (r *authRoutes) sendVerifyEmail(ctx *gin.Context) {
 	})
 }
 
-func (r *authRoutes) verifyToken(ctx *gin.Context) {
+func (r *authRoutes) verifyToken(
+	ctx *gin.Context,
+) {
 	var req requests.VerifyTokenRequest
 
 	err := ctx.ShouldBindJSON(&req)
@@ -194,7 +206,9 @@ func (r *authRoutes) verifyToken(ctx *gin.Context) {
 	})
 }
 
-func (r *authRoutes) forgotPassword(ctx *gin.Context) {
+func (r *authRoutes) forgotPassword(
+	ctx *gin.Context,
+) {
 	var req requests.ForgotPasswordRequest
 
 	err := ctx.ShouldBindJSON(&req)
@@ -224,7 +238,9 @@ func (r *authRoutes) forgotPassword(ctx *gin.Context) {
 	})
 }
 
-func (r *authRoutes) resetPassword(ctx *gin.Context) {
+func (r *authRoutes) resetPassword(
+	ctx *gin.Context,
+) {
 	var req requests.ResetPasswordRequest
 
 	err := ctx.ShouldBindJSON(&req)
@@ -255,7 +271,9 @@ func (r *authRoutes) resetPassword(ctx *gin.Context) {
 	})
 }
 
-func (r *authRoutes) refreshAuthToken(ctx *gin.Context) {
+func (r *authRoutes) refreshAuthToken(
+	ctx *gin.Context,
+) {
 	refreshToken := ctx.Request.Header.Get("Refresh-Token")
 
 	if refreshToken == "" {

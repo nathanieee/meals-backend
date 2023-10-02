@@ -17,7 +17,14 @@ type MemberRepo struct {
 }
 
 func NewMemberRepo(db *gorm.DB) *MemberRepo {
-	db.Preload(clause.Associations).Preload("Users.UserImages.Images").Preload("Users.Addresses").Preload("Caregiver.Users.UserImages.Images").Preload("Organizations").Preload("MemberAllergies.Allergies").Preload("MemberIllnesses.Illnesses")
+	db.
+		Preload(clause.Associations).
+		Preload("Users.UserImages.Images").
+		Preload("Users.Addresses").
+		Preload("Caregiver.Users.UserImages.Images").
+		Preload("Organizations").
+		Preload("MemberAllergies.Allergies").
+		Preload("MemberIllnesses.Illnesses")
 
 	return &MemberRepo{db: db}
 }
