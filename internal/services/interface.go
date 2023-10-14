@@ -31,4 +31,8 @@ type (
 	IMailService interface {
 		SendVerificationEmail(req requests.SendEmailRequest) error
 	}
+
+	IMemberService interface {
+		Create(req requests.CreateMemberRequest) (*responses.MemberResponse, error)
+	}
 )

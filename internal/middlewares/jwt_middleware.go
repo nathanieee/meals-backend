@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"project-skbackend/configs"
+	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils"
 	"strings"
 	"time"
@@ -38,7 +39,7 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 		extractedToken, err := extractToken(ctx)
 		if err != nil {
 			utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-				Message: "Invalid token",
+				Message: "Invalid extract token",
 				Debug:   err,
 				Errors:  err.Error(),
 			})
@@ -49,7 +50,7 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 		parsedToken, err := utils.ParseToken(extractedToken, cfg.App.Secret)
 		if err != nil {
 			utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-				Message: "Invalid token",
+				Message: "Invalid parse token",
 				Debug:   err,
 				Errors:  err.Error(),
 			})
@@ -57,14 +58,16 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 			return
 		}
 
-		if !slices.Contains(allowedLevel, uint(parsedToken.User.Role)) || (time.Now().Unix() >= parsedToken.Expire) {
-			utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-				Message: "Invalid token",
-				Debug:   nil,
-				Errors:  "You're not authorized to access this",
-			})
-			ctx.Abort()
-			return
+		if !slices.Contains(allowedLevel, uint(consttypes.UR_USER)) {
+			if !slices.Contains(allowedLevel, uint(parsedToken.User.Role)) || (time.Now().Unix() >= parsedToken.Expire) {
+				utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
+					Message: "Invalid token",
+					Debug:   nil,
+					Errors:  "You're not authorized to access this",
+				})
+				ctx.Abort()
+				return
+			}
 		}
 
 		if !utils.CheckWhitelistUrl(ctx.Request.URL.Path) {

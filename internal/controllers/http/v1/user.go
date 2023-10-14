@@ -5,6 +5,7 @@ import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
+	"project-skbackend/internal/middlewares"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/services"
 	"project-skbackend/packages/consttypes"
@@ -17,12 +18,22 @@ import (
 
 type userRoutes struct {
 	us  services.IUserService
-	ms  services.IMailService
+	mas services.IMailService
 	cfg *configs.Config
 }
 
-func newUserRoutes(h *gin.RouterGroup, db *gorm.DB, cfg *configs.Config, us services.IUserService, ms services.IMailService) {
-	r := &userRoutes{us: us, cfg: cfg, ms: ms}
+func newUserRoutes(
+	h *gin.RouterGroup,
+	db *gorm.DB,
+	cfg *configs.Config,
+	us services.IUserService,
+	mas services.IMailService,
+) {
+	r := &userRoutes{
+		us:  us,
+		cfg: cfg,
+		mas: mas,
+	}
 
 	adminGroup := h.Group("users")
 	{
@@ -31,6 +42,10 @@ func newUserRoutes(h *gin.RouterGroup, db *gorm.DB, cfg *configs.Config, us serv
 	}
 
 	userGroup := h.Group("users")
+	userGroup.Use(middlewares.JWTAuthMiddleware(
+		cfg,
+		uint(consttypes.UR_USER),
+	))
 	{
 		userGroup.GET("/me", r.getCurrentUser)
 		userGroup.DELETE("/delete", r.deleteUser)
@@ -52,7 +67,7 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := r.us.Create(req)
+	ures, err := r.us.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utils.ErrorResponse(ctx, http.StatusConflict, utils.ErrorRes{
@@ -72,7 +87,7 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 
 	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
 		Message: "Success Creating new user",
-		Data:    user,
+		Data:    ures,
 	})
 }
 

@@ -38,8 +38,14 @@ type (
 		Update(cg models.Caregiver, cgid uuid.UUID) (*models.Caregiver, error)
 		FindAll(p models.Pagination) (*models.Pagination, error)
 		FindByID(cgid uuid.UUID) (*responses.CaregiverResponse, error)
+		FindByEmail(email string) (*responses.CaregiverResponse, error)
 		Delete(cg models.Caregiver) error
 	}
 
 	IMealRepo interface{}
+
+	IAllergyRepo interface {
+		Create(al *models.Allergy) (*models.Allergy, error)
+		FindByID(alid int64) (*responses.AllergyResponse, error)
+	}
 )

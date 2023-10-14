@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
@@ -51,7 +50,7 @@ func (r *authRoutes) login(
 	if err != nil {
 		ve := utils.ValidationResponse(err)
 
-		utils.GeneralInputRequired(
+		utils.GeneralInputRequiredError(
 			"login",
 			ctx,
 			ve,
@@ -61,7 +60,6 @@ func (r *authRoutes) login(
 
 	user, token, err := r.as.Login(req)
 	if err != nil {
-
 		utils.GeneralInternalServerError(
 			"login",
 			ctx,
@@ -98,21 +96,21 @@ func (r *authRoutes) register(
 	if err != nil {
 		ve := utils.ValidationResponse(err)
 
-		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
-			Message: "Invalid request",
-			Debug:   err,
-			Errors:  ve,
-		})
+		utils.GeneralInputRequiredError(
+			"register",
+			ctx,
+			ve,
+		)
 		return
 	}
 
 	user, token, err := r.as.Register(req)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-			Message: "Something went wrong while registering",
-			Debug:   err,
-			Errors:  err.Error(),
-		})
+		utils.GeneralInternalServerError(
+			"register",
+			ctx,
+			err.Error(),
+		)
 		return
 	}
 
@@ -220,7 +218,6 @@ func (r *authRoutes) forgotPassword(
 		})
 		return
 	}
-	fmt.Println("testis")
 
 	err = r.as.ForgotPassword(req)
 	if err != nil {

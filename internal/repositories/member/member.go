@@ -29,6 +29,23 @@ func NewMemberRepo(db *gorm.DB) *MemberRepo {
 	return &MemberRepo{db: db}
 }
 
+var (
+	SELECTED_FIELDS = "" +
+		"id, " +
+		"user_id, " +
+		"caregiver_id, " +
+		"organization_id, " +
+		"height, " +
+		"weight, " +
+		"bmi, " +
+		"first_name, " +
+		"last_name, " +
+		"gender, " +
+		"date_of_birth, " +
+		"created_at, " +
+		"updated_at"
+)
+
 func (mr *MemberRepo) Create(m *models.Member) (*models.Member, error) {
 	err := mr.db.Create(m).Error
 	if err != nil {
@@ -39,7 +56,11 @@ func (mr *MemberRepo) Create(m *models.Member) (*models.Member, error) {
 }
 
 func (mr *MemberRepo) Update(m models.Member, mid uuid.UUID) (*models.Member, error) {
-	err := mr.db.Model(&m).Where("id = ?", mid).Updates(m).Error
+	err := mr.db.
+		Model(&m).
+		Where("id = ?", mid).
+		Updates(m).Error
+
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +72,9 @@ func (mr *MemberRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
 	var m []models.Member
 	var mres []responses.MemberResponse
 
-	result := mr.db.Model(&m).Select("id, user_id, caregiver_id, organization_id, height, weight, bmi, first_name, last_name, gender, date_of_birth, created_at, updated_at")
+	result := mr.db.
+		Model(&m).
+		Select(SELECTED_FIELDS)
 
 	if p.Search != "" {
 		result = result.
@@ -60,7 +83,11 @@ func (mr *MemberRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
 	}
 
 	if !p.Filter.CreatedFrom.IsZero() && !p.Filter.CreatedTo.IsZero() {
-		result = result.Where("date(created_at) between ? and ?", p.Filter.CreatedFrom.Format(consttypes.DATEFORMAT), p.Filter.CreatedTo.Format(consttypes.DATEFORMAT))
+		result = result.
+			Where("date(created_at) between ? and ?",
+				p.Filter.CreatedFrom.Format(consttypes.DATEFORMAT),
+				p.Filter.CreatedTo.Format(consttypes.DATEFORMAT),
+			)
 	}
 
 	result = result.Group("id").Scopes(pagination.Paginate(&m, &p, result)).Find(&mres)
@@ -75,7 +102,12 @@ func (mr *MemberRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
 
 func (mr *MemberRepo) FindByID(mid uuid.UUID) (*responses.MemberResponse, error) {
 	var mres *responses.MemberResponse
-	err := mr.db.Model(&models.Member{}).Select("id, user_id, caregiver_id, organization_id, height, weight, bmi, first_name, last_name, gender, date_of_birth, created_at, updated_at").First(&mres, mid).Error
+
+	err := mr.db.
+		Model(&models.Member{}).
+		Select(SELECTED_FIELDS).
+		First(&mres, mid).Error
+
 	if err != nil {
 		return nil, err
 	}

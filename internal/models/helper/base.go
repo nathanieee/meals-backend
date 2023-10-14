@@ -8,7 +8,7 @@ import (
 )
 
 type Model struct {
-	ID        uuid.UUID `gorm:"type:uuid;default:gen_random_uuid()"`
+	ID        uuid.UUID `json:"id" gorm:"type:uuid;default:gen_random_uuid()"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`

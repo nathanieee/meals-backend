@@ -41,12 +41,12 @@ func GenerateToken(user *responses.UserResponse, lifespan int, duration string, 
 	claims.User = user
 	claims.Expire = expTime.Unix()
 	unsignedToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, errSign := unsignedToken.SignedString([]byte(secret))
+	signedToken, err := unsignedToken.SignedString([]byte(secret))
 
 	token.Token = signedToken
 	token.Expires = expTime.UTC()
 
-	return token, errSign
+	return token, err
 }
 
 func ParseToken(tokenString string, secret string) (*TokenClaims, error) {
@@ -85,6 +85,5 @@ func GenerateRandomToken() int {
 	max := 99999999
 	// set seed
 	rand.Seed(time.Now().UnixNano())
-	// generate random number between 1000 - 9999
 	return rand.Intn(max-min+1) + min
 }

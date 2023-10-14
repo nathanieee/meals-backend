@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type CaregiverRepo struct {
@@ -16,11 +17,19 @@ type CaregiverRepo struct {
 }
 
 func NewCaregiverRepo(db *gorm.DB) *CaregiverRepo {
+	db.
+		Preload(clause.Associations).
+		Preload("User").
+		Preload("User.UserImages.Images").
+		Preload("User.Addresses")
+
 	return &CaregiverRepo{db: db}
 }
 
 func (cgr *CaregiverRepo) Create(cg *models.Caregiver) (*models.Caregiver, error) {
-	err := cgr.db.Create(cg).Error
+	err := cgr.db.
+		Create(cg).Error
+
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +38,11 @@ func (cgr *CaregiverRepo) Create(cg *models.Caregiver) (*models.Caregiver, error
 }
 
 func (cgr *CaregiverRepo) Update(cg models.Caregiver, cgid uuid.UUID) (*models.Caregiver, error) {
-	err := cgr.db.Model(&cg).Where("id = ?", cgid).Updates(cg).Error
+	err := cgr.db.
+		Model(&cg).
+		Where("id = ?", cgid).
+		Updates(cg).Error
+
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +54,9 @@ func (cgr *CaregiverRepo) FindAll(p models.Pagination) (*models.Pagination, erro
 	var cg []models.Caregiver
 	var cgres []responses.CaregiverResponse
 
-	result := cgr.db.Model(&cg).Select("id, user_id, gender, first_name, last_name, date_of_birth, created_at, updated_at")
+	result := cgr.db.
+		Model(&cg).
+		Select("id, user_id, gender, first_name, last_name, date_of_birth, created_at, updated_at")
 
 	if p.Search != "" {
 		result = result.
@@ -50,10 +65,16 @@ func (cgr *CaregiverRepo) FindAll(p models.Pagination) (*models.Pagination, erro
 	}
 
 	if !p.Filter.CreatedFrom.IsZero() && !p.Filter.CreatedTo.IsZero() {
-		result = result.Where("date(created_at) between ? and ?", p.Filter.CreatedFrom.Format(consttypes.DATEFORMAT), p.Filter.CreatedTo.Format(consttypes.DATEFORMAT))
+		result = result.
+			Where("date(created_at) between ? and ?",
+				p.Filter.CreatedFrom.Format(consttypes.DATEFORMAT),
+				p.Filter.CreatedTo.Format(consttypes.DATEFORMAT))
 	}
 
-	result = result.Group("id").Scopes(pagination.Paginate(&cg, &p, result)).Find(&cgres)
+	result = result.
+		Group("id").
+		Scopes(pagination.Paginate(&cg, &p, result)).
+		Find(&cgres)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -65,7 +86,27 @@ func (cgr *CaregiverRepo) FindAll(p models.Pagination) (*models.Pagination, erro
 
 func (cgr *CaregiverRepo) FindByID(cgid uuid.UUID) (*responses.CaregiverResponse, error) {
 	var cgres *responses.CaregiverResponse
-	err := cgr.db.Model(&models.Caregiver{}).Select("id, user_id, gender, first_name, last_name, date_of_birth, created_at, updated_at").First(&cgres, cgid).Error
+	err := cgr.db.
+		Model(&models.Caregiver{}).
+		Select("id, user_id, gender, first_name, last_name, date_of_birth, created_at, updated_at").
+		First(&cgres, cgid).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cgres, nil
+}
+
+func (cgr *CaregiverRepo) FindByEmail(email string) (*responses.CaregiverResponse, error) {
+	var cgres *responses.CaregiverResponse
+	err := cgr.db.
+		Model(&models.Caregiver{}).
+		Select("id, user_id, gender, first_name, last_name, date_of_birth, created_at, updated_at").
+		Where("users.email = ?", email).
+		Group("id").
+		Take(&cgres).Error
+
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +115,9 @@ func (cgr *CaregiverRepo) FindByID(cgid uuid.UUID) (*responses.CaregiverResponse
 }
 
 func (cgr *CaregiverRepo) Delete(cg models.Caregiver) error {
-	err := cgr.db.Delete(&cg).Error
+	err := cgr.db.
+		Delete(&cg).Error
+
 	if err != nil {
 		return err
 	}

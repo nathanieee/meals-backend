@@ -2,18 +2,21 @@ package di
 
 import (
 	"project-skbackend/configs"
+	merepo "project-skbackend/internal/repositories/member"
 	urepo "project-skbackend/internal/repositories/user"
 	ausvc "project-skbackend/internal/services/auth"
-	msvc "project-skbackend/internal/services/mail"
+	masvc "project-skbackend/internal/services/mail"
+	mesvc "project-skbackend/internal/services/member"
 	usvc "project-skbackend/internal/services/user"
 
 	"gorm.io/gorm"
 )
 
 type DependencyInjection struct {
-	UserService *usvc.UserService
-	AuthService *ausvc.AuthService
-	MailService *msvc.MailService
+	UserService   *usvc.UserService
+	AuthService   *ausvc.AuthService
+	MailService   *masvc.MailService
+	MemberService *mesvc.MemberService
 }
 
 func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjection {
@@ -25,15 +28,20 @@ func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjecti
 
 	/* ------------------------------ mail service ------------------------------ */
 
-	msvc := msvc.NewMailService(cfg)
+	masvc := masvc.NewMailService(cfg)
 
 	/* ------------------------------ auth service ------------------------------ */
 
-	ausvc := ausvc.NewAuthService(urepo, cfg, msvc)
+	ausvc := ausvc.NewAuthService(urepo, cfg, masvc)
+
+	/* ----------------------------- member service ----------------------------- */
+	merepo := merepo.NewMemberRepo(db)
+	mesvc := mesvc.NewMemberService(merepo, urepo)
 
 	return &DependencyInjection{
-		UserService: usvc,
-		AuthService: ausvc,
-		MailService: msvc,
+		UserService:   usvc,
+		AuthService:   ausvc,
+		MailService:   masvc,
+		MemberService: mesvc,
 	}
 }

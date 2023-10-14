@@ -21,11 +21,11 @@ import (
 type AuthService struct {
 	cfg *configs.Config
 	ur  repositories.IUserRepo
-	ms  services.IMailService
+	mas services.IMailService
 }
 
-func NewAuthService(ur repositories.IUserRepo, cfg *configs.Config, ms services.IMailService) *AuthService {
-	return &AuthService{ur: ur, cfg: cfg, ms: ms}
+func NewAuthService(ur repositories.IUserRepo, cfg *configs.Config, mas services.IMailService) *AuthService {
+	return &AuthService{ur: ur, cfg: cfg, mas: mas}
 }
 
 func (a *AuthService) Login(req requests.LoginRequest) (*responses.UserResponse, *utils.TokenHeader, error) {
@@ -159,7 +159,7 @@ func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 		Token:    token,
 	}
 
-	err = a.ms.SendVerificationEmail(emreq)
+	err = a.mas.SendVerificationEmail(emreq)
 	if err != nil {
 		return err
 	}
@@ -194,7 +194,7 @@ func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
 		Token:    token,
 	}
 
-	err = a.ms.SendVerificationEmail(emreq)
+	err = a.mas.SendVerificationEmail(emreq)
 	if err != nil {
 		return err
 	}

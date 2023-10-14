@@ -5,6 +5,7 @@ import (
 	"project-skbackend/packages/consttypes"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -50,4 +51,8 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 
 func (u *User) BeforeUpdate(tx *gorm.DB) error {
 	return u.hashPasswordIfNeeded()
+}
+
+func (u *User) IsEmpty() bool {
+	return cmp.Equal(u, User{})
 }
