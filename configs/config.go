@@ -124,6 +124,7 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 
 func (db DB) AutoSeed(gdb *gorm.DB) error {
 	SeedAdminCredentials(gdb)
+	SeedAllergyData(gdb)
 
 	return nil
 }

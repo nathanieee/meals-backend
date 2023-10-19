@@ -7,10 +7,10 @@ import (
 
 type (
 	SendEmailRequest struct {
-		Template string `validate:"required,oneof=email_veification.html"`
-		Subject  string `validate:"required"`
+		Template string `binding:"required,oneof=email_veification.html"`
+		Subject  string `binding:"required"`
 		Name     string
-		Email    string `validate:"required,email"`
+		Email    string `binding:"required,email"`
 		Token    int
 	}
 )

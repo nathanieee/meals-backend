@@ -11,17 +11,19 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-type TokenClaims struct {
-	jwt.StandardClaims
-	Authorized bool                    `json:"authorized"`
-	User       *responses.UserResponse `json:"user"`
-	Expire     int64                   `json:"expire"`
-}
+type (
+	TokenClaims struct {
+		jwt.StandardClaims
+		Authorized bool                    `json:"authorized"`
+		User       *responses.UserResponse `json:"user"`
+		Expire     int64                   `json:"expire"`
+	}
 
-type Token struct {
-	Token   string
-	Expires time.Time
-}
+	Token struct {
+		Token   string    `json:"token"`
+		Expires time.Time `json:"expires"`
+	}
+)
 
 func GenerateToken(user *responses.UserResponse, lifespan int, duration string, secret string) (*Token, error) {
 	token := &Token{}

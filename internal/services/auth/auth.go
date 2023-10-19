@@ -152,7 +152,7 @@ func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 		return err
 	}
 
-	emreq := requests.SendEmailRequest{
+	emreq := requests.SendEmailRequest{ // TODO - change this request accordingly
 		Template: "email_verification.html",
 		Subject:  "Reset Password",
 		Email:    user.Email,
@@ -187,7 +187,7 @@ func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
 		return err
 	}
 
-	emreq := requests.SendEmailRequest{
+	emreq := requests.SendEmailRequest{ // TODO - change this request accordingly
 		Template: "email_verification.html",
 		Subject:  "Reset Password",
 		Email:    user.Email,

@@ -13,17 +13,17 @@ type (
 
 	VerifyTokenRequest struct {
 		Token int    `json:"token" binding:"required,number" example:""`
-		Email string `json:"email" binding:"required,email"`
+		Email string `json:"email" binding:"required,email" example:"email@email.com"`
 	}
 
 	ForgotPasswordRequest struct {
-		Email string `json:"email" binding:"required,email"`
+		Email string `json:"email" binding:"required,email" example:"email@email.com"`
 	}
 
 	ResetPasswordRequest struct {
-		Email           string `json:"email" binding:"required,email"`
+		Email           string `json:"email" binding:"required,email" example:"email@email.com"`
 		Password        string `json:"password" binding:"required"`
-		ConfirmPassword string `json:"confirmPassword" binding:"required,eqfield=Password"`
+		ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=Password"`
 		Token           int    `json:"token" binding:"required"`
 	}
 

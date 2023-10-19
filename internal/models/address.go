@@ -9,7 +9,7 @@ import (
 type (
 	Address struct {
 		helper.Model
-		UserID      uuid.UUID `json:"userID" gorm:"not null" binding:"required"`
+		UserID      uuid.UUID `json:"user_id" gorm:"not null" binding:"required"`
 		Name        string    `json:"name" gorm:"not null" binding:"required"`
 		Address     string    `json:"address" gorm:"not null" binding:"required"`
 		Description string    `json:"description" gorm:"not null" binding:"required"`

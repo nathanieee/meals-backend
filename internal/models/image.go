@@ -10,6 +10,6 @@ type (
 		helper.Model
 		Name string               `json:"name" gorm:"not null" binding:"required" example:"image.jpg"`
 		Path string               `json:"path" gorm:"not null" binding:"required" example:"./files/images/profiles/image.jpg"`
-		Type consttypes.ImageType `json:"imageType" gorm:"not null" binding:"required" example:"Profile"`
+		Type consttypes.ImageType `json:"image_type" gorm:"not null" binding:"required" example:"Profile"`
 	}
 )

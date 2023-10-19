@@ -10,8 +10,8 @@ type (
 		Sort       string      `json:"sort,omitempty"`
 		Search     string      `json:"search,omitempty"`
 		Filter     Filter      `json:"-"`
-		TotalDatas int64       `json:"totalDatas"`
-		TotalPages int         `json:"totalPages"`
+		TotalDatas int64       `json:"total_datas"`
+		TotalPages int         `json:"total_pages"`
 		Data       interface{} `json:"datas"`
 	}
 
