@@ -96,6 +96,12 @@ func (db DB) GetDbConnectionUrl() string {
 	return connectionUrl
 }
 
+func (db DB) AutoSeedEnum(gdb *gorm.DB) error {
+	SeedEnum(gdb)
+
+	return nil
+}
+
 func (db DB) AutoMigrate(gdb *gorm.DB) error {
 	return gdb.AutoMigrate(
 		&models.User{},
@@ -122,7 +128,7 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 	)
 }
 
-func (db DB) AutoSeed(gdb *gorm.DB) error {
+func (db DB) AutoSeedTable(gdb *gorm.DB) error {
 	SeedAdminCredentials(gdb)
 	SeedAllergyData(gdb)
 

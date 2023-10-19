@@ -20,15 +20,16 @@ func checkEnumIsExist(db *gorm.DB, key string) bool {
 }
 
 func SeedEnum(db *gorm.DB) error {
-	if !checkEnumIsExist(db, "") {
-		db.Raw(
+	if !checkEnumIsExist(db, "allergens_enum") {
+		return db.Exec(
 			`CREATE TYPE allergens_enum 
 			AS ENUM (
-				'SEDAN',
-				'HATCHBACK',
-				'MINIVAN'
+				'` + string(consttypes.A_FOOD) + `',
+				'` + string(consttypes.A_MEDICAL) + `',
+				'` + string(consttypes.A_ENVIRONMENTAL) + `',
+				'` + string(consttypes.A_CONTACT) + `'
 			);`,
-		)
+		).Error
 	}
 
 	return nil
@@ -64,6 +65,8 @@ func SeedAdminCredentials(db *gorm.DB) error {
 }
 
 func SeedAllergyData(db *gorm.DB) error {
+	// * source: https://en.wikipedia.org/wiki/List_of_allergens
+	// TODO - needs to continue seed the other allergen type
 	if db.Migrator().HasTable(&models.Allergy{}) {
 		if err := db.First(&models.Allergy{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			allergies := []*models.Allergy{
