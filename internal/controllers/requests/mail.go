@@ -16,10 +16,10 @@ type (
 )
 
 func (s SendEmailRequest) ToString() string {
-	b, err := json.Marshal(s)
+	json, err := json.Marshal(s)
 	if err != nil {
 		fmt.Printf("Error: %s", err)
 		return ""
 	}
-	return string(b)
+	return string(json)
 }

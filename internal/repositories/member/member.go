@@ -1,4 +1,4 @@
-package member
+package mmbrrepository
 
 import (
 	"fmt"
@@ -12,22 +12,19 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type MemberRepo struct {
-	db *gorm.DB
-}
+type (
+	MemberRepository struct {
+		db *gorm.DB
+	}
 
-func NewMemberRepo(db *gorm.DB) *MemberRepo {
-	db.
-		Preload(clause.Associations).
-		Preload("Users.UserImages.Images").
-		Preload("Users.Addresses").
-		Preload("Caregiver.Users.UserImages.Images").
-		Preload("Organizations").
-		Preload("MemberAllergies.Allergies").
-		Preload("MemberIllnesses.Illnesses")
-
-	return &MemberRepo{db: db}
-}
+	IMemberRepository interface {
+		Create(m *models.Member) (*models.Member, error)
+		Update(m models.Member, mid uuid.UUID) (*models.Member, error)
+		FindAll(p models.Pagination) (*models.Pagination, error)
+		FindByID(mid uuid.UUID) (*responses.MemberResponse, error)
+		Delete(m models.Member) error
+	}
+)
 
 var (
 	SELECTED_FIELDS = "" +
@@ -46,8 +43,23 @@ var (
 		"updated_at"
 )
 
-func (mr *MemberRepo) Create(m *models.Member) (*models.Member, error) {
-	err := mr.db.Create(m).Error
+func NewMemberRepository(db *gorm.DB) *MemberRepository {
+	return &MemberRepository{db: db}
+}
+
+func (r *MemberRepository) preload(db *gorm.DB) *gorm.DB {
+	return db.
+		Preload(clause.Associations).
+		Preload("Users.UserImages.Images").
+		Preload("Users.Addresses").
+		Preload("Caregiver.Users.UserImages.Images").
+		Preload("Organizations").
+		Preload("MemberAllergies.Allergies").
+		Preload("MemberIllnesses.Illnesses")
+}
+
+func (r *MemberRepository) Create(m *models.Member) (*models.Member, error) {
+	err := r.db.Create(m).Error
 	if err != nil {
 		return nil, err
 	}
@@ -55,8 +67,8 @@ func (mr *MemberRepo) Create(m *models.Member) (*models.Member, error) {
 	return m, err
 }
 
-func (mr *MemberRepo) Update(m models.Member, mid uuid.UUID) (*models.Member, error) {
-	err := mr.db.
+func (r *MemberRepository) Update(m models.Member, mid uuid.UUID) (*models.Member, error) {
+	err := r.db.
 		Model(&m).
 		Where("id = ?", mid).
 		Updates(m).Error
@@ -68,11 +80,11 @@ func (mr *MemberRepo) Update(m models.Member, mid uuid.UUID) (*models.Member, er
 	return &m, nil
 }
 
-func (mr *MemberRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
+func (r *MemberRepository) FindAll(p models.Pagination) (*models.Pagination, error) {
 	var m []models.Member
 	var mres []responses.MemberResponse
 
-	result := mr.db.
+	result := r.db.
 		Model(&m).
 		Select(SELECTED_FIELDS)
 
@@ -100,10 +112,10 @@ func (mr *MemberRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
 	return &p, nil
 }
 
-func (mr *MemberRepo) FindByID(mid uuid.UUID) (*responses.MemberResponse, error) {
+func (r *MemberRepository) FindByID(mid uuid.UUID) (*responses.MemberResponse, error) {
 	var mres *responses.MemberResponse
 
-	err := mr.db.
+	err := r.db.
 		Model(&models.Member{}).
 		Select(SELECTED_FIELDS).
 		First(&mres, mid).Error
@@ -115,8 +127,8 @@ func (mr *MemberRepo) FindByID(mid uuid.UUID) (*responses.MemberResponse, error)
 	return mres, nil
 }
 
-func (mr *MemberRepo) Delete(m models.Member) error {
-	err := mr.db.Delete(&m).Error
+func (r *MemberRepository) Delete(m models.Member) error {
+	err := r.db.Delete(&m).Error
 	if err != nil {
 		return err
 	}

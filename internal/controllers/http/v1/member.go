@@ -5,7 +5,7 @@ import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
-	"project-skbackend/internal/services"
+	mmbrservice "project-skbackend/internal/services/member"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils"
 	"strings"
@@ -15,28 +15,28 @@ import (
 )
 
 type memberRoutes struct {
-	mes services.IMemberService
-	cfg *configs.Config
+	cfg     *configs.Config
+	membsvc mmbrservice.IMemberService
 }
 
 func newMemberRoutes(
 	h *gin.RouterGroup,
 	db *gorm.DB,
 	cfg *configs.Config,
-	mes services.IMemberService,
+	membsvc mmbrservice.IMemberService,
 ) {
 	r := &memberRoutes{
-		mes: mes,
-		cfg: cfg,
+		cfg:     cfg,
+		membsvc: membsvc,
 	}
 
-	adminGroup := h.Group("members")
-	adminGroup.Use(middlewares.JWTAuthMiddleware(
+	admgrp := h.Group("members")
+	admgrp.Use(middlewares.JWTAuthMiddleware(
 		cfg,
 		uint(consttypes.UR_USER),
 	))
 	{
-		adminGroup.POST("", r.createMember)
+		admgrp.POST("", r.createMember)
 	}
 }
 
@@ -55,7 +55,7 @@ func (r *memberRoutes) createMember(ctx *gin.Context) {
 		return
 	}
 
-	meres, err := r.mes.Create(req)
+	meres, err := r.membsvc.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utils.ErrorResponse(ctx, http.StatusConflict, utils.ErrorRes{

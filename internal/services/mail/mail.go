@@ -1,4 +1,4 @@
-package mail
+package mailservice
 
 import (
 	"bytes"
@@ -10,40 +10,53 @@ import (
 	"text/template"
 )
 
-type MailService struct {
-	cfg *configs.Config
-}
+type (
+	MailService struct {
+		cfg     *configs.Config
+		mailset *MailSetup
+	}
 
-func NewMailService(cfg *configs.Config) *MailService {
-	return &MailService{cfg: cfg}
+	MailSetup struct {
+		from    string
+		pass    string
+		host    string
+		port    string
+		address string
+		temdir  string
+	}
+
+	IMailService interface {
+		SendVerificationEmail(req requests.SendEmailRequest) error
+	}
+)
+
+func NewMailService(
+	cfg *configs.Config,
+) *MailService {
+	mailset := MailSetup{
+		from:    cfg.Mail.From,
+		pass:    cfg.Mail.Password,
+		host:    cfg.Mail.SMTPHost,
+		port:    cfg.Mail.SMTPPort,
+		address: cfg.Mail.SMTPHost + ":" + cfg.Mail.SMTPPort,
+		temdir:  cfg.Mail.TemplateDirectory,
+	}
+
+	return &MailService{
+		cfg:     cfg,
+		mailset: &mailset,
+	}
 }
 
 func (m *MailService) SendVerificationEmail(req requests.SendEmailRequest) error {
-
-	/* ------------------------- setup from and password ------------------------ */
-
-	from := m.cfg.Mail.From
-	pass := m.cfg.Mail.Password
 	to := []string{req.Email}
-
-	/* ------------------- setup smtp host, port, and address ------------------- */
-
-	smtphost := m.cfg.Mail.SMTPHost
-	smtpport := m.cfg.Mail.SMTPPort
-	address := smtphost + ":" + smtpport
-
-	/* --------------- setup mail template directory and file name -------------- */
-
-	temdir := m.cfg.Mail.TemplateDirectory
 	temfile := req.Template
 
 	/* ------------------------ setup plain auth setting ------------------------ */
-
-	auth := smtp.PlainAuth("", from, pass, smtphost)
+	auth := smtp.PlainAuth("", m.mailset.from, m.mailset.pass, m.mailset.host)
 
 	/* -------------------------- setup parse template -------------------------- */
-
-	t, err := template.ParseFiles(temdir + temfile)
+	t, err := template.ParseFiles(m.mailset.temdir + temfile)
 	if err != nil {
 		return err
 	}
@@ -54,7 +67,6 @@ func (m *MailService) SendVerificationEmail(req requests.SendEmailRequest) error
 	body.Write([]byte(fmt.Sprintf("Subject: This is a test subject \n%s\n\n", mimeHeaders)))
 
 	/* -------------------- setup the content of the template ------------------- */
-
 	// TODO CHANGE THE CONTENT ACCORDINGLY
 	t.Execute(&body, struct {
 		Name    string
@@ -67,8 +79,7 @@ func (m *MailService) SendVerificationEmail(req requests.SendEmailRequest) error
 	})
 
 	/* ------------------------------- send email ------------------------------- */
-
-	err = smtp.SendMail(address, auth, from, to, body.Bytes())
+	err = smtp.SendMail(m.mailset.address, auth, m.mailset.from, to, body.Bytes())
 	if err != nil {
 		return err
 	}

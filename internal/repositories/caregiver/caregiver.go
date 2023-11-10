@@ -1,4 +1,4 @@
-package caregiver
+package crgvrrepository
 
 import (
 	"fmt"
@@ -12,22 +12,35 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type CaregiverRepo struct {
-	db *gorm.DB
+type (
+	CaregiverRepository struct {
+		db *gorm.DB
+	}
+
+	ICaregiverRepository interface {
+		Create(cg *models.Caregiver) (*models.Caregiver, error)
+		Update(cg models.Caregiver, cgid uuid.UUID) (*models.Caregiver, error)
+		FindAll(p models.Pagination) (*models.Pagination, error)
+		FindByID(cgid uuid.UUID) (*responses.CaregiverResponse, error)
+		FindByEmail(email string) (*responses.CaregiverResponse, error)
+		Delete(cg models.Caregiver) error
+	}
+)
+
+func NewCaregiverRepository(db *gorm.DB) *CaregiverRepository {
+	return &CaregiverRepository{db: db}
 }
 
-func NewCaregiverRepo(db *gorm.DB) *CaregiverRepo {
-	db.
+func (r *CaregiverRepository) preload(db *gorm.DB) *gorm.DB {
+	return db.
 		Preload(clause.Associations).
 		Preload("User").
 		Preload("User.UserImages.Images").
 		Preload("User.Addresses")
-
-	return &CaregiverRepo{db: db}
 }
 
-func (cgr *CaregiverRepo) Create(cg *models.Caregiver) (*models.Caregiver, error) {
-	err := cgr.db.
+func (r *CaregiverRepository) Create(cg *models.Caregiver) (*models.Caregiver, error) {
+	err := r.db.
 		Create(cg).Error
 
 	if err != nil {
@@ -37,8 +50,8 @@ func (cgr *CaregiverRepo) Create(cg *models.Caregiver) (*models.Caregiver, error
 	return cg, err
 }
 
-func (cgr *CaregiverRepo) Update(cg models.Caregiver, cgid uuid.UUID) (*models.Caregiver, error) {
-	err := cgr.db.
+func (r *CaregiverRepository) Update(cg models.Caregiver, cgid uuid.UUID) (*models.Caregiver, error) {
+	err := r.db.
 		Model(&cg).
 		Where("id = ?", cgid).
 		Updates(cg).Error
@@ -50,11 +63,11 @@ func (cgr *CaregiverRepo) Update(cg models.Caregiver, cgid uuid.UUID) (*models.C
 	return &cg, nil
 }
 
-func (cgr *CaregiverRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
+func (r *CaregiverRepository) FindAll(p models.Pagination) (*models.Pagination, error) {
 	var cg []models.Caregiver
 	var cgres []responses.CaregiverResponse
 
-	result := cgr.db.
+	result := r.preload(r.db).
 		Model(&cg).
 		Select("id, user_id, gender, first_name, last_name, date_of_birth, created_at, updated_at")
 
@@ -84,9 +97,9 @@ func (cgr *CaregiverRepo) FindAll(p models.Pagination) (*models.Pagination, erro
 	return &p, nil
 }
 
-func (cgr *CaregiverRepo) FindByID(cgid uuid.UUID) (*responses.CaregiverResponse, error) {
+func (r *CaregiverRepository) FindByID(cgid uuid.UUID) (*responses.CaregiverResponse, error) {
 	var cgres *responses.CaregiverResponse
-	err := cgr.db.
+	err := r.preload(r.db).
 		Model(&models.Caregiver{}).
 		Select("id, user_id, gender, first_name, last_name, date_of_birth, created_at, updated_at").
 		First(&cgres, cgid).Error
@@ -98,9 +111,9 @@ func (cgr *CaregiverRepo) FindByID(cgid uuid.UUID) (*responses.CaregiverResponse
 	return cgres, nil
 }
 
-func (cgr *CaregiverRepo) FindByEmail(email string) (*responses.CaregiverResponse, error) {
+func (r *CaregiverRepository) FindByEmail(email string) (*responses.CaregiverResponse, error) {
 	var cgres *responses.CaregiverResponse
-	err := cgr.db.
+	err := r.preload(r.db).
 		Model(&models.Caregiver{}).
 		Select("id, user_id, gender, first_name, last_name, date_of_birth, created_at, updated_at").
 		Where("users.email = ?", email).
@@ -114,8 +127,8 @@ func (cgr *CaregiverRepo) FindByEmail(email string) (*responses.CaregiverRespons
 	return cgres, nil
 }
 
-func (cgr *CaregiverRepo) Delete(cg models.Caregiver) error {
-	err := cgr.db.
+func (r *CaregiverRepository) Delete(cg models.Caregiver) error {
+	err := r.db.
 		Delete(&cg).Error
 
 	if err != nil {

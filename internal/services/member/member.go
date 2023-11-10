@@ -1,4 +1,4 @@
-package member
+package mmbrservice
 
 import (
 	"encoding/json"
@@ -6,21 +6,40 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/repositories"
+	allgrepository "project-skbackend/internal/repositories/allergy"
+	crgvrrepository "project-skbackend/internal/repositories/caregiver"
+	mmbrrepository "project-skbackend/internal/repositories/member"
+	userrepository "project-skbackend/internal/repositories/user"
 
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
 
-type MemberService struct {
-	mer repositories.IMemberRepo
-	ur  repositories.IUserRepo
-	cgr repositories.ICaregiverRepo
-	alr repositories.IAllergyRepo
-}
+type (
+	MemberService struct {
+		membrepo  mmbrrepository.IMemberRepository
+		userrepo  userrepository.IUserRepository
+		crgvrrepo crgvrrepository.ICaregiverRepository
+		allgrepo  allgrepository.IAllergyRepository
+	}
 
-func NewMemberService(mer repositories.IMemberRepo, ur repositories.IUserRepo) *MemberService {
-	return &MemberService{mer: mer}
+	IMemberService interface {
+		Create(req requests.CreateMemberRequest) (*responses.MemberResponse, error)
+	}
+)
+
+func NewMemberService(
+	membrepo mmbrrepository.IMemberRepository,
+	userrepo userrepository.IUserRepository,
+	crgvrrepo crgvrrepository.ICaregiverRepository,
+	allgrepo allgrepository.IAllergyRepository,
+) *MemberService {
+	return &MemberService{
+		membrepo:  membrepo,
+		userrepo:  userrepo,
+		crgvrrepo: crgvrrepo,
+		allgrepo:  allgrepo,
+	}
 }
 
 func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.MemberResponse, error) {
@@ -30,7 +49,7 @@ func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.M
 	// var illnesses []*models.MemberIllness // TODO - assign illness later
 	var allergies []*models.MemberAllergy
 
-	ures, err := mes.ur.FindByEmail(req.User.Email)
+	ures, err := mes.userrepo.FindByEmail(req.User.Email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			user = &models.User{
@@ -38,7 +57,7 @@ func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.M
 				Password: req.User.Password,
 			}
 
-			user, err = mes.ur.Create(user)
+			user, err = mes.userrepo.Create(user)
 			if err != nil {
 				return nil, err
 			}
@@ -54,7 +73,7 @@ func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.M
 		}
 	}
 
-	cgres, err := mes.cgr.FindByEmail(req.Caregiver.Email)
+	cgres, err := mes.crgvrrepo.FindByEmail(req.Caregiver.Email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			cgruser = &models.User{
@@ -62,7 +81,7 @@ func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.M
 				Password: req.Caregiver.Password,
 			}
 
-			cgruser, err = mes.ur.Create(cgruser)
+			cgruser, err = mes.userrepo.Create(cgruser)
 			if err != nil {
 				return nil, err
 			}
@@ -76,7 +95,7 @@ func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.M
 				DateOfBirth: req.Caregiver.DateOfBirth,
 			}
 
-			caregiver, err = mes.cgr.Create(caregiver)
+			caregiver, err = mes.crgvrrepo.Create(caregiver)
 			if err != nil {
 				return nil, err
 			}
@@ -94,7 +113,7 @@ func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.M
 
 	for _, alid := range req.AllergyID {
 		var allergy models.Allergy
-		alres, err := mes.alr.FindByID(alid)
+		alres, err := mes.allgrepo.FindByID(alid)
 		if err != nil {
 			return nil, err
 		}
@@ -129,7 +148,7 @@ func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.M
 		DateOfBirth: req.DateOfBirth,
 	}
 
-	member, err = mes.mer.Create(member)
+	member, err = mes.membrepo.Create(member)
 	if err != nil {
 		return nil, err
 	}

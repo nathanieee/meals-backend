@@ -7,7 +7,8 @@ import (
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/middlewares"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/services"
+	mailservice "project-skbackend/internal/services/mail"
+	userservice "project-skbackend/internal/services/user"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils"
 	"strings"
@@ -17,38 +18,38 @@ import (
 )
 
 type userRoutes struct {
-	us  services.IUserService
-	mas services.IMailService
-	cfg *configs.Config
+	cfg     *configs.Config
+	usersvc userservice.IUserService
+	mailsvc mailservice.IMailService
 }
 
 func newUserRoutes(
 	h *gin.RouterGroup,
 	db *gorm.DB,
 	cfg *configs.Config,
-	us services.IUserService,
-	mas services.IMailService,
+	usersvc userservice.IUserService,
+	mailsvc mailservice.IMailService,
 ) {
 	r := &userRoutes{
-		us:  us,
-		cfg: cfg,
-		mas: mas,
+		cfg:     cfg,
+		usersvc: usersvc,
+		mailsvc: mailsvc,
 	}
 
-	adminGroup := h.Group("users")
+	admg := h.Group("users")
 	{
-		adminGroup.GET("", r.getUser)
-		adminGroup.POST("", r.createUser)
+		admg.GET("", r.getUser)
+		admg.POST("", r.createUser)
 	}
 
-	userGroup := h.Group("users")
-	userGroup.Use(middlewares.JWTAuthMiddleware(
+	useg := h.Group("users")
+	useg.Use(middlewares.JWTAuthMiddleware(
 		cfg,
 		uint(consttypes.UR_USER),
 	))
 	{
-		userGroup.GET("/me", r.getCurrentUser)
-		userGroup.DELETE("/delete", r.deleteUser)
+		useg.GET("/me", r.getCurrentUser)
+		useg.DELETE("/delete", r.deleteUser)
 	}
 }
 
@@ -67,7 +68,7 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 		return
 	}
 
-	ures, err := r.us.Create(req)
+	ures, err := r.usersvc.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utils.ErrorResponse(ctx, http.StatusConflict, utils.ErrorRes{
@@ -94,7 +95,7 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 func (r *userRoutes) getUser(ctx *gin.Context) {
 	paginationReq := utils.GeneratePaginationFromRequest(ctx, models.User{})
 
-	users, err := r.us.FindAll(paginationReq)
+	users, err := r.usersvc.FindAll(paginationReq)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
 			Message: "User not found",
@@ -131,7 +132,7 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := r.us.FindByID(loggedInUser.ID)
+	user, err := r.usersvc.FindByID(loggedInUser.ID)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
 			Message: "User not found",
@@ -177,7 +178,7 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 		return
 	}
 
-	err := r.us.Delete(loggedInUser.ID)
+	err := r.usersvc.Delete(loggedInUser.ID)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
 			Message: "Something went wrong",

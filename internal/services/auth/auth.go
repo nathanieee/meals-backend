@@ -1,4 +1,4 @@
-package auth
+package authservice
 
 import (
 	"encoding/json"
@@ -6,8 +6,8 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/repositories"
-	"project-skbackend/internal/services"
+	userrepository "project-skbackend/internal/repositories/user"
+	mailservice "project-skbackend/internal/services/mail"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils"
 	"strings"
@@ -18,18 +18,39 @@ import (
 	"gorm.io/gorm"
 )
 
-type AuthService struct {
-	cfg *configs.Config
-	ur  repositories.IUserRepo
-	mas services.IMailService
-}
+type (
+	AuthService struct {
+		cfg      *configs.Config
+		userrepo userrepository.IUserRepository
+		mailsvc  mailservice.IMailService
+	}
 
-func NewAuthService(ur repositories.IUserRepo, cfg *configs.Config, mas services.IMailService) *AuthService {
-	return &AuthService{ur: ur, cfg: cfg, mas: mas}
+	IAuthService interface {
+		Login(req requests.LoginRequest) (*responses.UserResponse, *utils.TokenHeader, error)
+		Register(req requests.RegisterRequest) (*responses.UserResponse, *utils.TokenHeader, error)
+		ForgotPassword(req requests.ForgotPasswordRequest) error
+		ResetPassword(req requests.ResetPasswordRequest) error
+		SendVerificationEmail(id uuid.UUID, token int) error
+		VerifyToken(req requests.VerifyTokenRequest) error
+		SendResetPasswordEmail(id uuid.UUID, token int) error
+		RefreshAuthToken(token string) (*responses.UserResponse, *utils.TokenHeader, error)
+	}
+)
+
+func NewAuthService(
+	cfg *configs.Config,
+	userrepo userrepository.IUserRepository,
+	mailsvc mailservice.IMailService,
+) *AuthService {
+	return &AuthService{
+		cfg:      cfg,
+		userrepo: userrepo,
+		mailsvc:  mailsvc,
+	}
 }
 
 func (a *AuthService) Login(req requests.LoginRequest) (*responses.UserResponse, *utils.TokenHeader, error) {
-	user, err := a.ur.FindByEmail(req.Email)
+	user, err := a.userrepo.FindByEmail(req.Email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil, utils.ErrUserNotFound
@@ -55,7 +76,7 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 	var user *responses.UserResponse
 	req.Email = strings.ToLower(req.Email)
 
-	user, err := a.ur.FindByEmail(req.Email)
+	user, err := a.userrepo.FindByEmail(req.Email)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, nil, utils.ErrUserNotFound
 	}
@@ -70,7 +91,7 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 		Role:     consttypes.UR_USER,
 	}
 
-	userModel, err := a.ur.Create(userCreate)
+	userModel, err := a.userrepo.Create(userCreate)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -90,7 +111,7 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 }
 
 func (a *AuthService) ForgotPassword(req requests.ForgotPasswordRequest) error {
-	user, err := a.ur.FindByEmail(req.Email)
+	user, err := a.userrepo.FindByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return utils.ErrUserNotFound
 	}
@@ -106,7 +127,7 @@ func (a *AuthService) ForgotPassword(req requests.ForgotPasswordRequest) error {
 }
 
 func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
-	user, err := a.ur.FindByEmail(req.Email)
+	user, err := a.userrepo.FindByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return utils.ErrUserNotFound
 	}
@@ -124,7 +145,7 @@ func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
 		ResetPasswordToken: 0,
 	}
 
-	_, err = a.ur.Update(userUpdate, user.ID)
+	_, err = a.userrepo.Update(userUpdate, user.ID)
 	if err != nil {
 		return err
 	}
@@ -133,7 +154,7 @@ func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
 }
 
 func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
-	user, err := a.ur.FindByID(id)
+	user, err := a.userrepo.FindByID(id)
 	if err != nil {
 		return err
 	}
@@ -147,7 +168,7 @@ func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 		ResetPasswordSentAt: time.Now().UTC(),
 	}
 
-	_, err = a.ur.Update(userUpdate, user.ID)
+	_, err = a.userrepo.Update(userUpdate, user.ID)
 	if err != nil {
 		return err
 	}
@@ -159,7 +180,7 @@ func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 		Token:    token,
 	}
 
-	err = a.mas.SendVerificationEmail(emreq)
+	err = a.mailsvc.SendVerificationEmail(emreq)
 	if err != nil {
 		return err
 	}
@@ -168,7 +189,7 @@ func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 }
 
 func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
-	user, err := a.ur.FindByID(id)
+	user, err := a.userrepo.FindByID(id)
 	if err != nil {
 		return err
 	}
@@ -182,7 +203,7 @@ func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
 		ConfirmationSentAt: time.Now().UTC(),
 	}
 
-	_, err = a.ur.Update(userUpdate, user.ID)
+	_, err = a.userrepo.Update(userUpdate, user.ID)
 	if err != nil {
 		return err
 	}
@@ -194,7 +215,7 @@ func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
 		Token:    token,
 	}
 
-	err = a.mas.SendVerificationEmail(emreq)
+	err = a.mailsvc.SendVerificationEmail(emreq)
 	if err != nil {
 		return err
 	}
@@ -203,7 +224,7 @@ func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
 }
 
 func (a *AuthService) VerifyToken(req requests.VerifyTokenRequest) error {
-	user, err := a.ur.FindByEmail(req.Email)
+	user, err := a.userrepo.FindByEmail(req.Email)
 	if err != nil {
 		return err
 	}
@@ -224,7 +245,7 @@ func (a *AuthService) VerifyToken(req requests.VerifyTokenRequest) error {
 		ConfirmedAt: time.Now().UTC(),
 	}
 
-	_, err = a.ur.Update(userUpdate, user.ID)
+	_, err = a.userrepo.Update(userUpdate, user.ID)
 	if err != nil {
 		return err
 	}
@@ -238,7 +259,7 @@ func (a *AuthService) RefreshAuthToken(refreshToken string) (*responses.UserResp
 		return nil, nil, err
 	}
 
-	user, err := a.ur.FindByID(parsedToken.User.ID)
+	user, err := a.userrepo.FindByID(parsedToken.User.ID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil, utils.ErrUserNotFound

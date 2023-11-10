@@ -2,46 +2,51 @@ package di
 
 import (
 	"project-skbackend/configs"
-	merepo "project-skbackend/internal/repositories/member"
-	urepo "project-skbackend/internal/repositories/user"
-	ausvc "project-skbackend/internal/services/auth"
-	masvc "project-skbackend/internal/services/mail"
-	mesvc "project-skbackend/internal/services/member"
-	usvc "project-skbackend/internal/services/user"
+	allgrepository "project-skbackend/internal/repositories/allergy"
+	crgvrrepository "project-skbackend/internal/repositories/caregiver"
+	mmbrrepository "project-skbackend/internal/repositories/member"
+	userrepository "project-skbackend/internal/repositories/user"
+	authservice "project-skbackend/internal/services/auth"
+	mailservice "project-skbackend/internal/services/mail"
+	mmbrservice "project-skbackend/internal/services/member"
+	userservice "project-skbackend/internal/services/user"
 
 	"gorm.io/gorm"
 )
 
 type DependencyInjection struct {
-	UserService   *usvc.UserService
-	AuthService   *ausvc.AuthService
-	MailService   *masvc.MailService
-	MemberService *mesvc.MemberService
+	UserService   *userservice.UserService
+	AuthService   *authservice.AuthService
+	MailService   *mailservice.MailService
+	MemberService *mmbrservice.MemberService
 }
 
 func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjection {
 
-	/* ------------------------------ user service ------------------------------ */
+	/* ---------------------------------- user ---------------------------------- */
+	user := userrepository.NewUserRepository(db)
+	us := userservice.NewUserService(user)
 
-	urepo := urepo.NewUserRepo(db)
-	usvc := usvc.NewUserService(urepo)
+	/* ---------------------------------- mail ---------------------------------- */
+	mais := mailservice.NewMailService(cfg)
 
-	/* ------------------------------ mail service ------------------------------ */
+	/* ---------------------------------- auth ---------------------------------- */
+	auts := authservice.NewAuthService(cfg, user, mais)
 
-	masvc := masvc.NewMailService(cfg)
+	/* ---------------------------- caregiver service --------------------------- */
+	carr := crgvrrepository.NewCaregiverRepository(db)
 
-	/* ------------------------------ auth service ------------------------------ */
-
-	ausvc := ausvc.NewAuthService(urepo, cfg, masvc)
+	/* --------------------------------- allergy -------------------------------- */
+	allr := allgrepository.NewAllergyRepository(db)
 
 	/* ----------------------------- member service ----------------------------- */
-	merepo := merepo.NewMemberRepo(db)
-	mesvc := mesvc.NewMemberService(merepo, urepo)
+	memr := mmbrrepository.NewMemberRepository(db)
+	mems := mmbrservice.NewMemberService(memr, user, carr, allr)
 
 	return &DependencyInjection{
-		UserService:   usvc,
-		AuthService:   ausvc,
-		MailService:   masvc,
-		MemberService: mesvc,
+		UserService:   us,
+		AuthService:   auts,
+		MailService:   mais,
+		MemberService: mems,
 	}
 }

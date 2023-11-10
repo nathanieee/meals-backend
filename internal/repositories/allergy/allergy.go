@@ -1,4 +1,4 @@
-package allergy
+package allgrepository
 
 import (
 	"project-skbackend/internal/controllers/responses"
@@ -6,18 +6,31 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
-type AllergyRepo struct {
-	db *gorm.DB
+type (
+	AllergyRepository struct {
+		db *gorm.DB
+	}
+
+	IAllergyRepository interface {
+		Create(al *models.Allergy) (*models.Allergy, error)
+		FindByID(alid uuid.UUID) (*responses.AllergyResponse, error)
+	}
+)
+
+func NewAllergyRepository(db *gorm.DB) *AllergyRepository {
+	return &AllergyRepository{db: db}
 }
 
-func NewAllergyRepo(db *gorm.DB) *AllergyRepo {
-	return &AllergyRepo{db: db}
+func (r *AllergyRepository) preload(db *gorm.DB) *gorm.DB {
+	return db.
+		Preload(clause.Associations)
 }
 
-func (alr *AllergyRepo) Create(al *models.Allergy) (*models.Allergy, error) {
-	err := alr.db.Create(al).Error
+func (r *AllergyRepository) Create(al *models.Allergy) (*models.Allergy, error) {
+	err := r.db.Create(al).Error
 	if err != nil {
 		return nil, err
 	}
@@ -25,9 +38,9 @@ func (alr *AllergyRepo) Create(al *models.Allergy) (*models.Allergy, error) {
 	return al, nil
 }
 
-func (alr *AllergyRepo) FindByID(alid uuid.UUID) (*responses.AllergyResponse, error) {
+func (r *AllergyRepository) FindByID(alid uuid.UUID) (*responses.AllergyResponse, error) {
 	var alres *responses.AllergyResponse
-	err := alr.db.
+	err := r.db.
 		Model(&models.Allergy{}).
 		Select("id, name, created_at, updated_at").
 		Group("id").

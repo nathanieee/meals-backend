@@ -1,4 +1,4 @@
-package user
+package userservice
 
 import (
 	"encoding/json"
@@ -6,17 +6,30 @@ import (
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/models/helper"
-	"project-skbackend/internal/repositories"
+	userrepository "project-skbackend/internal/repositories/user"
 
 	"github.com/google/uuid"
 )
 
-type UserService struct {
-	ur repositories.IUserRepo
-}
+type (
+	UserService struct {
+		userrepo userrepository.IUserRepository
+	}
 
-func NewUserService(ur repositories.IUserRepo) *UserService {
-	return &UserService{ur: ur}
+	IUserService interface {
+		Create(req requests.CreateUserRequest) (*responses.UserResponse, error)
+		FindByID(id uuid.UUID) (*responses.UserResponse, error)
+		FindAll(paginationReq models.Pagination) (*models.Pagination, error)
+		Delete(id uuid.UUID) error
+	}
+)
+
+func NewUserService(
+	userrepo userrepository.IUserRepository,
+) *UserService {
+	return &UserService{
+		userrepo: userrepo,
+	}
 }
 
 func (us *UserService) Create(req requests.CreateUserRequest) (*responses.UserResponse, error) {
@@ -27,7 +40,7 @@ func (us *UserService) Create(req requests.CreateUserRequest) (*responses.UserRe
 		Password: req.Password,
 	}
 
-	user, err := us.ur.Create(user)
+	user, err := us.userrepo.Create(user)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +55,7 @@ func (us *UserService) Create(req requests.CreateUserRequest) (*responses.UserRe
 }
 
 func (us *UserService) FindByID(uid uuid.UUID) (*responses.UserResponse, error) {
-	user, err := us.ur.FindByID(uid)
+	user, err := us.userrepo.FindByID(uid)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +64,7 @@ func (us *UserService) FindByID(uid uuid.UUID) (*responses.UserResponse, error) 
 }
 
 func (us *UserService) FindAll(paginationReq models.Pagination) (*models.Pagination, error) {
-	users, err := us.ur.FindAll(paginationReq)
+	users, err := us.userrepo.FindAll(paginationReq)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +76,7 @@ func (us *UserService) Delete(uid uuid.UUID) error {
 		Model: helper.Model{ID: uid},
 	}
 
-	err := us.ur.Delete(userModel)
+	err := us.userrepo.Delete(userModel)
 	if err != nil {
 		return err
 	}

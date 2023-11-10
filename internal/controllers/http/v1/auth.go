@@ -5,39 +5,42 @@ import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
-	"project-skbackend/internal/services"
+	authservice "project-skbackend/internal/services/auth"
 	"project-skbackend/packages/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
 type authRoutes struct {
-	cfg *configs.Config
-	as  services.IAuthService
+	cfg     *configs.Config
+	authsvc authservice.IAuthService
 }
 
 func newAuthRoutes(
-	handler *gin.RouterGroup,
+	h *gin.RouterGroup,
 	cfg *configs.Config,
-	as services.IAuthService,
+	authsvc authservice.IAuthService,
 ) {
-	r := &authRoutes{as: as, cfg: cfg}
+	r := &authRoutes{
+		cfg:     cfg,
+		authsvc: authsvc,
+	}
 
-	h := handler.Group("auth")
+	useg := h.Group("auth")
 	{
-		h.POST("login", r.login)
-		h.POST("register", r.register)
+		useg.POST("login", r.login)
+		useg.POST("register", r.register)
 
-		verifyGroup := h.Group("verify")
+		verifyGroup := useg.Group("verify")
 		{
 			verifyGroup.POST("", r.verifyToken)
 			verifyGroup.POST("send", r.sendVerifyEmail)
 		}
 
-		h.POST("forgot-password", r.forgotPassword)
-		h.POST("reset-password", r.resetPassword)
+		useg.POST("forgot-password", r.forgotPassword)
+		useg.POST("reset-password", r.resetPassword)
 
-		h.GET("refresh-token", r.refreshAuthToken)
+		useg.GET("refresh-token", r.refreshAuthToken)
 	}
 }
 
@@ -58,7 +61,7 @@ func (r *authRoutes) login(
 		return
 	}
 
-	user, token, err := r.as.Login(req)
+	user, token, err := r.authsvc.Login(req)
 	if err != nil {
 		utils.GeneralInternalServerError(
 			"login",
@@ -104,7 +107,7 @@ func (r *authRoutes) register(
 		return
 	}
 
-	user, token, err := r.as.Register(req)
+	user, token, err := r.authsvc.Register(req)
 	if err != nil {
 		utils.GeneralInternalServerError(
 			"register",
@@ -157,7 +160,7 @@ func (r *authRoutes) sendVerifyEmail(
 	}
 
 	token := utils.GenerateRandomToken()
-	err := r.as.SendVerificationEmail(loggedInUser.ID, token)
+	err := r.authsvc.SendVerificationEmail(loggedInUser.ID, token)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
 			Message: "Error sending verification email",
@@ -188,7 +191,7 @@ func (r *authRoutes) verifyToken(
 		return
 	}
 
-	err = r.as.VerifyToken(req)
+	err = r.authsvc.VerifyToken(req)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
 			Message: "Cannot verify token",
@@ -219,7 +222,7 @@ func (r *authRoutes) forgotPassword(
 		return
 	}
 
-	err = r.as.ForgotPassword(req)
+	err = r.authsvc.ForgotPassword(req)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
 			Message: "Something went wrong",
@@ -252,7 +255,7 @@ func (r *authRoutes) resetPassword(
 		return
 	}
 
-	err = r.as.ResetPassword(req)
+	err = r.authsvc.ResetPassword(req)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
 			Message: "Something went wrong",
@@ -282,7 +285,7 @@ func (r *authRoutes) refreshAuthToken(
 		return
 	}
 
-	user, token, err := r.as.RefreshAuthToken(refreshToken)
+	user, token, err := r.authsvc.RefreshAuthToken(refreshToken)
 	if err != nil {
 		utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
 			Message: "Something went wrong",

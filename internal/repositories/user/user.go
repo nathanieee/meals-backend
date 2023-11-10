@@ -1,4 +1,4 @@
-package user
+package userrepository
 
 import (
 	"fmt"
@@ -12,35 +12,47 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type UserRepo struct {
-	db *gorm.DB
-}
+var (
+	SELECTED_FIELDS = `
+		id,
+		email,
+		role,
+		password,
+		reset_password_token,
+		reset_password_sent_at,
+		confirmation_token,
+		confirmed_at,
+		confirmation_sent_at,
+		created_at,
+		updated_at
+	`
+)
 
-func NewUserRepo(db *gorm.DB) *UserRepo {
+type (
+	UserRepository struct {
+		db *gorm.DB
+	}
+
+	IUserRepository interface {
+		FindAll(p models.Pagination) (*models.Pagination, error)
+		Create(user *models.User) (*models.User, error)
+		Update(user models.User, uid uuid.UUID) (*models.User, error)
+		FindByID(uid uuid.UUID) (*responses.UserResponse, error)
+		FindByEmail(email string) (*responses.UserResponse, error)
+		Delete(user models.User) error
+	}
+)
+
+func NewUserRepository(db *gorm.DB) *UserRepository {
 	db.
 		Preload(clause.Associations).
 		Preload("UserImages.Images").
 		Preload("Addresses")
 
-	return &UserRepo{db: db}
+	return &UserRepository{db: db}
 }
 
-var (
-	SELECTED_FIELDS = "" +
-		"id, " +
-		"email, " +
-		"role, " +
-		"password, " +
-		"reset_password_token, " +
-		"reset_password_sent_at, " +
-		"confirmation_token, " +
-		"confirmed_at, " +
-		"confirmation_sent_at, " +
-		"created_at, " +
-		"updated_at"
-)
-
-func (ur *UserRepo) Create(u *models.User) (*models.User, error) {
+func (ur *UserRepository) Create(u *models.User) (*models.User, error) {
 	err := ur.db.Create(u).Error
 	if err != nil {
 		return nil, err
@@ -49,7 +61,7 @@ func (ur *UserRepo) Create(u *models.User) (*models.User, error) {
 	return u, nil
 }
 
-func (ur *UserRepo) Update(u models.User, uid uuid.UUID) (*models.User, error) {
+func (ur *UserRepository) Update(u models.User, uid uuid.UUID) (*models.User, error) {
 	err := ur.db.
 		Model(&u).
 		Where("id = ?", uid).
@@ -62,7 +74,7 @@ func (ur *UserRepo) Update(u models.User, uid uuid.UUID) (*models.User, error) {
 	return &u, nil
 }
 
-func (ur *UserRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
+func (ur *UserRepository) FindAll(p models.Pagination) (*models.Pagination, error) {
 	var u []models.User
 	var ures []responses.UserResponse
 
@@ -96,7 +108,7 @@ func (ur *UserRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
 	return &p, nil
 }
 
-func (ur *UserRepo) FindByID(uid uuid.UUID) (*responses.UserResponse, error) {
+func (ur *UserRepository) FindByID(uid uuid.UUID) (*responses.UserResponse, error) {
 	var ures *responses.UserResponse
 	err := ur.db.
 		Model(&models.User{}).
@@ -111,7 +123,7 @@ func (ur *UserRepo) FindByID(uid uuid.UUID) (*responses.UserResponse, error) {
 	return ures, nil
 }
 
-func (ur *UserRepo) FindByEmail(email string) (*responses.UserResponse, error) {
+func (ur *UserRepository) FindByEmail(email string) (*responses.UserResponse, error) {
 	var ures *responses.UserResponse
 	err := ur.db.
 		Model(&models.User{}).
@@ -127,7 +139,7 @@ func (ur *UserRepo) FindByEmail(email string) (*responses.UserResponse, error) {
 	return ures, nil
 }
 
-func (ur *UserRepo) Delete(u models.User) error {
+func (ur *UserRepository) Delete(u models.User) error {
 	err := ur.db.
 		Delete(&u).Error
 

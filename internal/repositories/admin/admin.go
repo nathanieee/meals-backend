@@ -1,4 +1,4 @@
-package admin
+package admnrepository
 
 import (
 	"fmt"
@@ -12,18 +12,31 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type AdminRepo struct {
-	db *gorm.DB
+type (
+	AdminRepository struct {
+		db *gorm.DB
+	}
+
+	IAdminRepository interface {
+		Create(a *models.Admin) (*models.Admin, error)
+		Update(a models.Admin, aid uuid.UUID) (*models.Admin, error)
+		FindAll(p models.Pagination) (*models.Pagination, error)
+		FindByID(aid uuid.UUID) (*responses.AdminResponse, error)
+		Delete(a models.Admin) error
+	}
+)
+
+func NewAdminRepository(db *gorm.DB) *AdminRepository {
+	return &AdminRepository{db: db}
 }
 
-func NewAdminRepo(db *gorm.DB) *AdminRepo {
-	db.Preload(clause.Associations)
-
-	return &AdminRepo{db: db}
+func (r *AdminRepository) preload(db *gorm.DB) *gorm.DB {
+	return db.
+		Preload(clause.Associations)
 }
 
-func (ar *AdminRepo) Create(a *models.Admin) (*models.Admin, error) {
-	err := ar.db.Create(a).Error
+func (r *AdminRepository) Create(a *models.Admin) (*models.Admin, error) {
+	err := r.db.Create(a).Error
 	if err != nil {
 		return nil, err
 	}
@@ -31,8 +44,8 @@ func (ar *AdminRepo) Create(a *models.Admin) (*models.Admin, error) {
 	return a, err
 }
 
-func (ar *AdminRepo) Update(a models.Admin, aid uuid.UUID) (*models.Admin, error) {
-	err := ar.db.Model(&a).Where("id = ?", aid).Updates(a).Error
+func (r *AdminRepository) Update(a models.Admin, aid uuid.UUID) (*models.Admin, error) {
+	err := r.db.Model(&a).Where("id = ?", aid).Updates(a).Error
 	if err != nil {
 		return nil, err
 	}
@@ -40,11 +53,11 @@ func (ar *AdminRepo) Update(a models.Admin, aid uuid.UUID) (*models.Admin, error
 	return &a, nil
 }
 
-func (ar *AdminRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
+func (r *AdminRepository) FindAll(p models.Pagination) (*models.Pagination, error) {
 	var a []models.Admin
 	var ares []responses.AdminResponse
 
-	result := ar.db.Model(&a).Select("id, user_id, first_name, last_name, gender, date_of_birth, created_at, updated_at")
+	result := r.db.Model(&a).Select("id, user_id, first_name, last_name, gender, date_of_birth, created_at, updated_at")
 
 	if p.Search != "" {
 		result = result.
@@ -66,9 +79,9 @@ func (ar *AdminRepo) FindAll(p models.Pagination) (*models.Pagination, error) {
 	return &p, nil
 }
 
-func (ar *AdminRepo) FindByID(aid uuid.UUID) (*responses.AdminResponse, error) {
+func (r *AdminRepository) FindByID(aid uuid.UUID) (*responses.AdminResponse, error) {
 	var ares *responses.AdminResponse
-	err := ar.db.Model(&models.Admin{}).Select("id, user_id, first_name, last_name, gender, date_of_birth, created_at, updated_at").First(&ares, aid).Error
+	err := r.db.Model(&models.Admin{}).Select("id, user_id, first_name, last_name, gender, date_of_birth, created_at, updated_at").First(&ares, aid).Error
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +89,8 @@ func (ar *AdminRepo) FindByID(aid uuid.UUID) (*responses.AdminResponse, error) {
 	return ares, nil
 }
 
-func (ar *AdminRepo) Delete(a models.Admin) error {
-	err := ar.db.Delete(&a).Error
+func (r *AdminRepository) Delete(a models.Admin) error {
+	err := r.db.Delete(&a).Error
 	if err != nil {
 		return err
 	}

@@ -1,11 +1,23 @@
-package meal
+package mealrepository
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+)
 
-type MealRepo struct {
-	db *gorm.DB
+type (
+	MealRepository struct {
+		db *gorm.DB
+	}
+
+	IMealRepository interface{}
+)
+
+func NewMealRepository(db *gorm.DB) *MealRepository {
+	return &MealRepository{db: db}
 }
 
-func NewMealRepo(db *gorm.DB) *MealRepo {
-	return &MealRepo{db: db}
+func (r *MealRepository) preload(db *gorm.DB) *gorm.DB {
+	return db.
+		Preload(clause.Associations)
 }
