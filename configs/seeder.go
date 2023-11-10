@@ -70,6 +70,7 @@ func SeedAllergyData(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.Allergy{}) {
 		if err := db.First(&models.Allergy{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			allergies := []*models.Allergy{
+				// ! start of food allergen
 				{
 					Name:        "Milk",
 					Description: "A milk allergy, also known as a dairy allergy, is an adverse immune system response to one or more proteins found in cow's milk. It is different from lactose intolerance, which is a non-immune digestive disorder where the body has difficulty digesting lactose, a sugar found in milk. A milk allergy is an immune system disorder and can be more severe.",
@@ -179,6 +180,83 @@ func SeedAllergyData(db *gorm.DB) error {
 					Name:        "Wheat",
 					Description: "Wheat allergy is an allergy to wheat which typically presents itself as a food allergy, but can also be a contact allergy resulting from occupational exposure. Like all allergies, wheat allergy involves immunoglobulin E and mast cell response. Typically the allergy is limited to the seed storage proteins of wheat.",
 					Allergens:   consttypes.A_FOOD,
+				},
+				// ! start of medical allergen
+				{
+					Name:        "Balsam of Peru",
+					Description: "Balsam of Peru is a resinous substance that comes from the Myroxylon balsamum tree, which is native to Central America. Despite its name, it is not a true balsam. The resin is extracted from the tree trunk and branches. Balsam of Peru is often used in perfumes, flavorings, and various cosmetic and medicinal products.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Tetracycline",
+					Description: "Tetracycline, sold under various brand names, is an oral antibiotic in the tetracyclines family of medications, used to treat a number of infections, including acne, cholera, brucellosis, plague, malaria, and syphilis.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Dilantin",
+					Description: "Phenytoin (PHT), sold under the brand name Dilantin among others, is an anti-seizure medication. It is useful for the prevention of tonic-clonic seizures and focal seizures, but not absence seizures. The intravenous form, fosphenytoin, is used for status epilepticus that does not improve with benzodiazepines.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Tegretol (carbamazepine)",
+					Description: "Carbamazepine, sold under the brand name Tegretol among others, is an anticonvulsant medication used in the treatment of epilepsy and neuropathic pain. It is used as an adjunctive treatment in schizophrenia along with other medications and as a second-line agent in bipolar disorder. Carbamazepine appears to work as well as phenytoin and valproate for focal and generalized seizures.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Penicillin",
+					Description: "Carbamazepine, sold under the brand name Tegretol among others, is an anticonvulsant medication used in the treatment of epilepsy and neuropathic pain. It is used as an adjunctive treatment in schizophrenia along with other medications and as a second-line agent in bipolar disorder. Carbamazepine appears to work as well as phenytoin and valproate for focal and generalized seizures.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Cephalosporins",
+					Description: "The cephalosporins are a class of β-lactam antibiotics originally derived from the fungus Acremonium, which was previously known as Cephalosporium.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Sulfonamides",
+					Description: "Sulfonamide is a functional group that is the basis of several groups of drugs, which are called sulphonamides, sulfa drugs or sulpha drugs. The original antibacterial sulfonamides are synthetic (nonantibiotic) antimicrobial agents that contain the sulfonamide group. Some sulfonamides are also devoid of antibacterial activity, e.g., the anticonvulsant sultiame.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Non-steroidal anti-inflammatories",
+					Description: "Non-steroidal anti-inflammatory drugs (NSAID) are members of a therapeutic drug class which reduces pain, decreases inflammation, decreases fever, and prevents blood clots. Side effects depend on the specific drug, its dose and duration of use, but largely include an increased risk of gastrointestinal ulcers and bleeds, heart attack, and kidney disease.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Intravenous contrast dye",
+					Description: "Radiocontrast agents are substances used to enhance the visibility of internal structures in X-ray-based imaging techniques such as computed tomography, projectional radiography, and fluoroscopy. Radiocontrast agents are typically iodine, or more rarely barium sulfate. The contrast agents absorb external X-rays, resulting in decreased exposure on the X-ray detector.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Local anesthetics",
+					Description: "A local anesthetic (LA) is a medication that causes absence of all sensation in a specific body part without loss of consciousness, as opposed to a general anesthetic, which eliminates all sensation in the entire body and causes unconsciousness.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				// ! start of contact allergen
+				{
+					Name:        "Dimethylaminopropylamine",
+					Description: "Dimethylaminopropylamine (DMAPA) is a diamine used in the preparation of some surfactants, such as cocamidopropyl betaine which is an ingredient in many personal care products including soaps, shampoos, and cosmetics. BASF, a major producer, claims that DMAPA-derivatives do not sting the eyes and makes a fine-bubble foam, making it appropriate in shampoos.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Latex",
+					Description: "Latex is an emulsion of polymer microparticles in water. Latexes are found in nature, but synthetic latexes are common as well.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Paraphenylenediamine",
+					Description: "p-Phenylenediamine (PPD) is an organic compound with the formula C6H4(NH2)2. This derivative of aniline is a white solid, but samples can darken due to air oxidation. It is mainly used as a component of engineering polymers and composites like kevlar. It is also an ingredient in hair dyes and is occasionally used as a substitute for henna.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Glyceryl monothioglycolate",
+					Description: "A permanent wave, commonly called a perm or permanent, is a hairstyle consisting of waves or curls set into the hair. The curls may last a number of months, hence the name.",
+					Allergens:   consttypes.A_MEDICAL,
+				},
+				{
+					Name:        "Toluenesulfonamide formaldehyde ",
+					Description: "There are three isomers of toluidine, which are organic compounds. These isomers are o-toluidine, m-toluidine, and p-toluidine, with the prefixed letter abbreviating, respectively, ortho; meta; and para. All three are aryl amines whose chemical structures are similar to aniline except that a methyl group is substituted onto the benzene ring. The difference between these three isomers is the position where the methyl group (-CH3) is bonded to the ring relative to the amino functional group (-NH2); see illustration of the chemical structures below.",
+					Allergens:   consttypes.A_MEDICAL,
 				},
 			}
 
