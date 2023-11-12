@@ -14,5 +14,4 @@ const (
 	PT_PERSONAL     PatronType = "Personal"
 
 	OT_NURSINGHOME OrganizationType = "Nursing Home"
-	OT_ORPHANAGE   OrganizationType = "Orphanage"
 )

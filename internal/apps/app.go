@@ -21,19 +21,9 @@ func Run(cfg *configs.Config) {
 		fmt.Errorf("app - Run - postgres: %w", err)
 	}
 
-	err = cfg.DB.AutoSeedEnum(db)
+	err = cfg.DB.DBSetup(db)
 	if err != nil {
-		fmt.Errorf("app - Run - create enum: %w", err)
-	}
-
-	err = cfg.DB.AutoMigrate(db)
-	if err != nil {
-		fmt.Errorf("app - Run - migrate: %w", err)
-	}
-
-	err = cfg.DB.AutoSeedTable(db)
-	if err != nil {
-		fmt.Errorf("app - Run - seed table: %w", err)
+		fmt.Errorf("app - Run - DB setup: %w", err)
 	}
 
 	di := di.NewDependencyInjection(db, cfg)

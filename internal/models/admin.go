@@ -15,7 +15,7 @@ type (
 		User        User              `json:"user"`
 		FirstName   string            `json:"first_name" gorm:"not null" binding:"required" example:"Jonathan"`
 		LastName    string            `json:"last_name" gorm:"not null" binding:"required" example:"Vince"`
-		Gender      consttypes.Gender `json:"gender" gorm:"not null" binding:"required" example:"Male"`
+		Gender      consttypes.Gender `json:"gender" gorm:"not null; type:gender_enum" binding:"required" example:"Male"`
 		DateOfBirth time.Time         `json:"date_of_birth" gorm:"not null" binding:"required" example:"2000-12-30"`
 	}
 )

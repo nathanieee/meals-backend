@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"project-skbackend/internal/models"
@@ -96,8 +97,30 @@ func (db DB) GetDbConnectionUrl() string {
 	return connectionUrl
 }
 
+func (db DB) DBSetup(gdb *gorm.DB) error {
+	err := db.AutoSeedEnum(gdb)
+	if err != nil {
+		return err
+	}
+
+	err = db.AutoMigrate(gdb)
+	if err != nil {
+		return err
+	}
+
+	err = db.AutoSeedTable(gdb)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (db DB) AutoSeedEnum(gdb *gorm.DB) error {
-	SeedEnum(gdb)
+	err := SeedEnum(gdb)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -129,8 +152,22 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 }
 
 func (db DB) AutoSeedTable(gdb *gorm.DB) error {
-	SeedAdminCredentials(gdb)
-	SeedAllergyData(gdb)
+	seedfuncs := []func(*gorm.DB) error{
+		SeedAdminCredentials,
+		SeedAllergyData,
+	}
+
+	var errs []error
+
+	for _, seedfunc := range seedfuncs {
+		if err := seedfunc(gdb); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if len(errs) > 0 {
+		return errors.New("Error seeding table")
+	}
 
 	return nil
 }

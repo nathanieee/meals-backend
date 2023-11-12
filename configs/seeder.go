@@ -21,7 +21,7 @@ func checkEnumIsExist(db *gorm.DB, key string) bool {
 
 func SeedEnum(db *gorm.DB) error {
 	if !checkEnumIsExist(db, "allergens_enum") {
-		return db.Exec(
+		err := db.Exec(
 			`CREATE TYPE allergens_enum 
 			AS ENUM (
 				'` + string(consttypes.A_FOOD) + `',
@@ -30,6 +30,95 @@ func SeedEnum(db *gorm.DB) error {
 				'` + string(consttypes.A_CONTACT) + `'
 			);`,
 		).Error
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if !checkEnumIsExist(db, "gender_enum") {
+		err := db.Exec(
+			`CREATE TYPE gender_enum
+			AS ENUM (
+				'` + string(consttypes.G_MALE) + `',
+				'` + string(consttypes.G_FEMALE) + `',
+				'` + string(consttypes.G_OTHER) + `'
+			);`,
+		).Error
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if !checkEnumIsExist(db, "meal_status_enum") {
+		err := db.Exec(
+			`CREATE TYPE meal_status_enum 
+			AS ENUM (
+				'` + string(consttypes.MS_ACTIVE) + `',
+				'` + string(consttypes.MS_INACTIVE) + `',
+				'` + string(consttypes.MS_OUTOFSTOCK) + `'
+			);`,
+		).Error
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if !checkEnumIsExist(db, "donation_status_enum") {
+		err := db.Exec(
+			`CREATE TYPE donation_status_enum 
+			AS ENUM (
+				'` + string(consttypes.DS_ACCEPTED) + `',
+				'` + string(consttypes.DS_REJECTED) + `'
+			);`,
+		).Error
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if !checkEnumIsExist(db, "image_type_enum") {
+		err := db.Exec(
+			`CREATE TYPE image_type_enum 
+			AS ENUM (
+				'` + string(consttypes.IT_PROFILE) + `',
+				'` + string(consttypes.IT_MEAL) + `'
+			);`,
+		).Error
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if !checkEnumIsExist(db, "patron_type_enum") {
+		err := db.Exec(
+			`CREATE TYPE patron_type_enum 
+			AS ENUM (
+				'` + string(consttypes.PT_ORGANIZATION) + `',
+				'` + string(consttypes.PT_PERSONAL) + `'
+			);`,
+		).Error
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if !checkEnumIsExist(db, "organization_type_enum") {
+		err := db.Exec(
+			`CREATE TYPE organization_type_enum 
+			AS ENUM (
+				'` + string(consttypes.OT_NURSINGHOME) + `'
+			);`,
+		).Error
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -64,9 +153,37 @@ func SeedAdminCredentials(db *gorm.DB) error {
 	return nil
 }
 
+func SeedCaregiverCredentials(db *gorm.DB) error {
+	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Caregiver{}) {
+		if err := db.First(&models.Caregiver{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			time, err := time.Parse(consttypes.DATEFORMAT, "2000-10-20")
+			if err != nil {
+				return err
+			}
+
+			caregivers := []*models.Caregiver{
+				{
+					User: models.User{
+						Email:    "caregiver@test.com",
+						Password: "password",
+						Role:     consttypes.UR_CAREGIVER,
+					},
+					FirstName:   "Care",
+					LastName:    "Giver",
+					Gender:      consttypes.G_FEMALE,
+					DateOfBirth: time,
+				},
+			}
+
+			db.Create(caregivers)
+		}
+	}
+
+	return nil
+}
+
 func SeedAllergyData(db *gorm.DB) error {
 	// * source: https://en.wikipedia.org/wiki/List_of_allergens
-	// TODO - needs to continue seed the other allergen type
 	if db.Migrator().HasTable(&models.Allergy{}) {
 		if err := db.First(&models.Allergy{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			allergies := []*models.Allergy{
@@ -257,6 +374,42 @@ func SeedAllergyData(db *gorm.DB) error {
 					Name:        "Toluenesulfonamide formaldehyde ",
 					Description: "There are three isomers of toluidine, which are organic compounds. These isomers are o-toluidine, m-toluidine, and p-toluidine, with the prefixed letter abbreviating, respectively, ortho; meta; and para. All three are aryl amines whose chemical structures are similar to aniline except that a methyl group is substituted onto the benzene ring. The difference between these three isomers is the position where the methyl group (-CH3) is bonded to the ring relative to the amino functional group (-NH2); see illustration of the chemical structures below.",
 					Allergens:   consttypes.A_MEDICAL,
+				},
+				// ! start of environmental allergen
+				{
+					Name:        "Pollen",
+					Description: "Pollens are microspores from trees, grass or weeds that appear as a fine dust. Pollen may be many colors, including yellow, white, red or brown. Plants release pollen to fertilize other plants for reproduction. Pollen levels are usually highest in the morning. Pollen levels increase on warm, windy days.",
+					Allergens:   consttypes.A_ENVIRONMENTAL,
+				},
+				{
+					Name:        "Molds",
+					Description: "Molds are tiny fungi (singular, fungus). They have spores that float in the air. Mold is common in damp areas with little or no airflow. These areas may include your basement, kitchen or bathroom. Mold also grows outdoors in leaf piles, grass, mulch, hay or under mushrooms. Mold spore levels are highest during hot, humid weather.",
+					Allergens:   consttypes.A_ENVIRONMENTAL,
+				},
+				{
+					Name:        "Pet dander and saliva (spit)",
+					Description: "Pet dander is tiny scales from your pet's skin, hair or feathers. Your pet's sweat glands secrete proteins through their skin, which collect in their skin and fur and may cause an allergic reaction. Your pet's spit (saliva) also contains these proteins.",
+					Allergens:   consttypes.A_ENVIRONMENTAL,
+				},
+				{
+					Name:        "Dust mites",
+					Description: "Dust mites are tiny, eight-legged relatives of spiders. They're too small to see with your eyes. They live on bedding, mattresses, carpets, curtains and upholstered (fabric) furniture. They feed on the dead skin cells that you and your pets shed. Dust mites live on every continent except Antarctica, but they thrive in hot, humid environments. They don't bite you. Breathing in the proteins from their urine (pee), feces (poop) and dead bodies may cause allergic reactions.",
+					Allergens:   consttypes.A_ENVIRONMENTAL,
+				},
+				{
+					Name:        "Cockroaches",
+					Description: "Cockroaches are reddish-brown or black insects that are 1.5 to 2 inches long. Male cockroaches have two pairs of wings. Many female cockroaches don't have wings. If they have wings, they aren't strong enough to allow flight (vestigial wings). The proteins in their poop, spit, eggs and dead body parts may cause allergic reactions.",
+					Allergens:   consttypes.A_ENVIRONMENTAL,
+				},
+				{
+					Name:        "Smoke",
+					Description: "Smoke of any kind can trigger a non-IgE reaction. The chemicals in these products can cause irritation that's similar to an allergic reaction. Examples include tobacco product smoke — including cigarettes, vapes and cigars — and marijuana and scented candle smoke.",
+					Allergens:   consttypes.A_ENVIRONMENTAL,
+				},
+				{
+					Name:        "Dust",
+					Description: "Dust is a combination of tiny particles of matter. Dust may include dead skin cells, hair, pollen, clothing fibers, dust mites, dead insect pieces, dirt, bacteria and tiny pieces of plastic.",
+					Allergens:   consttypes.A_ENVIRONMENTAL,
 				},
 			}
 
