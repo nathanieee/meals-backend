@@ -1,11 +1,12 @@
-clean:
-	docker-compose -f docker-compose.yaml down -v
+DOCKER_COMPOSE := docker-compose
+ENV_FILE := .env
+
+ifndef ENV_EXISTS
+$(shell if [ ! -f $(ENV_FILE) ]; then cp example.env $(ENV_FILE); fi)
+endif
+
+.PHONY: dev
 
 dev:
-	if [ ! -f .env ]; then cp .env.example .env; fi;
-	docker-compose -f docker-compose.yaml up --build
-
-restart:
-	docker-compose -f docker-compose.yaml down -v
-	if [ ! -f .env ]; then cp .env.example .env; fi;	
-	docker-compose -f docker-compose.yaml up --build
+	$(DOCKER_COMPOSE) down --remove-orphans
+	$(DOCKER_COMPOSE) up --build
