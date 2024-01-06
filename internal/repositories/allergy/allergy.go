@@ -1,8 +1,8 @@
 package allgrepository
 
 import (
-	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
+	"project-skbackend/packages/utils/logger"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -15,8 +15,8 @@ type (
 	}
 
 	IAllergyRepository interface {
-		Create(al *models.Allergy) (*models.Allergy, error)
-		FindByID(alid uuid.UUID) (*responses.AllergyResponse, error)
+		Create(al models.Allergy) (*models.Allergy, error)
+		FindByID(alid uuid.UUID) (*models.Allergy, error)
 	}
 )
 
@@ -29,26 +29,28 @@ func (r *AllergyRepository) preload(db *gorm.DB) *gorm.DB {
 		Preload(clause.Associations)
 }
 
-func (r *AllergyRepository) Create(al *models.Allergy) (*models.Allergy, error) {
+func (r *AllergyRepository) Create(al models.Allergy) (*models.Allergy, error) {
 	err := r.db.Create(al).Error
 	if err != nil {
+		logger.LogError(err)
 		return nil, err
 	}
 
-	return al, nil
+	return &al, nil
 }
 
-func (r *AllergyRepository) FindByID(alid uuid.UUID) (*responses.AllergyResponse, error) {
-	var alres *responses.AllergyResponse
-	err := r.db.
+func (r *AllergyRepository) FindByID(alid uuid.UUID) (*models.Allergy, error) {
+	var ally *models.Allergy
+	err := r.
+		preload(r.db).
 		Model(&models.Allergy{}).
-		Select("id, name, created_at, updated_at").
 		Group("id").
-		First(&alres, alid).Error
+		First(&ally, alid).Error
 
 	if err != nil {
+		logger.LogError(err)
 		return nil, err
 	}
 
-	return alres, nil
+	return ally, nil
 }

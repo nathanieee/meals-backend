@@ -1,9 +1,10 @@
 package models
 
 import (
-	"project-skbackend/internal/controllers/requests"
+	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/logger"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,9 +16,9 @@ type (
 		helper.Model
 		UserID         uuid.UUID         `json:"user_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
 		User           User              `json:"user"`
-		CaregiverID    uuid.UUID         `json:"caregiver_id" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		CaregiverID    *uuid.UUID        `json:"caregiver_id,omitempty" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4" default:"null"`
 		Caregiver      *Caregiver        `json:"caregiver,omitempty"`
-		OrganizationID uuid.UUID         `json:"organization_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		OrganizationID *uuid.UUID        `json:"organization_id,omitempty" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4" default:"null"`
 		Organization   *Organization     `json:"organization,omitempty"`
 		Illness        []*MemberIllness  `json:"illness,omitempty"`
 		Allergy        []*MemberAllergy  `json:"allergy,omitempty"`
@@ -45,12 +46,13 @@ type (
 	}
 )
 
-func (m *Member) FromRequest(req requests.CreateMemberRequest) (*Member, error) {
-	member := Member{}
-	err := copier.Copy(&member, &req)
-	if err != nil {
-		return nil, err
+func (m *Member) ToResponse() *responses.MemberResponse {
+	mres := responses.MemberResponse{}
+
+	if err := copier.Copy(&mres, &m); err != nil {
+		logger.LogError(err)
+		return nil
 	}
 
-	return &member, nil
+	return &mres
 }

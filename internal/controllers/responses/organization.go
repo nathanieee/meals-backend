@@ -1,6 +1,7 @@
 package responses
 
 import (
+	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
 
 	"github.com/google/uuid"
@@ -8,8 +9,10 @@ import (
 
 type (
 	OrganizationResponse struct {
-		ID   uuid.UUID                   `json:"id"`
-		Type consttypes.OrganizationType `json:"type" gorm:"not null" binding:"required" example:"Orphanage"`
-		Name string                      `json:"name" gorm:"not null" binding:"required" example:"Panti Jompo Syailendra"`
+		helper.Model
+		UserID uuid.UUID                   `json:"-"`
+		User   UserResponse                `json:"user"`
+		Type   consttypes.OrganizationType `json:"type"`
+		Name   string                      `json:"name"`
 	}
 )

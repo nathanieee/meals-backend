@@ -1,17 +1,15 @@
 package responses
 
 import (
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/uuid"
+	"project-skbackend/internal/models/helper"
+	"project-skbackend/packages/consttypes"
 )
 
 type (
 	AllergyResponse struct {
-		ID   uuid.UUID `json:"id"`
-		Name string    `json:"name" gorm:"not null" binding:"required" example:"Lactose Intolerant"`
+		helper.Model
+		Name        string               `json:"name"`
+		Description string               `json:"description"`
+		Allergens   consttypes.Allergens `json:"allergens"`
 	}
 )
-
-func (alres *AllergyResponse) IsEmpty() bool {
-	return cmp.Equal(alres, AllergyResponse{})
-}

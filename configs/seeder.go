@@ -419,3 +419,217 @@ func SeedAllergyData(db *gorm.DB) error {
 
 	return nil
 }
+
+func SeedIllnessData(db *gorm.DB) error {
+	// * source: https://chat.openai.com
+	if db.Migrator().HasTable(&models.Illness{}) {
+		if err := db.First(&models.Illness{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			illnesses := []*models.Illness{
+				{
+					Name:        "Covid",
+					Description: "Coronavirus disease (COVID-19) is an infectious disease caused by the SARS-CoV-2 virus.",
+				},
+				{
+					Name:        "Influenza",
+					Description: "Influenza, commonly known as the flu, is a contagious respiratory illness caused by influenza viruses that infect the nose, throat, and sometimes the lungs.",
+				},
+				{
+					Name:        "Common Cold",
+					Description: "The common cold is a viral infection of the upper respiratory tract, primarily caused by rhinoviruses, leading to symptoms like sneezing, runny or stuffy nose, sore throat, and coughing.",
+				},
+				{
+					Name:        "Pneumonia",
+					Description: "Pneumonia is an infection that inflames the air sacs in one or both lungs, often caused by bacteria, viruses, or fungi, leading to symptoms like cough, fever, and difficulty breathing.",
+				},
+				{
+					Name:        "Bronchitis",
+					Description: "Bronchitis is the inflammation of the lining of the bronchial tubes, often due to viral infections, causing symptoms such as cough, chest discomfort, and production of mucus.",
+				},
+				{
+					Name:        "Urinary Tract Infection (UTI)",
+					Description: "A urinary tract infection is an infection in any part of the urinary system, commonly caused by bacteria and leading to symptoms like frequent urination, pain or burning sensation during urination, and abdominal pain.",
+				},
+				{
+					Name:        "Gastroenteritis",
+					Description: "Gastroenteritis is an inflammation of the stomach and intestines, commonly caused by viral or bacterial infection, resulting in symptoms like diarrhea, vomiting, abdominal cramps, and nausea.",
+				},
+				{
+					Name:        "Migraine",
+					Description: "A migraine is a type of headache characterized by throbbing pain, often accompanied by nausea, vomiting, and sensitivity to light and sound.",
+				},
+				{
+					Name:        "Asthma",
+					Description: "Asthma is a chronic respiratory condition that causes airways to become inflamed and narrowed, leading to difficulty breathing, wheezing, coughing, and chest tightness.",
+				},
+				{
+					Name:        "Diabetes",
+					Description: "Diabetes is a chronic condition characterized by high levels of sugar (glucose) in the blood, resulting from inadequate insulin production or ineffective use of insulin by the body.",
+				},
+				{
+					Name:        "Hypertension (High Blood Pressure)",
+					Description: "Hypertension, or high blood pressure, is a condition where the force of blood against the artery walls is consistently too high, potentially leading to various health problems such as heart disease, stroke, and kidney issues.",
+				},
+				{
+					Name:        "Arthritis",
+					Description: "Arthritis is a broad term referring to joint inflammation, causing pain, stiffness, and swelling. There are many types of arthritis, including osteoarthritis and rheumatoid arthritis.",
+				},
+				{
+					Name:        "Osteoporosis",
+					Description: "Osteoporosis is a condition characterized by weakened bones, increasing the risk of fractures. It often occurs due to bone loss, making bones brittle and prone to breakage.",
+				},
+				{
+					Name:        "Depression",
+					Description: "Depression is a mental health disorder causing persistent feelings of sadness, loss of interest in activities, changes in appetite or sleep patterns, and difficulty concentrating or making decisions.",
+				},
+				{
+					Name:        "Anxiety Disorders",
+					Description: "Anxiety disorders involve excessive worry, fear, or apprehension, leading to symptoms such as restlessness, irritability, difficulty controlling feelings of worry, and physical symptoms like increased heart rate.",
+				},
+				{
+					Name:        "Chronic Obstructive Pulmonary Disease (COPD)",
+					Description: "COPD is a group of lung diseases, including chronic bronchitis and emphysema, characterized by breathing difficulties, coughing, wheezing, and tightness in the chest.",
+				},
+				{
+					Name:        "Eczema (Atopic Dermatitis)",
+					Description: "Eczema is a skin condition that causes itchy, inflamed patches, often appearing on the face, hands, elbows, or knees. It can be triggered by various factors and tends to be chronic.",
+				},
+				{
+					Name:        "Hyperthyroidism",
+					Description: "Hyperthyroidism occurs when the thyroid gland produces too much thyroid hormone, leading to symptoms such as weight loss, rapid heartbeat, sweating, anxiety, and fatigue.",
+				},
+				{
+					Name:        "Hypothyroidism",
+					Description: "Hypothyroidism is a condition where the thyroid gland does not produce enough thyroid hormone, causing symptoms like fatigue, weight gain, dry skin, constipation, and depression.",
+				},
+				{
+					Name:        "Gastroesophageal Reflux Disease (GERD)",
+					Description: "GERD is a digestive disorder where stomach acid frequently flows back into the esophagus, causing symptoms like heartburn, chest pain, difficulty swallowing, and regurgitation.",
+				},
+				{
+					Name:        "Chronic Kidney Disease (CKD)",
+					Description: "Chronic kidney disease involves the gradual loss of kidney function over time. It may lead to complications such as fluid retention, electrolyte imbalances, and anemia.",
+				},
+				{
+					Name:        "Celiac Disease",
+					Description: "Celiac disease is an autoimmune disorder where ingestion of gluten leads to damage in the small intestine, resulting in symptoms like diarrhea, abdominal pain, fatigue, and malnutrition.",
+				},
+				{
+					Name:        "Osteoarthritis",
+					Description: "Osteoarthritis is a degenerative joint disease characterized by the breakdown of joint cartilage and underlying bone, leading to symptoms like joint pain, stiffness, and reduced mobility.",
+				},
+				{
+					Name:        "Rheumatoid Arthritis",
+					Description: "Rheumatoid arthritis is an autoimmune disorder that causes joint inflammation, pain, stiffness, and swelling. It can affect various organs and lead to deformities in severe cases.",
+				},
+				{
+					Name:        "Fibromyalgia",
+					Description: "Fibromyalgia is a chronic disorder characterized by widespread musculoskeletal pain, fatigue, sleep disturbances, and tenderness in specific areas of the body.",
+				},
+				{
+					Name:        "Migraine",
+					Description: "A migraine is a severe headache that can cause intense throbbing or pulsing sensation, often accompanied by nausea, vomiting, and sensitivity to light and sound.",
+				},
+				{
+					Name:        "Obsessive-Compulsive Disorder (OCD)",
+					Description: "OCD is a mental health condition characterized by repetitive, intrusive thoughts (obsessions) and behaviors or rituals (compulsions) done to alleviate anxiety or distress.",
+				},
+				{
+					Name:        "Post-Traumatic Stress Disorder (PTSD)",
+					Description: "PTSD is a mental health condition triggered by experiencing or witnessing a traumatic event. Symptoms may include flashbacks, nightmares, severe anxiety, and emotional numbness.",
+				},
+				{
+					Name:        "Chronic Fatigue Syndrome (CFS)",
+					Description: "CFS, also known as myalgic encephalomyelitis (ME), is a complex disorder characterized by extreme fatigue that doesn't improve with rest, often accompanied by other symptoms like muscle pain, impaired memory, and sleep issues.",
+				},
+				{
+					Name:        "Gout",
+					Description: "Gout is a type of arthritis caused by the buildup of uric acid in the blood, leading to sudden and severe pain, redness, swelling, and tenderness in joints, often in the big toe.",
+				},
+				{
+					Name:        "Crohn's Disease",
+					Description: "Crohn's disease is a type of inflammatory bowel disease (IBD) causing inflammation in the digestive tract, leading to abdominal pain, diarrhea, fatigue, and weight loss.",
+				},
+				{
+					Name:        "Ulcerative Colitis",
+					Description: "Ulcerative colitis is an inflammatory bowel disease characterized by inflammation and ulcers in the colon and rectum, leading to symptoms like abdominal pain, diarrhea, rectal bleeding, and fatigue.",
+				},
+				{
+					Name:        "Endometriosis",
+					Description: "Endometriosis is a painful disorder where tissue similar to the lining of the uterus grows outside the uterus, causing pelvic pain, heavy menstrual bleeding, and fertility problems.",
+				},
+				{
+					Name:        "Polycystic Ovary Syndrome (PCOS)",
+					Description: "PCOS is a hormonal disorder common among women of reproductive age, causing irregular periods, excess androgen levels, cysts on the ovaries, and difficulties in conceiving.",
+				},
+				{
+					Name:        "Multiple Sclerosis (MS)",
+					Description: "MS is a chronic disease affecting the central nervous system, causing a wide range of symptoms including fatigue, numbness or weakness in limbs, vision problems, and difficulties with coordination and balance.",
+				},
+				{
+					Name:        "Parkinson's Disease",
+					Description: "Parkinson's disease is a progressive nervous system disorder affecting movement, causing tremors, stiffness, slowness of movement, and difficulties with balance and coordination.",
+				},
+				{
+					Name:        "Bipolar Disorder",
+					Description: "Bipolar disorder, also known as manic-depressive illness, is a mental health condition characterized by extreme mood swings that include emotional highs (mania or hypomania) and lows (depression).",
+				},
+				{
+					Name:        "Schizophrenia",
+					Description: "Schizophrenia is a chronic mental disorder characterized by distorted thinking, hallucinations, delusions, and abnormal social behavior. It may cause disruptions in daily functioning.",
+				},
+				{
+					Name:        "Epilepsy",
+					Description: "Epilepsy is a neurological disorder characterized by recurrent seizures, which can vary from brief and nearly undetectable to long periods of vigorous shaking.",
+				},
+				{
+					Name:        "Sleep Apnea",
+					Description: "Sleep apnea is a sleep disorder where breathing repeatedly stops and starts during sleep, leading to loud snoring, abrupt awakenings, and daytime sleepiness.",
+				},
+				{
+					Name:        "Hepatitis",
+					Description: "Hepatitis refers to liver inflammation, often caused by viral infections (such as hepatitis A, B, or C) or due to other factors like alcohol, drugs, or autoimmune diseases, leading to symptoms like jaundice, abdominal pain, fatigue, and nausea.",
+				},
+				{
+					Name:        "Irritable Bowel Syndrome (IBS)",
+					Description: "IBS is a gastrointestinal disorder characterized by abdominal pain, bloating, changes in bowel habits (diarrhea or constipation), and often associated with stress or certain foods.",
+				},
+				{
+					Name:        "Chronic Migraine",
+					Description: "Chronic migraine is a subtype of migraine characterized by experiencing headaches on 15 or more days per month for at least three months, with at least eight days being migraines.",
+				},
+				{
+					Name:        "Lupus",
+					Description: "Lupus is a chronic autoimmune disease that can affect various parts of the body, causing inflammation, pain, and damage to joints, skin, kidneys, blood cells, heart, and lungs.",
+				},
+				{
+					Name:        "Attention-Deficit/Hyperactivity Disorder (ADHD)",
+					Description: "ADHD is a neurodevelopmental disorder characterized by difficulty paying attention, hyperactivity, impulsivity, and often interferes with daily functioning or development.",
+				},
+				{
+					Name:        "Ovarian Cancer",
+					Description: "Ovarian cancer begins in the ovaries and is often referred to as the 'silent killer' due to its subtle or absent symptoms in the early stages. Symptoms may include abdominal bloating, pelvic pain, and difficulty eating or feeling full quickly.",
+				},
+				{
+					Name:        "Testicular Cancer",
+					Description: "Testicular cancer affects the testicles and is most common in young or middle-aged men. Symptoms may include a lump or swelling in the testicle, pain, discomfort, or changes in size or shape of the testicles.",
+				},
+				{
+					Name:        "Pancreatitis",
+					Description: "Pancreatitis is inflammation of the pancreas, causing severe abdominal pain, nausea, vomiting, and in severe cases, complications like organ damage and infections.",
+				},
+				{
+					Name:        "Cushing's Syndrome",
+					Description: "Cushing's syndrome occurs due to prolonged exposure to high levels of cortisol, leading to symptoms such as weight gain, fatigue, muscle weakness, high blood pressure, and changes in skin appearance.",
+				},
+				{
+					Name:        "Anemia",
+					Description: "Anemia is a condition characterized by a lack of healthy red blood cells or hemoglobin in the blood, resulting in symptoms such as fatigue, weakness, pale skin, and shortness of breath.",
+				},
+			}
+
+			db.Create(illnesses)
+		}
+	}
+
+	return nil
+}

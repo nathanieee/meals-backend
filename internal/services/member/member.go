@@ -1,18 +1,19 @@
 package mmbrservice
 
 import (
-	"encoding/json"
-	"math"
+	"fmt"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
 	allgrepository "project-skbackend/internal/repositories/allergy"
 	crgvrrepository "project-skbackend/internal/repositories/caregiver"
+	illrepository "project-skbackend/internal/repositories/illness"
 	mmbrrepository "project-skbackend/internal/repositories/member"
+	orgrepository "project-skbackend/internal/repositories/organization"
 	userrepository "project-skbackend/internal/repositories/user"
 
-	"github.com/jinzhu/copier"
-	"gorm.io/gorm"
+	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/logger"
 )
 
 type (
@@ -21,6 +22,8 @@ type (
 		userrepo  userrepository.IUserRepository
 		crgvrrepo crgvrrepository.ICaregiverRepository
 		allgrepo  allgrepository.IAllergyRepository
+		illrepo   illrepository.IIllnessRepository
+		orgrepo   orgrepository.OrganizationRepository
 	}
 
 	IMemberService interface {
@@ -33,131 +36,78 @@ func NewMemberService(
 	userrepo userrepository.IUserRepository,
 	crgvrrepo crgvrrepository.ICaregiverRepository,
 	allgrepo allgrepository.IAllergyRepository,
+	illrepo illrepository.IIllnessRepository,
+	orgrepo orgrepository.OrganizationRepository,
 ) *MemberService {
 	return &MemberService{
 		membrepo:  membrepo,
 		userrepo:  userrepo,
 		crgvrrepo: crgvrrepo,
 		allgrepo:  allgrepo,
+		illrepo:   illrepo,
+		orgrepo:   orgrepo,
 	}
 }
 
 func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.MemberResponse, error) {
-	var meres *responses.MemberResponse
-	var user, cgruser *models.User
-	var caregiver *models.Caregiver
-	// var illnesses []*models.MemberIllness // TODO - assign illness later
+	var illnesses []*models.MemberIllness
 	var allergies []*models.MemberAllergy
+	var caregiver *models.Caregiver
+	var organization *models.Organization
+	var err error
 
-	ures, err := mes.userrepo.FindByEmail(req.User.Email)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			user = &models.User{
-				Email:    req.User.Email,
-				Password: req.User.Password,
-			}
+	user := req.User.ToModel(consttypes.UR_MEMBER)
 
-			user, err = mes.userrepo.Create(user)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, err
-		}
+	// * if caregiver request is not empty, then convert it to model.
+	if req.Caregiver != nil {
+		caregiver = req.Caregiver.ToModel()
 	}
 
-	if !ures.IsEmpty() {
-		err = copier.Copy(&user, &ures)
+	// * check the organization id and assign it to the object.
+	if req.OrganizationID != nil {
+		organization, err = mes.orgrepo.FindByID(*req.OrganizationID)
 		if err != nil {
+			logger.LogError(err)
 			return nil, err
 		}
 	}
 
-	cgres, err := mes.crgvrrepo.FindByEmail(req.Caregiver.Email)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			cgruser = &models.User{
-				Email:    req.Caregiver.Email,
-				Password: req.Caregiver.Password,
-			}
-
-			cgruser, err = mes.userrepo.Create(cgruser)
-			if err != nil {
-				return nil, err
-			}
-
-			caregiver = &models.Caregiver{
-				UserID:      cgruser.ID,
-				User:        *cgruser,
-				Gender:      req.Caregiver.Gender,
-				FirstName:   req.Caregiver.FirstName,
-				LastName:    req.Caregiver.LastName,
-				DateOfBirth: req.Caregiver.DateOfBirth,
-			}
-
-			caregiver, err = mes.crgvrrepo.Create(caregiver)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, err
-		}
-	}
-
-	if !cgres.IsEmpty() {
-		err = copier.Copy(&caregiver, &cgres)
+	// * find illness object and append to the array.
+	for _, ill := range req.IllnessID {
+		illness, err := mes.illrepo.FindByID(ill)
 		if err != nil {
+			logger.LogError(err)
 			return nil, err
 		}
+
+		millness := illness.ToMemberIllness()
+
+		illnesses = append(illnesses, millness)
 	}
 
-	for _, alid := range req.AllergyID {
-		var allergy models.Allergy
-		alres, err := mes.allgrepo.FindByID(alid)
+	// * find allergy object and append to the array.
+	for _, all := range req.AllergyID {
+		allergy, err := mes.allgrepo.FindByID(all)
 		if err != nil {
+			logger.LogError(err)
 			return nil, err
 		}
 
-		if !alres.IsEmpty() {
-			err = copier.Copy(&allergy, &alres)
-			if err != nil {
-				return nil, err
-			}
-		}
+		mallergy := allergy.ToMemberAllergy()
 
-		mallergy := models.MemberAllergy{
-			AllergyID: allergy.ID,
-			Allergy:   allergy,
-		}
-
-		allergies = append(allergies, &mallergy)
+		allergies = append(allergies, mallergy)
 	}
 
-	member := &models.Member{
-		UserID:      user.ID,
-		User:        *user,
-		CaregiverID: caregiver.ID,
-		Caregiver:   caregiver,
-		Allergy:     allergies, // TODO - assign illness here
-		Height:      req.Height,
-		Weight:      req.Weight,
-		BMI:         req.Weight / math.Pow(2, req.Height),
-		FirstName:   req.FirstName,
-		LastName:    req.LastName,
-		Gender:      req.Gender,
-		DateOfBirth: req.DateOfBirth,
-	}
-
-	member, err = mes.membrepo.Create(member)
+	member := req.ToModel(*user, *caregiver, allergies, illnesses, organization)
+	member, err = mes.membrepo.Create(*member)
 	if err != nil {
+		logger.LogError(err)
 		return nil, err
 	}
 
-	marm, _ := json.Marshal(member)
-	err = json.Unmarshal(marm, &meres)
-	if err != nil {
-		return nil, err
-	}
+	fmt.Println(member)
 
-	return meres, nil
+	mres := member.ToResponse()
+
+	return mres, nil
 }

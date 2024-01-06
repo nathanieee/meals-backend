@@ -1,22 +1,21 @@
 package responses
 
 import (
-	"project-skbackend/internal/models"
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 )
 
 type (
 	UserResponse struct {
 		helper.Model
-		Address                []*models.Address   `json:"address,omitempty" gorm:"foreignKey:UserID;references:ID"`
-		UserImage              *models.UserImage   `json:"user_image,omitempty" gorm:"foreignKey:UserID;references:ID"`
-		Email                  string              `json:"email" example:"email@email.com"`
-		Password               string              `json:"-" example:"password"`
-		Role                   consttypes.UserRole `json:"role" example:"0"`
+		Address                []*AddressResponse  `json:"address,omitempty"`
+		UserImage              *UserImageResponse  `json:"user_image,omitempty"`
+		Email                  string              `json:"email"`
+		Password               string              `json:"-"`
+		Role                   consttypes.UserRole `json:"role"`
 		ResetPasswordToken     int                 `json:"-"`
 		ResetPasswordSentAt    time.Time           `json:"-"`
 		ConfirmationToken      int                 `json:"-"`
@@ -25,8 +24,11 @@ type (
 		RefreshToken           string              `json:"-"`
 		RefreshTokenExpiration string              `json:"-"`
 	}
-)
 
-func (ures *UserResponse) IsEmpty() bool {
-	return cmp.Equal(ures, UserResponse{})
-}
+	UserImageResponse struct {
+		helper.Model
+		UserID  uuid.UUID     `json:"user_id"`
+		ImageID uuid.UUID     `json:"image_id"`
+		Image   ImageResponse `json:"image"`
+	}
+)

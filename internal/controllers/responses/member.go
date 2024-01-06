@@ -1,7 +1,7 @@
 package responses
 
 import (
-	"project-skbackend/internal/models"
+	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
 	"time"
 
@@ -10,31 +10,33 @@ import (
 
 type (
 	MemberResponse struct {
-		ID           uuid.UUID              `json:"id"`
-		Email        string                 `json:"email" example:"email@email.com"`
-		Role         consttypes.UserRole    `json:"role" gorm:"not null" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		Caregiver    *CaregiverResponse     `json:"caregiver,omitempty"`
-		Organization *OrganizationResponse  `json:"organization,omitempty"`
-		Illness      *MemberIllnessResponse `json:"illness,omitempty"`
-		Allergy      *MemberAllergyResponse `json:"allergy,omitempty"`
-		Height       float64                `json:"height" gorm:"not null" binding:"required" example:"100"`
-		Weight       float64                `json:"weight" gorm:"not null" binding:"required" example:"150"`
-		BMI          float64                `json:"bmi" gorm:"not null" binding:"required" example:"19"`
-		FirstName    string                 `json:"first_name" gorm:"not null" binding:"required" example:"Jonathan"`
-		LastName     string                 `json:"last_name" gorm:"not null" binding:"required" example:"Vince"`
-		Gender       consttypes.Gender      `json:"gender" gorm:"not null" binding:"required" example:"Male"`
-		DateOfBirth  time.Time              `json:"date_of_birth" gorm:"not null" binding:"required" example:"2000-10-20"`
+		helper.Model
+		UserID         uuid.UUID                `json:"-"`
+		User           UserResponse             `json:"user"`
+		CaregiverID    *uuid.UUID               `json:"caregiver_id,omitempty"`
+		Caregiver      *CaregiverResponse       `json:"caregiver,omitempty"`
+		OrganizationID *uuid.UUID               `json:"organization_id,omitempty"`
+		Organization   *OrganizationResponse    `json:"organization,omitempty"`
+		Illness        []*MemberIllnessResponse `json:"illness,omitempty"`
+		Allergy        []*MemberAllergyResponse `json:"allergy,omitempty"`
+		Height         float64                  `json:"height"`
+		Weight         float64                  `json:"weight"`
+		BMI            float64                  `json:"bmi"`
+		FirstName      string                   `json:"first_name"`
+		LastName       string                   `json:"last_name"`
+		Gender         consttypes.Gender        `json:"gender"`
+		DateOfBirth    time.Time                `json:"date_of_birth"`
 	}
 
 	MemberIllnessResponse struct {
-		ID        uuid.UUID      `json:"id"`
-		IllnessID uuid.UUID      `json:"illness_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		Illness   models.Illness `json:"illness"`
+		helper.Model
+		IllnessID uuid.UUID       `json:"illness_id"`
+		Illness   IllnessResponse `json:"illness"`
 	}
 
 	MemberAllergyResponse struct {
-		ID        uuid.UUID      `json:"id"`
-		AllergyID uuid.UUID      `json:"allergy_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		Allergy   models.Allergy `json:"allergy"`
+		helper.Model
+		AllergyID uuid.UUID       `json:"allergy_id"`
+		Allergy   AllergyResponse `json:"allergy"`
 	}
 )

@@ -11,19 +11,12 @@ RUN apk update && apk add --no-cache ca-certificates curl tzdata git \
   && go mod download
 
 # Install tools and dependencies
-RUN apk add --no-cache git \
-  && go install github.com/cosmtrek/air@latest \
+RUN go install github.com/cosmtrek/air@latest \
   && go install github.com/go-delve/delve/cmd/dlv@latest \
   && go install github.com/vektra/mockery/v2@latest
 
 # Copy the rest of the source code
 COPY . .
-
-# Set environment variables
-ENV GO111MODULE="on"
-ENV GOOS="linux"
-ENV CGO_ENABLED=0
-ENV GOFLAGS="-buildvcs=false"
 
 # Expose ports
 EXPOSE ${HTTP_PORT}

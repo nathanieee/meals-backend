@@ -4,7 +4,9 @@ import (
 	"project-skbackend/configs"
 	allgrepository "project-skbackend/internal/repositories/allergy"
 	crgvrrepository "project-skbackend/internal/repositories/caregiver"
+	illrepository "project-skbackend/internal/repositories/illness"
 	mmbrrepository "project-skbackend/internal/repositories/member"
+	orgrepository "project-skbackend/internal/repositories/organization"
 	userrepository "project-skbackend/internal/repositories/user"
 	authservice "project-skbackend/internal/services/auth"
 	mailservice "project-skbackend/internal/services/mail"
@@ -39,9 +41,15 @@ func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjecti
 	/* --------------------------------- allergy -------------------------------- */
 	allr := allgrepository.NewAllergyRepository(db)
 
+	/* --------------------------------- illness -------------------------------- */
+	illr := illrepository.NewIllnessRepository(db)
+
+	/* ------------------------------ organization ------------------------------ */
+	orgr := orgrepository.NewOrganizationRepository(db)
+
 	/* ----------------------------- member service ----------------------------- */
 	memr := mmbrrepository.NewMemberRepository(db)
-	mems := mmbrservice.NewMemberService(memr, user, carr, allr)
+	mems := mmbrservice.NewMemberService(memr, user, carr, allr, illr, *orgr)
 
 	return &DependencyInjection{
 		UserService:   us,

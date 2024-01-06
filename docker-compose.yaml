@@ -32,7 +32,7 @@ services:
     depends_on:
       - meals-db
     volumes:
-      - .:/app:rw,cached
+      - .:/app:rw,delegated
     restart: always
 
 volumes:

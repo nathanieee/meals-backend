@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"project-skbackend/internal/controllers/responses"
+	"project-skbackend/internal/models"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -25,7 +26,7 @@ type (
 	}
 )
 
-func GenerateToken(user *responses.UserResponse, lifespan int, duration string, secret string) (*Token, error) {
+func GenerateToken(user *models.User, lifespan int, duration string, secret string) (*Token, error) {
 	token := &Token{}
 	expTime := time.Time{}
 
@@ -40,7 +41,7 @@ func GenerateToken(user *responses.UserResponse, lifespan int, duration string, 
 
 	claims := TokenClaims{}
 	claims.Authorized = true
-	claims.User = user
+	claims.User = user.ToResponse()
 	claims.Expire = expTime.Unix()
 	unsignedToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := unsignedToken.SignedString([]byte(secret))

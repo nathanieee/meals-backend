@@ -15,3 +15,9 @@ func Round(val float64, roundOn float64, places int) (newVal float64) {
 	newVal = round / pow
 	return
 }
+
+func BMICalculation(weight, height float64) float64 {
+	height = height / 100
+
+	return weight / (height * height)
+}

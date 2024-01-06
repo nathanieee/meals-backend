@@ -59,7 +59,7 @@ func (a *AuthService) Login(req requests.LoginRequest) (*responses.UserResponse,
 		return nil, nil, err
 	}
 
-	err = verifyPassword(user, req.Password)
+	err = verifyPassword(*user, req.Password)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -69,15 +69,15 @@ func (a *AuthService) Login(req requests.LoginRequest) (*responses.UserResponse,
 		return nil, nil, err
 	}
 
-	return user, tokenHeader, nil
+	return user.ToResponse(), tokenHeader, nil
 }
 
 func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserResponse, *utils.TokenHeader, error) {
-	var user *responses.UserResponse
+	var user *models.User
 	req.Email = strings.ToLower(req.Email)
 
 	user, err := a.userrepo.FindByEmail(req.Email)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && err == gorm.ErrRecordNotFound {
 		return nil, nil, utils.ErrUserNotFound
 	}
 
@@ -85,18 +85,18 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 		return nil, nil, utils.ErrUserAlreadyExist
 	}
 
-	userCreate := &models.User{
+	user = &models.User{
 		Email:    req.Email,
 		Password: req.Password,
 		Role:     consttypes.UR_USER,
 	}
 
-	userModel, err := a.userrepo.Create(userCreate)
+	user, err = a.userrepo.Create(*user)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	marshaledUser, _ := json.Marshal(userModel)
+	marshaledUser, _ := json.Marshal(user)
 	err = json.Unmarshal(marshaledUser, &user)
 	if err != nil {
 		return nil, nil, err
@@ -107,7 +107,7 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 		return nil, nil, err
 	}
 
-	return user, token, nil
+	return user.ToResponse(), token, nil
 }
 
 func (a *AuthService) ForgotPassword(req requests.ForgotPasswordRequest) error {
@@ -277,11 +277,11 @@ func (a *AuthService) RefreshAuthToken(refreshToken string) (*responses.UserResp
 		return nil, nil, err
 	}
 
-	return user, tokenHeader, err
+	return user.ToResponse(), tokenHeader, err
 }
 
-func verifyPassword(u *responses.UserResponse, password string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+func verifyPassword(user models.User, password string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 
 	if err != nil {
 		switch err {
@@ -295,7 +295,7 @@ func verifyPassword(u *responses.UserResponse, password string) error {
 	return err
 }
 
-func (a *AuthService) generateAuthTokens(user *responses.UserResponse) (*utils.TokenHeader, error) {
+func (a *AuthService) generateAuthTokens(user *models.User) (*utils.TokenHeader, error) {
 	refreshToken, err := utils.GenerateToken(user, a.cfg.App.RefreshTokenLifespan, a.cfg.App.TokenLifespanDuration, a.cfg.App.Secret)
 	if err != nil {
 		return nil, err

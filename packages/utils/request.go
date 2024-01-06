@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"math"
-	"project-skbackend/internal/models"
 	"project-skbackend/packages/consttypes"
 	"reflect"
 	"strconv"
@@ -28,7 +27,7 @@ func CheckWhitelistUrl(url string) bool {
 	return whitelistedUrl[splittedUrl[1]]
 }
 
-func GeneratePaginationFromRequest(ctx *gin.Context, dbModel interface{}) models.Pagination {
+func GeneratePaginationFromRequest(ctx *gin.Context, dbModel interface{}) Pagination {
 	// Initializing default
 	//	var mode string
 	limit := 10
@@ -94,13 +93,13 @@ func GeneratePaginationFromRequest(ctx *gin.Context, dbModel interface{}) models
 		}
 	}
 
-	return models.Pagination{
+	return Pagination{
 		Limit:     limit,
 		Page:      page,
 		Sort:      sort,
 		Direction: direction,
 		Search:    search,
-		Filter: models.Filter{
+		Filter: Filter{
 			Level:       level,
 			CreatedFrom: createdFrom,
 			CreatedTo:   createdTo,

@@ -91,21 +91,21 @@ func ErrorResponse(c *gin.Context, code int, res ErrorRes) {
 func getErrorMsg(fe validator.FieldError) string {
 	switch fe.Tag() {
 	case "required":
-		return "This field is required"
+		return "this field is required"
 	case "email":
-		return "Should be a valid email address"
+		return "should be a valid email address"
 	case "file":
-		return "Should be a valid file"
+		return "should be a valid file"
 	case "lte":
-		return "Should be less than " + fe.Param()
+		return "should be less than " + fe.Param()
 	case "gte":
-		return "Should be greater than " + fe.Param()
+		return "should be greater than " + fe.Param()
 	case "len":
-		return "Should be " + fe.Param() + " character(s) long"
+		return "should be " + fe.Param() + " character(s) long"
 	case "eqfield":
-		return "Should be equal to " + fe.Param()
+		return "should be equal to " + fe.Param()
 	}
-	return "Unknown error"
+	return "unknown error"
 }
 
 func ValidationResponse(err error) []ValidationErrorMsg {

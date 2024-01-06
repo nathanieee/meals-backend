@@ -13,3 +13,10 @@ type (
 		Allergens   consttypes.Allergens `json:"allergens" gorm:"not null; type:allergens_enum" binding:"required" example:"Food"`
 	}
 )
+
+func (ally *Allergy) ToMemberAllergy() *MemberAllergy {
+	return &MemberAllergy{
+		AllergyID: ally.ID,
+		Allergy:   *ally,
+	}
+}

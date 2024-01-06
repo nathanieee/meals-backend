@@ -8,5 +8,5 @@ endif
 .PHONY: dev
 
 dev:
-	$(DOCKER_COMPOSE) down --remove-orphans
+	$(DOCKER_COMPOSE) down --rmi all --volumes --remove-orphans
 	$(DOCKER_COMPOSE) up --build

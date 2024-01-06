@@ -6,6 +6,8 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/pagination"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils"
+	"project-skbackend/packages/utils/logger"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -34,12 +36,13 @@ type (
 	}
 
 	IUserRepository interface {
-		FindAll(p models.Pagination) (*models.Pagination, error)
-		Create(user *models.User) (*models.User, error)
+		FindAll(p utils.Pagination) (*utils.Pagination, error)
+		Create(user models.User) (*models.User, error)
 		Update(user models.User, uid uuid.UUID) (*models.User, error)
-		FindByID(uid uuid.UUID) (*responses.UserResponse, error)
-		FindByEmail(email string) (*responses.UserResponse, error)
+		FindByID(uid uuid.UUID) (*models.User, error)
+		FindByEmail(email string) (*models.User, error)
 		Delete(user models.User) error
+		FirstOrCreate(user models.User) (*models.User, error)
 	}
 )
 
@@ -52,33 +55,35 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (ur *UserRepository) Create(u *models.User) (*models.User, error) {
-	err := ur.db.Create(u).Error
+func (ur *UserRepository) Create(user models.User) (*models.User, error) {
+	err := ur.db.Create(&user).Error
 	if err != nil {
+		logger.LogError(err)
 		return nil, err
 	}
 
-	return u, nil
+	return &user, nil
 }
 
-func (ur *UserRepository) Update(u models.User, uid uuid.UUID) (*models.User, error) {
+func (ur *UserRepository) Update(user models.User, uid uuid.UUID) (*models.User, error) {
 	err := ur.db.
-		Model(&u).
+		Model(&user).
 		Where("id = ?", uid).
-		Updates(u).Error
+		Updates(user).Error
 
 	if err != nil {
+		logger.LogError(err)
 		return nil, err
 	}
 
-	return &u, nil
+	return &user, nil
 }
 
-func (ur *UserRepository) FindAll(p models.Pagination) (*models.Pagination, error) {
-	var u []models.User
+func (ur *UserRepository) FindAll(p utils.Pagination) (*utils.Pagination, error) {
+	var user []models.User
 	var ures []responses.UserResponse
 
-	result := ur.db.Model(&u).
+	result := ur.db.Model(&user).
 		Select(SELECTED_FIELDS)
 
 	if p.Search != "" {
@@ -97,10 +102,11 @@ func (ur *UserRepository) FindAll(p models.Pagination) (*models.Pagination, erro
 
 	result = result.
 		Group("id").
-		Scopes(pagination.Paginate(&u, &p, result)).
+		Scopes(pagination.Paginate(&user, &p, result)).
 		Find(&ures)
 
 	if result.Error != nil {
+		logger.LogError(result.Error)
 		return nil, result.Error
 	}
 
@@ -108,44 +114,57 @@ func (ur *UserRepository) FindAll(p models.Pagination) (*models.Pagination, erro
 	return &p, nil
 }
 
-func (ur *UserRepository) FindByID(uid uuid.UUID) (*responses.UserResponse, error) {
-	var ures *responses.UserResponse
+func (ur *UserRepository) FindByID(uid uuid.UUID) (*models.User, error) {
+	var user models.User
 	err := ur.db.
 		Model(&models.User{}).
 		Select(SELECTED_FIELDS).
 		Group("id").
-		First(&ures, uid).Error
+		First(&user, uid).Error
 
 	if err != nil {
+		logger.LogError(err)
 		return nil, err
 	}
 
-	return ures, nil
+	return &user, nil
 }
 
-func (ur *UserRepository) FindByEmail(email string) (*responses.UserResponse, error) {
-	var ures *responses.UserResponse
+func (ur *UserRepository) FindByEmail(email string) (*models.User, error) {
+	var user models.User
 	err := ur.db.
 		Model(&models.User{}).
 		Select(SELECTED_FIELDS).
 		Where("email = ?", email).
 		Group("id").
-		Take(&ures).Error
+		Take(&user).Error
 
 	if err != nil {
+		logger.LogError(err)
 		return nil, err
 	}
 
-	return ures, nil
+	return &user, nil
 }
 
-func (ur *UserRepository) Delete(u models.User) error {
+func (ur *UserRepository) Delete(user models.User) error {
 	err := ur.db.
-		Delete(&u).Error
+		Delete(&user).Error
 
 	if err != nil {
+		logger.LogError(err)
 		return err
 	}
 
 	return nil
+}
+
+func (ur *UserRepository) FirstOrCreate(user models.User) (*models.User, error) {
+	err := ur.db.FirstOrCreate(&user, user).Error
+	if err != nil {
+		logger.LogError(err)
+		return nil, err
+	}
+
+	return &user, nil
 }

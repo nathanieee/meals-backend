@@ -1,12 +1,14 @@
 package models
 
 import (
+	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/logger"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
 
@@ -14,10 +16,10 @@ type (
 	User struct {
 		helper.Model
 		Address                []*Address          `json:"address,omitempty"`
-		Password               string              `json:"-" gorm:"size:255;not null;" binding:"required" example:"password"`
 		UserImage              *UserImage          `json:"user_image,omitempty"`
 		Email                  string              `json:"email" gorm:"not null;unique" example:"email@email.com"`
-		Role                   consttypes.UserRole `json:"role" gorm:"not null" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4" default:"0"`
+		Password               string              `json:"-" gorm:"size:255;not null;" binding:"required" example:"password"`
+		Role                   consttypes.UserRole `json:"role" gorm:"not null" example:"0" default:"0"`
 		ResetPasswordToken     int                 `json:"-"`
 		ResetPasswordSentAt    time.Time           `json:"-"`
 		ConfirmationToken      int                 `json:"-"`
@@ -53,6 +55,12 @@ func (u *User) BeforeUpdate(tx *gorm.DB) error {
 	return u.hashPasswordIfNeeded()
 }
 
-func (u *User) IsEmpty() bool {
-	return cmp.Equal(u, User{})
+func (u *User) ToResponse() *responses.UserResponse {
+	var ures responses.UserResponse
+	err := copier.Copy(&ures, &u)
+	if err != nil {
+		logger.LogError(err)
+	}
+
+	return &ures
 }

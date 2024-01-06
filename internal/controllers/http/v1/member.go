@@ -4,9 +4,7 @@ import (
 	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
-	"project-skbackend/internal/middlewares"
 	mmbrservice "project-skbackend/internal/services/member"
-	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils"
 	"strings"
 
@@ -31,10 +29,6 @@ func newMemberRoutes(
 	}
 
 	admgrp := h.Group("members")
-	admgrp.Use(middlewares.JWTAuthMiddleware(
-		cfg,
-		uint(consttypes.UR_USER),
-	))
 	{
 		admgrp.POST("", r.createMember)
 	}
