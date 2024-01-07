@@ -4,8 +4,8 @@ import (
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils/logger"
-	"time"
+	"project-skbackend/packages/custom"
+	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -24,11 +24,11 @@ type (
 		Allergy        []*MemberAllergy  `json:"allergy,omitempty"`
 		Height         float64           `json:"height" gorm:"not null" binding:"required" example:"100"`
 		Weight         float64           `json:"weight" gorm:"not null" binding:"required" example:"150"`
-		BMI            float64           `json:"bmi" gorm:"not null" binding:"required" example:"19"`
+		BMI            float64           `json:"bmi" gorm:"not null;type:decimal(10,2)" binding:"required" example:"19"`
 		FirstName      string            `json:"first_name" gorm:"not null" binding:"required" example:"Jonathan"`
 		LastName       string            `json:"last_name" gorm:"not null" binding:"required" example:"Vince"`
 		Gender         consttypes.Gender `json:"gender" gorm:"not null; type:gender_enum" binding:"required" example:"Male"`
-		DateOfBirth    time.Time         `json:"date_of_birth" gorm:"not null" binding:"required" example:"2000-10-20"`
+		DateOfBirth    custom.CDT_DATE   `json:"date_of_birth" gorm:"not null" binding:"required" example:"2000-10-20"`
 	}
 
 	MemberIllness struct {
@@ -50,7 +50,7 @@ func (m *Member) ToResponse() *responses.MemberResponse {
 	mres := responses.MemberResponse{}
 
 	if err := copier.Copy(&mres, &m); err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil
 	}
 

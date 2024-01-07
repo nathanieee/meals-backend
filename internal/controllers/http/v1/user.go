@@ -6,11 +6,11 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/middlewares"
-	"project-skbackend/internal/models"
 	mailservice "project-skbackend/internal/services/mail"
 	userservice "project-skbackend/internal/services/user"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils"
+	"project-skbackend/packages/utils/utrequest"
+	"project-skbackend/packages/utils/utresponse"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +24,7 @@ type userRoutes struct {
 }
 
 func newUserRoutes(
-	h *gin.RouterGroup,
+	rg *gin.RouterGroup,
 	db *gorm.DB,
 	cfg *configs.Config,
 	usersvc userservice.IUserService,
@@ -36,20 +36,20 @@ func newUserRoutes(
 		mailsvc: mailsvc,
 	}
 
-	admg := h.Group("users")
+	admingrp := rg.Group("users")
 	{
-		admg.GET("", r.getUser)
-		admg.POST("", r.createUser)
+		admingrp.GET("", r.getUser)
+		admingrp.POST("", r.createUser)
 	}
 
-	useg := h.Group("users")
-	useg.Use(middlewares.JWTAuthMiddleware(
+	usergrp := rg.Group("users")
+	usergrp.Use(middlewares.JWTAuthMiddleware(
 		cfg,
 		uint(consttypes.UR_USER),
 	))
 	{
-		useg.GET("/me", r.getCurrentUser)
-		useg.DELETE("/delete", r.deleteUser)
+		usergrp.GET("/me", r.getCurrentUser)
+		usergrp.DELETE("/delete", r.deleteUser)
 	}
 }
 
@@ -58,9 +58,9 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		ve := utils.ValidationResponse(err)
+		ve := utresponse.ValidationResponse(err)
 
-		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
+		utresponse.ErrorResponse(ctx, http.StatusBadRequest, utresponse.ErrorRes{
 			Message: "Invalid request",
 			Debug:   err,
 			Errors:  ve,
@@ -71,13 +71,13 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 	ures, err := r.usersvc.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			utils.ErrorResponse(ctx, http.StatusConflict, utils.ErrorRes{
+			utresponse.ErrorResponse(ctx, http.StatusConflict, utresponse.ErrorRes{
 				Message: "Duplicate email",
 				Debug:   err,
 				Errors:  err.Error(),
 			})
 		} else {
-			utils.ErrorResponse(ctx, http.StatusInternalServerError, utils.ErrorRes{
+			utresponse.ErrorResponse(ctx, http.StatusInternalServerError, utresponse.ErrorRes{
 				Message: "Something went wrong",
 				Debug:   err,
 				Errors:  err.Error(),
@@ -86,26 +86,26 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
+	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
 		Message: "Success Creating new user",
 		Data:    ures,
 	})
 }
 
 func (r *userRoutes) getUser(ctx *gin.Context) {
-	paginationReq := utils.GeneratePaginationFromRequest(ctx, models.User{})
+	paginationReq := utrequest.GeneratePaginationFromRequest(ctx)
 
 	users, err := r.usersvc.FindAll(paginationReq)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
-			Message: "User not found",
+		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
+			Message: "users not found",
 			Debug:   nil,
 			Errors:  nil,
 		})
 		return
 	}
 
-	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
+	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
 		Message: "Success Get Users",
 		Data:    users,
 	})
@@ -114,7 +114,7 @@ func (r *userRoutes) getUser(ctx *gin.Context) {
 func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 	ctxUser, exists := ctx.Get("user")
 	if !exists {
-		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
+		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Message: "Error getting user",
 			Debug:   nil,
 			Errors:  "User not found",
@@ -124,7 +124,7 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 
 	loggedInUser, ok := ctxUser.(responses.UserResponse)
 	if !ok {
-		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
+		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Message: "Error getting user",
 			Debug:   nil,
 			Errors:  "Unable to assert User ID",
@@ -134,7 +134,7 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 
 	user, err := r.usersvc.FindByID(loggedInUser.ID)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
+		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Message: "User not found",
 			Debug:   nil,
 			Errors:  "User not found",
@@ -142,7 +142,7 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
+	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
 		Message: "Success Get User",
 		Data:    user,
 	})
@@ -151,7 +151,7 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 func (r *userRoutes) deleteUser(ctx *gin.Context) {
 	ctxUser, exists := ctx.Get("user")
 	if !exists {
-		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
+		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Message: "Error getting user",
 			Debug:   nil,
 			Errors:  "User not found",
@@ -161,7 +161,7 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 
 	loggedInUser, ok := ctxUser.(responses.UserResponse)
 	if !ok {
-		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
+		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Message: "Error getting user",
 			Debug:   nil,
 			Errors:  "Unable to assert User ID",
@@ -170,7 +170,7 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 	}
 
 	if loggedInUser.Role == consttypes.UR_ADMIN {
-		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
+		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Message: "Something went wrong",
 			Debug:   nil,
 			Errors:  "Admin role can't be deleted",
@@ -180,7 +180,7 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 
 	err := r.usersvc.Delete(loggedInUser.ID)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
+		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Message: "Something went wrong",
 			Debug:   err,
 			Errors:  "Something went wrong while deleting user",
@@ -188,7 +188,7 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
+	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
 		Message: "Success Delete User",
 		Data:    nil,
 	})

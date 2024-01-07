@@ -5,7 +5,8 @@ import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	mmbrservice "project-skbackend/internal/services/member"
-	"project-skbackend/packages/utils"
+	"project-skbackend/packages/utils/utrequest"
+	"project-skbackend/packages/utils/utresponse"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +19,7 @@ type memberRoutes struct {
 }
 
 func newMemberRoutes(
-	h *gin.RouterGroup,
+	rg *gin.RouterGroup,
 	db *gorm.DB,
 	cfg *configs.Config,
 	membsvc mmbrservice.IMemberService,
@@ -28,9 +29,10 @@ func newMemberRoutes(
 		membsvc: membsvc,
 	}
 
-	admgrp := h.Group("members")
+	admgrp := rg.Group("members")
 	{
 		admgrp.POST("", r.createMember)
+		admgrp.GET("", r.getMembers)
 	}
 }
 
@@ -39,36 +41,56 @@ func (r *memberRoutes) createMember(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		ve := utils.ValidationResponse(err)
+		ve := utresponse.ValidationResponse(err)
 
-		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
-			Message: "Invalid request",
-			Debug:   err,
-			Errors:  ve,
-		})
+		utresponse.GeneralInvalidRequest(
+			"create member",
+			ctx,
+			ve,
+			&err,
+		)
 		return
 	}
 
 	meres, err := r.membsvc.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			utils.ErrorResponse(ctx, http.StatusConflict, utils.ErrorRes{
-				Message: "Duplicate email",
+			utresponse.ErrorResponse(ctx, http.StatusConflict, utresponse.ErrorRes{
+				Message: "duplicate email",
 				Debug:   err,
 				Errors:  err.Error(),
 			})
 		} else {
-			utils.ErrorResponse(ctx, http.StatusInternalServerError, utils.ErrorRes{
-				Message: "Something went wrong",
-				Debug:   err,
-				Errors:  err.Error(),
-			})
+			utresponse.GeneralInternalServerError(
+				"something went wrong",
+				ctx,
+				err,
+			)
 		}
 		return
 	}
 
-	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
-		Message: "Success Creating new user",
+	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
+		Message: "success creating new member",
 		Data:    meres,
+	})
+}
+
+func (r *memberRoutes) getMembers(ctx *gin.Context) {
+	paginationReq := utrequest.GeneratePaginationFromRequest(ctx)
+
+	members, err := r.membsvc.FindAll(paginationReq)
+	if err != nil {
+		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
+			Message: "members not found",
+			Debug:   err,
+			Errors:  err.Error(),
+		})
+		return
+	}
+
+	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
+		Message: "success get members",
+		Data:    members,
 	})
 }

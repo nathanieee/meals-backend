@@ -8,6 +8,7 @@ import (
 	v1 "project-skbackend/internal/controllers/http/v1"
 	"project-skbackend/internal/di"
 	"project-skbackend/packages/servers"
+	"project-skbackend/packages/utils/utlogger"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
@@ -18,11 +19,13 @@ import (
 func Run(cfg *configs.Config) {
 	db, err := gorm.Open(postgres.Open(cfg.DB.GetDbConnectionUrl()))
 	if err != nil {
+		utlogger.LogError(err)
 		fmt.Errorf("app - Run - postgres: %w", err)
 	}
 
 	err = cfg.DB.DBSetup(db)
 	if err != nil {
+		utlogger.LogError(err)
 		fmt.Errorf("app - Run - DB setup: %w", err)
 	}
 
@@ -43,6 +46,7 @@ func Run(cfg *configs.Config) {
 
 	err = httpServer.Shutdown()
 	if err != nil {
+		utlogger.LogError(err)
 		fmt.Errorf("%w", err)
 	}
 }

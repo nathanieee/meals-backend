@@ -2,7 +2,7 @@ package ilnsrepository
 
 import (
 	"project-skbackend/internal/models"
-	"project-skbackend/packages/utils/logger"
+	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -32,7 +32,7 @@ func (r *IllnessRepository) preload(db *gorm.DB) *gorm.DB {
 func (r *IllnessRepository) Create(ill models.Illness) (*models.Illness, error) {
 	err := r.db.Create(ill).Error
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -48,7 +48,7 @@ func (r *IllnessRepository) FindByID(illid uuid.UUID) (*models.Illness, error) {
 		First(&illness, illid).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 

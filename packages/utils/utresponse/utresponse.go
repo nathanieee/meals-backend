@@ -1,11 +1,11 @@
-package utils
+package utresponse
 
 import (
 	"errors"
 	"fmt"
 	"net/http"
 	"project-skbackend/packages/custom"
-	"time"
+	"project-skbackend/packages/utils/uttoken"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -16,28 +16,21 @@ import (
 /* -------------------------------------------------------------------------- */
 
 type (
-	TokenHeader struct {
-		AuthToken           string
-		AuthTokenExpires    time.Time
-		RefreshToken        string
-		RefreshTokenExpires time.Time
-	}
-
 	SuccessRes struct {
-		Message string      `json:"message"`
-		Data    any         `json:"data,omitempty"`
-		Header  TokenHeader `json:"-"`
+		Message string              `json:"message"`
+		Data    any                 `json:"data,omitempty"`
+		Header  uttoken.TokenHeader `json:"-"`
 	}
 )
 
-func SuccessResponse(c *gin.Context, code int, res SuccessRes) {
-	if res.Header != (TokenHeader{}) {
-		c.Header("refresh-token", res.Header.RefreshToken)
-		c.Header("refresh-token-expired", res.Header.RefreshTokenExpires.String())
-		c.Header("Authorization", "Bearer "+res.Header.AuthToken)
-		c.Header("expired-at", res.Header.AuthTokenExpires.String())
+func SuccessResponse(ctx *gin.Context, code int, res SuccessRes) {
+	if res.Header != (uttoken.TokenHeader{}) {
+		ctx.Header("refresh-token", res.Header.RefreshToken)
+		ctx.Header("refresh-token-expired", res.Header.RefreshTokenExpires.String())
+		ctx.Header("Authorization", "Bearer "+res.Header.AuthToken)
+		ctx.Header("expired-at", res.Header.AuthTokenExpires.String())
 	}
-	c.JSON(code, res)
+	ctx.JSON(code, res)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -46,8 +39,9 @@ func SuccessResponse(c *gin.Context, code int, res SuccessRes) {
 
 type (
 	ValidationErrorMsg struct {
-		Field   string `json:"field"`
-		Message string `json:"message"`
+		Namespace string `json:"namespace"`
+		Field     string `json:"field"`
+		Message   string `json:"message"`
 	}
 
 	ErrorRes struct {
@@ -84,8 +78,8 @@ var (
 	ErrSendEmailVerificationRequest = errors.New("you already requested a verification message in less than 5 minutes")
 )
 
-func ErrorResponse(c *gin.Context, code int, res ErrorRes) {
-	c.JSON(code, res)
+func ErrorResponse(ctx *gin.Context, code int, res ErrorRes) {
+	ctx.JSON(code, res)
 }
 
 func getErrorMsg(fe validator.FieldError) string {
@@ -114,7 +108,8 @@ func ValidationResponse(err error) []ValidationErrorMsg {
 	if errors.As(err, &ve) {
 		out := make([]ValidationErrorMsg, len(ve))
 		for i, fe := range ve {
-			out[i] = ValidationErrorMsg{fmt.Sprintf("%s", fe.Field()), getErrorMsg(fe)}
+			out[i] = ValidationErrorMsg{fe.Namespace(), fmt.Sprintf("%s", fe.Field()), getErrorMsg(fe)}
+			fmt.Println(err)
 		}
 		return out
 	}
@@ -122,18 +117,26 @@ func ValidationResponse(err error) []ValidationErrorMsg {
 	return nil
 }
 
-func GeneralInputRequiredError(m custom.V_STRING, c *gin.Context, e any) {
-	ErrorResponse(c, http.StatusBadRequest, ErrorRes{
-		Message: string(m.SuffixSpaceCheck()) + "(input required)",
+func GeneralInputRequiredError(message custom.CDT_STRING, ctx *gin.Context, err any) {
+	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
+		Message: message.SuffixSpaceCheck() + "(input required)",
 		Debug:   nil,
-		Errors:  e,
+		Errors:  err,
 	})
 }
 
-func GeneralInternalServerError(m custom.V_STRING, c *gin.Context, e any) {
-	ErrorResponse(c, http.StatusInternalServerError, ErrorRes{
-		Message: string(m.SuffixSpaceCheck()) + "(internal server error)",
+func GeneralInternalServerError(message custom.CDT_STRING, ctx *gin.Context, err any) {
+	ErrorResponse(ctx, http.StatusInternalServerError, ErrorRes{
+		Message: message.SuffixSpaceCheck() + "(internal server error)",
 		Debug:   nil,
-		Errors:  e,
+		Errors:  err,
+	})
+}
+
+func GeneralInvalidRequest(message custom.CDT_STRING, ctx *gin.Context, ve []ValidationErrorMsg, err *error) {
+	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
+		Message: message.SuffixSpaceCheck() + "(invalid request)",
+		Debug:   *err,
+		Errors:  ve,
 	})
 }

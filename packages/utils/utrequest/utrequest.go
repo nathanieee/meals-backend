@@ -1,9 +1,11 @@
-package utils
+package utrequest
 
 import (
 	"fmt"
 	"math"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utmath"
+	"project-skbackend/packages/utils/utpagination"
 	"reflect"
 	"strconv"
 	"strings"
@@ -27,13 +29,12 @@ func CheckWhitelistUrl(url string) bool {
 	return whitelistedUrl[splittedUrl[1]]
 }
 
-func GeneratePaginationFromRequest(ctx *gin.Context, dbModel interface{}) Pagination {
+func GeneratePaginationFromRequest(ctx *gin.Context) utpagination.Pagination {
 	// Initializing default
 	//	var mode string
 	limit := 10
 	page := 1
 	search := ""
-	level := ""
 	sort := "id"
 	direction := "asc"
 	var createdFrom time.Time
@@ -64,15 +65,8 @@ func GeneratePaginationFromRequest(ctx *gin.Context, dbModel interface{}) Pagina
 			if queryValue == "asc" || queryValue == "desc" {
 				direction = queryValue
 			}
-
 			break
-		case "level":
-			queryValue = strings.ToLower(queryValue)
-			if queryValue == "beginner" || queryValue == "intermediate" || queryValue == "advanced" {
-				level = queryValue
-			}
-			break
-		case "createdFrom":
+		case "created-from":
 			queryValue = strings.ToLower(queryValue)
 			if queryValue != "" {
 				date, err := time.Parse(consttypes.DATEFORMAT, queryValue)
@@ -81,7 +75,7 @@ func GeneratePaginationFromRequest(ctx *gin.Context, dbModel interface{}) Pagina
 				}
 			}
 			break
-		case "createdTo":
+		case "created-to":
 			queryValue = strings.ToLower(queryValue)
 			if queryValue != "" {
 				date, err := time.Parse(consttypes.DATEFORMAT, queryValue)
@@ -93,14 +87,13 @@ func GeneratePaginationFromRequest(ctx *gin.Context, dbModel interface{}) Pagina
 		}
 	}
 
-	return Pagination{
+	return utpagination.Pagination{
 		Limit:     limit,
 		Page:      page,
 		Sort:      sort,
 		Direction: direction,
 		Search:    search,
-		Filter: Filter{
-			Level:       level,
+		Filter: utpagination.Filter{
 			CreatedFrom: createdFrom,
 			CreatedTo:   createdTo,
 		},
@@ -150,7 +143,7 @@ func GetReadableFileSize(size float64, ext string) error {
 	maxSoundSizeSuffix := "MB"
 
 	base := math.Log(size) / math.Log(1024)
-	getSize := Round(math.Pow(1024, base-math.Floor(base)), .5, 2)
+	getSize := utmath.Round(math.Pow(1024, base-math.Floor(base)), .5, 2)
 	getSuffix := suffixes[int(math.Floor(base))]
 	if getSuffix == "KB" {
 		getSize = math.Ceil((getSize/1000)*100) / 100

@@ -1,4 +1,4 @@
-package utils
+package utpagination
 
 import "time"
 
@@ -16,7 +16,6 @@ type (
 	}
 
 	Filter struct {
-		Level       string `json:"level,omitempty"`
 		CreatedFrom time.Time
 		CreatedTo   time.Time
 	}

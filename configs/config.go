@@ -2,7 +2,7 @@ package configs
 
 import (
 	"fmt"
-	"log"
+	"project-skbackend/packages/utils/utlogger"
 	"sync"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -63,7 +63,7 @@ func GetInstance() *Config {
 			cfg, err := newConfig()
 
 			if err != nil {
-				log.Fatal(err)
+				utlogger.LogError(err)
 			}
 			instance = cfg
 		})
@@ -81,6 +81,7 @@ func newConfig() (*Config, error) {
 
 	err = cleanenv.ReadEnv(cfg)
 	if err != nil {
+		utlogger.LogError(err)
 		return nil, err
 	}
 	return cfg, nil

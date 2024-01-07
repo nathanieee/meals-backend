@@ -6,8 +6,8 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/pagination"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils"
-	"project-skbackend/packages/utils/logger"
+	"project-skbackend/packages/utils/utlogger"
+	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -22,7 +22,7 @@ type (
 	IAdminRepository interface {
 		Create(a models.Admin) (*models.Admin, error)
 		Update(a models.Admin, aid uuid.UUID) (*models.Admin, error)
-		FindAll(p utils.Pagination) (*utils.Pagination, error)
+		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		FindByID(aid uuid.UUID) (*responses.AdminResponse, error)
 		Delete(a models.Admin) error
 	}
@@ -40,7 +40,7 @@ func (r *AdminRepository) preload(db *gorm.DB) *gorm.DB {
 func (r *AdminRepository) Create(a models.Admin) (*models.Admin, error) {
 	err := r.db.Create(a).Error
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -50,14 +50,14 @@ func (r *AdminRepository) Create(a models.Admin) (*models.Admin, error) {
 func (r *AdminRepository) Update(a models.Admin, aid uuid.UUID) (*models.Admin, error) {
 	err := r.db.Model(&a).Where("id = ?", aid).Updates(a).Error
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
 	return &a, nil
 }
 
-func (r *AdminRepository) FindAll(p utils.Pagination) (*utils.Pagination, error) {
+func (r *AdminRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var a []models.Admin
 	var ares []responses.AdminResponse
 
@@ -76,7 +76,7 @@ func (r *AdminRepository) FindAll(p utils.Pagination) (*utils.Pagination, error)
 	result = result.Group("id").Scopes(pagination.Paginate(&a, &p, result)).Find(&ares)
 
 	if result.Error != nil {
-		logger.LogError(result.Error)
+		utlogger.LogError(result.Error)
 		return nil, result.Error
 	}
 
@@ -88,7 +88,7 @@ func (r *AdminRepository) FindByID(aid uuid.UUID) (*responses.AdminResponse, err
 	var ares *responses.AdminResponse
 	err := r.db.Model(&models.Admin{}).Select("id, user_id, first_name, last_name, gender, date_of_birth, created_at, updated_at").First(&ares, aid).Error
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -98,7 +98,7 @@ func (r *AdminRepository) FindByID(aid uuid.UUID) (*responses.AdminResponse, err
 func (r *AdminRepository) Delete(a models.Admin) error {
 	err := r.db.Delete(&a).Error
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return err
 	}
 

@@ -3,26 +3,26 @@ package pagination
 import (
 	"fmt"
 	"math"
-	"project-skbackend/packages/utils"
+	"project-skbackend/packages/utils/utpagination"
 
 	"gorm.io/gorm"
 )
 
-func getLimit(p *utils.Pagination) int {
+func getLimit(p *utpagination.Pagination) int {
 	if p.Limit == 0 {
 		p.Limit = 10
 	}
 	return p.Limit
 }
 
-func getPage(p *utils.Pagination) int {
+func getPage(p *utpagination.Pagination) int {
 	if p.Page == 0 {
 		p.Page = 1
 	}
 	return p.Page
 }
 
-func getSort(p *utils.Pagination) string {
+func getSort(p *utpagination.Pagination) string {
 	builtQuery := "id desc"
 	direction := "asc"
 
@@ -37,11 +37,15 @@ func getSort(p *utils.Pagination) string {
 	return builtQuery
 }
 
-func getOffset(p *utils.Pagination) int {
+func getOffset(p *utpagination.Pagination) int {
 	return (getPage(p) - 1) * getLimit(p)
 }
 
-func Paginate(utils interface{}, pagination *utils.Pagination, db *gorm.DB) func(db *gorm.DB) *gorm.DB {
+func Paginate(
+	utpagination interface{},
+	pagination *utpagination.Pagination,
+	db *gorm.DB,
+) func(db *gorm.DB) *gorm.DB {
 	var totalDatas int64
 	db.Count(&totalDatas)
 

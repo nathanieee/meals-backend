@@ -4,7 +4,8 @@ import (
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils/logger"
+	"project-skbackend/packages/utils/utlogger"
+	"project-skbackend/packages/utils/uttoken"
 	"time"
 
 	"github.com/google/uuid"
@@ -59,8 +60,22 @@ func (u *User) ToResponse() *responses.UserResponse {
 	var ures responses.UserResponse
 	err := copier.Copy(&ures, &u)
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 	}
 
 	return &ures
+}
+
+func (u *User) ToAuthResponse(token *uttoken.TokenHeader) *responses.AuthResponse {
+	aures := responses.AuthResponse{
+		Token:   token.AuthToken,
+		Expires: token.AuthTokenExpires,
+	}
+
+	err := copier.Copy(&aures, &u)
+	if err != nil {
+		utlogger.LogError(err)
+	}
+
+	return &aures
 }

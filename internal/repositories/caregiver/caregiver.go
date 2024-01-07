@@ -6,8 +6,8 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/pagination"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils"
-	"project-skbackend/packages/utils/logger"
+	"project-skbackend/packages/utils/utlogger"
+	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -22,7 +22,7 @@ type (
 	ICaregiverRepository interface {
 		Create(cg models.Caregiver) (*models.Caregiver, error)
 		Update(cg models.Caregiver, cgid uuid.UUID) (*models.Caregiver, error)
-		FindAll(p utils.Pagination) (*utils.Pagination, error)
+		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		FindByID(cgid uuid.UUID) (*responses.CaregiverResponse, error)
 		FindByEmail(email string) (*responses.CaregiverResponse, error)
 		Delete(cg models.Caregiver) error
@@ -46,7 +46,7 @@ func (r *CaregiverRepository) Create(cg models.Caregiver) (*models.Caregiver, er
 		Create(cg).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -60,14 +60,14 @@ func (r *CaregiverRepository) Update(cg models.Caregiver, cgid uuid.UUID) (*mode
 		Updates(cg).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
 	return &cg, nil
 }
 
-func (r *CaregiverRepository) FindAll(p utils.Pagination) (*utils.Pagination, error) {
+func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var cg []models.Caregiver
 	var cgres []responses.CaregiverResponse
 
@@ -94,7 +94,7 @@ func (r *CaregiverRepository) FindAll(p utils.Pagination) (*utils.Pagination, er
 		Find(&cgres)
 
 	if result.Error != nil {
-		logger.LogError(result.Error)
+		utlogger.LogError(result.Error)
 		return nil, result.Error
 	}
 
@@ -110,7 +110,7 @@ func (r *CaregiverRepository) FindByID(cgid uuid.UUID) (*responses.CaregiverResp
 		First(&cgres, cgid).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -127,7 +127,7 @@ func (r *CaregiverRepository) FindByEmail(email string) (*responses.CaregiverRes
 		Take(&cgres).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -139,7 +139,7 @@ func (r *CaregiverRepository) Delete(cg models.Caregiver) error {
 		Delete(&cg).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return err
 	}
 

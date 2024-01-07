@@ -1,7 +1,6 @@
 package mmbrservice
 
 import (
-	"fmt"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
@@ -13,7 +12,8 @@ import (
 	userrepository "project-skbackend/internal/repositories/user"
 
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils/logger"
+	"project-skbackend/packages/utils/utlogger"
+	"project-skbackend/packages/utils/utpagination"
 )
 
 type (
@@ -28,6 +28,7 @@ type (
 
 	IMemberService interface {
 		Create(req requests.CreateMemberRequest) (*responses.MemberResponse, error)
+		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
 	}
 )
 
@@ -67,7 +68,7 @@ func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.M
 	if req.OrganizationID != nil {
 		organization, err = mes.orgrepo.FindByID(*req.OrganizationID)
 		if err != nil {
-			logger.LogError(err)
+			utlogger.LogError(err)
 			return nil, err
 		}
 	}
@@ -76,7 +77,7 @@ func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.M
 	for _, ill := range req.IllnessID {
 		illness, err := mes.illrepo.FindByID(ill)
 		if err != nil {
-			logger.LogError(err)
+			utlogger.LogError(err)
 			return nil, err
 		}
 
@@ -89,7 +90,7 @@ func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.M
 	for _, all := range req.AllergyID {
 		allergy, err := mes.allgrepo.FindByID(all)
 		if err != nil {
-			logger.LogError(err)
+			utlogger.LogError(err)
 			return nil, err
 		}
 
@@ -101,13 +102,21 @@ func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.M
 	member := req.ToModel(*user, *caregiver, allergies, illnesses, organization)
 	member, err = mes.membrepo.Create(*member)
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
-
-	fmt.Println(member)
 
 	mres := member.ToResponse()
 
 	return mres, nil
+}
+
+func (mes *MemberService) FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error) {
+	members, err := mes.membrepo.FindAll(preq)
+	if err != nil {
+		utlogger.LogError(err)
+		return nil, err
+	}
+
+	return members, nil
 }

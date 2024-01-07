@@ -1,4 +1,4 @@
-package utils
+package uttoken
 
 import (
 	"encoding/hex"
@@ -6,13 +6,19 @@ import (
 	"fmt"
 	"math/rand"
 	"project-skbackend/internal/controllers/responses"
-	"project-skbackend/internal/models"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
 type (
+	TokenHeader struct {
+		AuthToken           string
+		AuthTokenExpires    time.Time
+		RefreshToken        string
+		RefreshTokenExpires time.Time
+	}
+
 	TokenClaims struct {
 		jwt.StandardClaims
 		Authorized bool                    `json:"authorized"`
@@ -26,7 +32,7 @@ type (
 	}
 )
 
-func GenerateToken(user *models.User, lifespan int, duration string, secret string) (*Token, error) {
+func GenerateToken(ures *responses.UserResponse, lifespan int, duration string, secret string) (*Token, error) {
 	token := &Token{}
 	expTime := time.Time{}
 
@@ -41,7 +47,7 @@ func GenerateToken(user *models.User, lifespan int, duration string, secret stri
 
 	claims := TokenClaims{}
 	claims.Authorized = true
-	claims.User = user.ToResponse()
+	claims.User = ures
 	claims.Expire = expTime.Unix()
 	unsignedToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := unsignedToken.SignedString([]byte(secret))

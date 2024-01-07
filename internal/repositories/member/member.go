@@ -6,10 +6,11 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/pagination"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils"
-	"project-skbackend/packages/utils/logger"
+	"project-skbackend/packages/utils/utlogger"
+	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -40,7 +41,7 @@ type (
 	IMemberRepository interface {
 		Create(m models.Member) (*models.Member, error)
 		Update(m models.Member, mid uuid.UUID) (*models.Member, error)
-		FindAll(p utils.Pagination) (*utils.Pagination, error)
+		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		FindByID(mid uuid.UUID) (*models.Member, error)
 		Delete(m models.Member) error
 	}
@@ -53,12 +54,12 @@ func NewMemberRepository(db *gorm.DB) *MemberRepository {
 func (r *MemberRepository) preload(db *gorm.DB) *gorm.DB {
 	return db.
 		Preload(clause.Associations).
-		Preload("Users.UserImages.Images").
-		Preload("Users.Addresses").
-		Preload("Caregiver.Users.UserImages.Images").
-		Preload("Organizations").
-		Preload("MemberAllergies.Allergies").
-		Preload("MemberIllnesses.Illnesses")
+		Preload("User.UserImage.Image").
+		Preload("User.Address").
+		Preload("Caregiver.User.UserImage.Image").
+		Preload("Organization").
+		Preload("Allergy.Allergy").
+		Preload("Illness.Illness")
 }
 
 func (r *MemberRepository) Create(m models.Member) (*models.Member, error) {
@@ -66,7 +67,7 @@ func (r *MemberRepository) Create(m models.Member) (*models.Member, error) {
 		Create(&m).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -80,21 +81,20 @@ func (r *MemberRepository) Update(m models.Member, mid uuid.UUID) (*models.Membe
 		Updates(m).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
 	return &m, nil
 }
 
-func (r *MemberRepository) FindAll(p utils.Pagination) (*utils.Pagination, error) {
+func (r *MemberRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var m []models.Member
 	var mres []responses.MemberResponse
 
 	result := r.
 		preload(r.db).
-		Model(&m).
-		Select(SELECTED_FIELDS)
+		Model(&m)
 
 	if p.Search != "" {
 		result = result.
@@ -110,14 +110,20 @@ func (r *MemberRepository) FindAll(p utils.Pagination) (*utils.Pagination, error
 			)
 	}
 
-	result = result.Group("id").Scopes(pagination.Paginate(&m, &p, result)).Find(&mres)
+	result = result.Group("id").Scopes(pagination.Paginate(&m, &p, result)).Find(&m)
 
 	if result.Error != nil {
-		logger.LogError(result.Error)
+		utlogger.LogError(result.Error)
 		return nil, result.Error
 	}
 
+	err := copier.Copy(&mres, &m)
+	if err != nil {
+		return nil, err
+	}
+
 	p.Data = mres
+
 	return &p, nil
 }
 
@@ -130,7 +136,7 @@ func (r *MemberRepository) FindByID(mid uuid.UUID) (*models.Member, error) {
 		First(&m, mid).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -142,7 +148,7 @@ func (r *MemberRepository) Delete(m models.Member) error {
 		Delete(&m).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return err
 	}
 

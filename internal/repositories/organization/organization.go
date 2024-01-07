@@ -2,7 +2,7 @@ package orgrepository
 
 import (
 	"project-skbackend/internal/models"
-	"project-skbackend/packages/utils/logger"
+	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -43,7 +43,7 @@ func (r *OrganizationRepository) preload(db *gorm.DB) *gorm.DB {
 func (r *OrganizationRepository) Create(o models.Organization) (*models.Organization, error) {
 	err := r.db.Create(o).Error
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -59,7 +59,7 @@ func (r *OrganizationRepository) FindByID(oid uuid.UUID) (*models.Organization, 
 		First(&o, oid).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 

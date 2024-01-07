@@ -4,9 +4,13 @@ import (
 	"errors"
 	"os"
 	"project-skbackend/internal/models"
+	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/custom"
+	"project-skbackend/packages/utils/utlogger"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -32,6 +36,7 @@ func SeedEnum(db *gorm.DB) error {
 		).Error
 
 		if err != nil {
+			utlogger.LogError(err)
 			return err
 		}
 	}
@@ -47,6 +52,7 @@ func SeedEnum(db *gorm.DB) error {
 		).Error
 
 		if err != nil {
+			utlogger.LogError(err)
 			return err
 		}
 	}
@@ -62,6 +68,7 @@ func SeedEnum(db *gorm.DB) error {
 		).Error
 
 		if err != nil {
+			utlogger.LogError(err)
 			return err
 		}
 	}
@@ -76,6 +83,7 @@ func SeedEnum(db *gorm.DB) error {
 		).Error
 
 		if err != nil {
+			utlogger.LogError(err)
 			return err
 		}
 	}
@@ -90,6 +98,7 @@ func SeedEnum(db *gorm.DB) error {
 		).Error
 
 		if err != nil {
+			utlogger.LogError(err)
 			return err
 		}
 	}
@@ -104,6 +113,7 @@ func SeedEnum(db *gorm.DB) error {
 		).Error
 
 		if err != nil {
+			utlogger.LogError(err)
 			return err
 		}
 	}
@@ -117,6 +127,7 @@ func SeedEnum(db *gorm.DB) error {
 		).Error
 
 		if err != nil {
+			utlogger.LogError(err)
 			return err
 		}
 	}
@@ -127,10 +138,7 @@ func SeedEnum(db *gorm.DB) error {
 func SeedAdminCredentials(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Admin{}) {
 		if err := db.First(&models.User{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			time, err := time.Parse(consttypes.DATEFORMAT, "2000-10-20")
-			if err != nil {
-				return err
-			}
+			date := time.Now()
 
 			admins := []*models.Admin{
 				{
@@ -142,7 +150,7 @@ func SeedAdminCredentials(db *gorm.DB) error {
 					FirstName:   os.Getenv("ADMIN_FIRSTNAME"),
 					LastName:    os.Getenv("ADMIN_LASTNAME"),
 					Gender:      consttypes.G_MALE,
-					DateOfBirth: time,
+					DateOfBirth: custom.CDT_DATE(date),
 				},
 			}
 
@@ -156,10 +164,7 @@ func SeedAdminCredentials(db *gorm.DB) error {
 func SeedCaregiverCredentials(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Caregiver{}) {
 		if err := db.First(&models.Caregiver{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			time, err := time.Parse(consttypes.DATEFORMAT, "2000-10-20")
-			if err != nil {
-				return err
-			}
+			date := time.Now()
 
 			caregivers := []*models.Caregiver{
 				{
@@ -171,7 +176,7 @@ func SeedCaregiverCredentials(db *gorm.DB) error {
 					FirstName:   "Care",
 					LastName:    "Giver",
 					Gender:      consttypes.G_FEMALE,
-					DateOfBirth: time,
+					DateOfBirth: custom.CDT_DATE(date),
 				},
 			}
 
@@ -185,10 +190,20 @@ func SeedCaregiverCredentials(db *gorm.DB) error {
 func SeedAllergyData(db *gorm.DB) error {
 	// * source: https://en.wikipedia.org/wiki/List_of_allergens
 	if db.Migrator().HasTable(&models.Allergy{}) {
+		uuidstr := "123e4567-e89b-12d3-a456-426614174000"
+		uuid, err := uuid.Parse(uuidstr)
+		if err != nil {
+			utlogger.LogError(err)
+			return err
+		}
+
 		if err := db.First(&models.Allergy{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			allergies := []*models.Allergy{
 				// ! start of food allergen
 				{
+					Model: helper.Model{
+						ID: uuid,
+					},
 					Name:        "Milk",
 					Description: "A milk allergy, also known as a dairy allergy, is an adverse immune system response to one or more proteins found in cow's milk. It is different from lactose intolerance, which is a non-immune digestive disorder where the body has difficulty digesting lactose, a sugar found in milk. A milk allergy is an immune system disorder and can be more severe.",
 					Allergens:   consttypes.A_FOOD,
@@ -367,7 +382,7 @@ func SeedAllergyData(db *gorm.DB) error {
 				},
 				{
 					Name:        "Glyceryl monothioglycolate",
-					Description: "A permanent wave, commonly called a perm or permanent, is a hairstyle consisting of waves or curls set into the hair. The curls may last a number of months, hence the name.",
+					Description: "Glyceryl monothioglycolate is a chemical compound primarily used in hair products, particularly in hair waving or straightening solutions. It's an ingredient commonly found in hair relaxers or perms.",
 					Allergens:   consttypes.A_MEDICAL,
 				},
 				{
@@ -423,9 +438,19 @@ func SeedAllergyData(db *gorm.DB) error {
 func SeedIllnessData(db *gorm.DB) error {
 	// * source: https://chat.openai.com
 	if db.Migrator().HasTable(&models.Illness{}) {
+		uuidstr := "123e4567-e89b-12d3-a456-426614174000"
+		uuid, err := uuid.Parse(uuidstr)
+		if err != nil {
+			utlogger.LogError(err)
+			return err
+		}
+
 		if err := db.First(&models.Illness{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			illnesses := []*models.Illness{
 				{
+					Model: helper.Model{
+						ID: uuid,
+					},
 					Name:        "Covid",
 					Description: "Coronavirus disease (COVID-19) is an infectious disease caused by the SARS-CoV-2 virus.",
 				},

@@ -7,7 +7,7 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/models/helper"
 	userrepository "project-skbackend/internal/repositories/user"
-	"project-skbackend/packages/utils"
+	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
 )
@@ -20,7 +20,7 @@ type (
 	IUserService interface {
 		Create(req requests.CreateUserRequest) (*responses.UserResponse, error)
 		FindByID(id uuid.UUID) (*responses.UserResponse, error)
-		FindAll(paginationReq utils.Pagination) (*utils.Pagination, error)
+		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
 		Delete(id uuid.UUID) error
 	}
 )
@@ -64,11 +64,12 @@ func (us *UserService) FindByID(uid uuid.UUID) (*responses.UserResponse, error) 
 	return user.ToResponse(), err
 }
 
-func (us *UserService) FindAll(paginationReq utils.Pagination) (*utils.Pagination, error) {
-	users, err := us.userrepo.FindAll(paginationReq)
+func (us *UserService) FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error) {
+	users, err := us.userrepo.FindAll(preq)
 	if err != nil {
 		return nil, err
 	}
+
 	return users, nil
 }
 

@@ -3,7 +3,7 @@ package requests
 import (
 	"project-skbackend/internal/models"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils/logger"
+	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/jinzhu/copier"
 )
@@ -21,7 +21,7 @@ func (req *CreateUserRequest) ToModel(role consttypes.UserRole) *models.User {
 	}
 
 	if err := copier.Copy(&user, &req); err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil
 	}
 

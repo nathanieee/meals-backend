@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"project-skbackend/internal/models"
+	"project-skbackend/packages/utils/utlogger"
 
 	"gorm.io/gorm"
 )
@@ -19,16 +20,19 @@ func (db DB) GetDbConnectionUrl() string {
 func (db DB) DBSetup(gdb *gorm.DB) error {
 	err := db.AutoSeedEnum(gdb)
 	if err != nil {
+		utlogger.LogError(err)
 		return err
 	}
 
 	err = db.AutoMigrate(gdb)
 	if err != nil {
+		utlogger.LogError(err)
 		return err
 	}
 
 	err = db.AutoSeedTable(gdb)
 	if err != nil {
+		utlogger.LogError(err)
 		return err
 	}
 
@@ -38,6 +42,7 @@ func (db DB) DBSetup(gdb *gorm.DB) error {
 func (db DB) AutoSeedEnum(gdb *gorm.DB) error {
 	err := SeedEnum(gdb)
 	if err != nil {
+		utlogger.LogError(err)
 		return err
 	}
 

@@ -9,7 +9,7 @@ import (
 	userrepository "project-skbackend/internal/repositories/user"
 	mailservice "project-skbackend/internal/services/mail"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils"
+	"project-skbackend/packages/utils/uttoken"
 	"strings"
 	"time"
 
@@ -26,14 +26,14 @@ type (
 	}
 
 	IAuthService interface {
-		Login(req requests.LoginRequest) (*responses.UserResponse, *utils.TokenHeader, error)
-		Register(req requests.RegisterRequest) (*responses.UserResponse, *utils.TokenHeader, error)
+		Login(req requests.LoginRequest) (*responses.UserResponse, *uttoken.TokenHeader, error)
+		Register(req requests.RegisterRequest) (*responses.UserResponse, *uttoken.TokenHeader, error)
 		ForgotPassword(req requests.ForgotPasswordRequest) error
 		ResetPassword(req requests.ResetPasswordRequest) error
 		SendVerificationEmail(id uuid.UUID, token int) error
 		VerifyToken(req requests.VerifyTokenRequest) error
 		SendResetPasswordEmail(id uuid.UUID, token int) error
-		RefreshAuthToken(token string) (*responses.UserResponse, *utils.TokenHeader, error)
+		RefreshAuthToken(token string) (*responses.UserResponse, *uttoken.TokenHeader, error)
 	}
 )
 
@@ -49,11 +49,11 @@ func NewAuthService(
 	}
 }
 
-func (a *AuthService) Login(req requests.LoginRequest) (*responses.UserResponse, *utils.TokenHeader, error) {
+func (a *AuthService) Login(req requests.LoginRequest) (*responses.UserResponse, *uttoken.TokenHeader, error) {
 	user, err := a.userrepo.FindByEmail(req.Email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, nil, utils.ErrUserNotFound
+			return nil, nil, err
 		}
 
 		return nil, nil, err
@@ -72,17 +72,17 @@ func (a *AuthService) Login(req requests.LoginRequest) (*responses.UserResponse,
 	return user.ToResponse(), tokenHeader, nil
 }
 
-func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserResponse, *utils.TokenHeader, error) {
+func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserResponse, *uttoken.TokenHeader, error) {
 	var user *models.User
 	req.Email = strings.ToLower(req.Email)
 
 	user, err := a.userrepo.FindByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
-		return nil, nil, utils.ErrUserNotFound
+		return nil, nil, err
 	}
 
 	if user != nil {
-		return nil, nil, utils.ErrUserAlreadyExist
+		return nil, nil, err
 	}
 
 	user = &models.User{
@@ -113,10 +113,10 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 func (a *AuthService) ForgotPassword(req requests.ForgotPasswordRequest) error {
 	user, err := a.userrepo.FindByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
-		return utils.ErrUserNotFound
+		return err
 	}
 
-	token := utils.GenerateRandomToken()
+	token := uttoken.GenerateRandomToken()
 
 	err = a.SendResetPasswordEmail(user.ID, token)
 	if err != nil {
@@ -129,15 +129,15 @@ func (a *AuthService) ForgotPassword(req requests.ForgotPasswordRequest) error {
 func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
 	user, err := a.userrepo.FindByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
-		return utils.ErrUserNotFound
+		return err
 	}
 
 	if req.Token != user.ResetPasswordToken {
-		return utils.ErrTokenMismatch
+		return err
 	}
 
 	if !time.Now().UTC().Before(user.ResetPasswordSentAt.Add(time.Minute * 5)) {
-		return utils.ErrTokenExpired
+		return err
 	}
 
 	userUpdate := models.User{
@@ -160,7 +160,7 @@ func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 	}
 
 	if time.Now().UTC().Before(user.ResetPasswordSentAt.Add(time.Minute * 5)) {
-		return utils.ErrSendEmailResetRequest
+		return err
 	}
 
 	userUpdate := models.User{
@@ -195,7 +195,7 @@ func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
 	}
 
 	if time.Now().UTC().Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
-		return utils.ErrSendEmailVerificationRequest
+		return err
 	}
 
 	userUpdate := models.User{
@@ -230,15 +230,15 @@ func (a *AuthService) VerifyToken(req requests.VerifyTokenRequest) error {
 	}
 
 	if !time.Now().UTC().Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
-		return utils.ErrTokenExpired
+		return err
 	}
 
 	if !user.ConfirmedAt.Equal(time.Time{}) {
-		return utils.ErrUserAlreadyConfirmed
+		return err
 	}
 
 	if req.Token != user.ConfirmationToken {
-		return utils.ErrTokenIsNotTheSame
+		return err
 	}
 
 	userUpdate := models.User{
@@ -253,8 +253,8 @@ func (a *AuthService) VerifyToken(req requests.VerifyTokenRequest) error {
 	return nil
 }
 
-func (a *AuthService) RefreshAuthToken(refreshToken string) (*responses.UserResponse, *utils.TokenHeader, error) {
-	parsedToken, err := utils.ParseToken(refreshToken, a.cfg.App.Secret)
+func (a *AuthService) RefreshAuthToken(refreshToken string) (*responses.UserResponse, *uttoken.TokenHeader, error) {
+	parsedToken, err := uttoken.ParseToken(refreshToken, a.cfg.App.Secret)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -262,14 +262,14 @@ func (a *AuthService) RefreshAuthToken(refreshToken string) (*responses.UserResp
 	user, err := a.userrepo.FindByID(parsedToken.User.ID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, nil, utils.ErrUserNotFound
+			return nil, nil, err
 		}
 
 		return nil, nil, err
 	}
 
 	if time.Now().Unix() >= parsedToken.Expire {
-		return nil, nil, utils.ErrTokenExpired
+		return nil, nil, err
 	}
 
 	tokenHeader, err := a.generateAuthTokens(user)
@@ -286,7 +286,7 @@ func verifyPassword(user models.User, password string) error {
 	if err != nil {
 		switch err {
 		case bcrypt.ErrMismatchedHashAndPassword:
-			return utils.ErrIncorrectPassword
+			return err
 		default:
 			return err
 		}
@@ -295,18 +295,18 @@ func verifyPassword(user models.User, password string) error {
 	return err
 }
 
-func (a *AuthService) generateAuthTokens(user *models.User) (*utils.TokenHeader, error) {
-	refreshToken, err := utils.GenerateToken(user, a.cfg.App.RefreshTokenLifespan, a.cfg.App.TokenLifespanDuration, a.cfg.App.Secret)
+func (a *AuthService) generateAuthTokens(user *models.User) (*uttoken.TokenHeader, error) {
+	refreshToken, err := uttoken.GenerateToken(user.ToResponse(), a.cfg.App.RefreshTokenLifespan, a.cfg.App.TokenLifespanDuration, a.cfg.App.Secret)
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := utils.GenerateToken(user, a.cfg.App.TokenLifespan, a.cfg.App.TokenLifespanDuration, a.cfg.App.Secret)
+	token, err := uttoken.GenerateToken(user.ToResponse(), a.cfg.App.TokenLifespan, a.cfg.App.TokenLifespanDuration, a.cfg.App.Secret)
 	if err != nil {
 		return nil, err
 	}
 
-	tokenHeader := utils.TokenHeader{
+	tokenHeader := uttoken.TokenHeader{
 		AuthToken:           token.Token,
 		AuthTokenExpires:    token.Expires,
 		RefreshToken:        refreshToken.Token,

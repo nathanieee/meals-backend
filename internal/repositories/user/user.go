@@ -6,8 +6,8 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/pagination"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils"
-	"project-skbackend/packages/utils/logger"
+	"project-skbackend/packages/utils/utlogger"
+	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -36,7 +36,7 @@ type (
 	}
 
 	IUserRepository interface {
-		FindAll(p utils.Pagination) (*utils.Pagination, error)
+		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		Create(user models.User) (*models.User, error)
 		Update(user models.User, uid uuid.UUID) (*models.User, error)
 		FindByID(uid uuid.UUID) (*models.User, error)
@@ -58,7 +58,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 func (ur *UserRepository) Create(user models.User) (*models.User, error) {
 	err := ur.db.Create(&user).Error
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -72,14 +72,14 @@ func (ur *UserRepository) Update(user models.User, uid uuid.UUID) (*models.User,
 		Updates(user).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-func (ur *UserRepository) FindAll(p utils.Pagination) (*utils.Pagination, error) {
+func (ur *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var user []models.User
 	var ures []responses.UserResponse
 
@@ -106,7 +106,7 @@ func (ur *UserRepository) FindAll(p utils.Pagination) (*utils.Pagination, error)
 		Find(&ures)
 
 	if result.Error != nil {
-		logger.LogError(result.Error)
+		utlogger.LogError(result.Error)
 		return nil, result.Error
 	}
 
@@ -123,7 +123,7 @@ func (ur *UserRepository) FindByID(uid uuid.UUID) (*models.User, error) {
 		First(&user, uid).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -140,7 +140,7 @@ func (ur *UserRepository) FindByEmail(email string) (*models.User, error) {
 		Take(&user).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -152,7 +152,7 @@ func (ur *UserRepository) Delete(user models.User) error {
 		Delete(&user).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return err
 	}
 
@@ -162,7 +162,7 @@ func (ur *UserRepository) Delete(user models.User) error {
 func (ur *UserRepository) FirstOrCreate(user models.User) (*models.User, error) {
 	err := ur.db.FirstOrCreate(&user, user).Error
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 

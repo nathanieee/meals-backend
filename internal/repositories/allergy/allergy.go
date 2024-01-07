@@ -2,7 +2,7 @@ package allgrepository
 
 import (
 	"project-skbackend/internal/models"
-	"project-skbackend/packages/utils/logger"
+	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -32,7 +32,7 @@ func (r *AllergyRepository) preload(db *gorm.DB) *gorm.DB {
 func (r *AllergyRepository) Create(al models.Allergy) (*models.Allergy, error) {
 	err := r.db.Create(al).Error
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -48,7 +48,7 @@ func (r *AllergyRepository) FindByID(alid uuid.UUID) (*models.Allergy, error) {
 		First(&ally, alid).Error
 
 	if err != nil {
-		logger.LogError(err)
+		utlogger.LogError(err)
 		return nil, err
 	}
 

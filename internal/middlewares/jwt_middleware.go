@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils"
+	"project-skbackend/packages/utils/utrequest"
+	"project-skbackend/packages/utils/utresponse"
+	"project-skbackend/packages/utils/uttoken"
 	"strings"
 	"time"
 
@@ -38,7 +40,7 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 	return func(ctx *gin.Context) {
 		extractedToken, err := extractToken(ctx)
 		if err != nil {
-			utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
+			utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
 				Message: "Invalid extract token",
 				Debug:   err,
 				Errors:  err.Error(),
@@ -47,9 +49,9 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 			return
 		}
 
-		parsedToken, err := utils.ParseToken(extractedToken, cfg.App.Secret)
+		parsedToken, err := uttoken.ParseToken(extractedToken, cfg.App.Secret)
 		if err != nil {
-			utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
+			utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
 				Message: "Invalid parse token",
 				Debug:   err,
 				Errors:  err.Error(),
@@ -60,7 +62,7 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 
 		if !slices.Contains(allowedLevel, uint(consttypes.UR_USER)) {
 			if !slices.Contains(allowedLevel, uint(parsedToken.User.Role)) || (time.Now().Unix() >= parsedToken.Expire) {
-				utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
+				utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
 					Message: "Invalid token",
 					Debug:   nil,
 					Errors:  "You're not authorized to access this",
@@ -70,9 +72,9 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 			}
 		}
 
-		if !utils.CheckWhitelistUrl(ctx.Request.URL.Path) {
+		if !utrequest.CheckWhitelistUrl(ctx.Request.URL.Path) {
 			if parsedToken.User.ConfirmedAt == (time.Time{}) && !strings.Contains(ctx.Request.URL.Path, "verify") {
-				utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
+				utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
 					Message: "Invalid token",
 					Debug:   nil,
 					Errors:  "This account is not verified",
