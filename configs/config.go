@@ -34,13 +34,14 @@ type (
 	}
 
 	DB struct {
-		PoolMax      int    `env:"DB_POOL_MAX"`
-		Host         string `env:"DB_HOST"`
-		User         string `env:"DB_USER"`
-		Password     string `env:"DB_PASSWORD"`
-		DatabaseName string `env:"DB_NAME"`
-		Port         string `env:"DB_PORT"`
-		SslMode      string `env:"SSL_MODE"`
+		PoolMax  int    `env:"DB_POOL_MAX"`
+		Host     string `env:"DB_HOST"`
+		User     string `env:"DB_USER"`
+		Password string `env:"DB_PASSWORD"`
+		Name     string `env:"DB_NAME"`
+		Port     string `env:"DB_PORT"`
+		SslMode  string `env:"DB_SSL_MODE"`
+		LogMode  bool   `env:"DB_LOG_MODE"`
 	}
 
 	Mail struct {

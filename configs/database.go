@@ -7,12 +7,13 @@ import (
 	"project-skbackend/packages/utils/utlogger"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func (db DB) GetDbConnectionUrl() string {
 	url := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
-		db.Host, db.User, db.Password, db.DatabaseName, db.Port, db.SslMode,
+		db.Host, db.User, db.Password, db.Name, db.Port, db.SslMode,
 	)
 	return url
 }
@@ -64,6 +65,15 @@ func (db DB) AutoSeedEnum(gdb *gorm.DB) error {
 	}
 
 	return nil
+}
+
+func (db DB) GetLogLevel() logger.LogLevel {
+	loglevel := logger.Warn
+	if db.LogMode {
+		loglevel = logger.Info
+	}
+
+	return loglevel
 }
 
 func (db DB) AutoMigrate(gdb *gorm.DB) error {

@@ -14,10 +14,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func Run(cfg *configs.Config) {
-	db, err := gorm.Open(postgres.Open(cfg.DB.GetDbConnectionUrl()))
+	db, err := gorm.Open(postgres.Open(cfg.DB.GetDbConnectionUrl()), &gorm.Config{
+		Logger: logger.Default.LogMode(cfg.GetLogLevel()),
+	})
+
 	if err != nil {
 		utlogger.LogError(err)
 		fmt.Errorf("app - Run - postgres: %w", err)
