@@ -94,7 +94,6 @@ func (r *MemberRepository) FindAll(p utpagination.Pagination) (*utpagination.Pag
 
 	result := r.
 		preload(r.db).
-		Debug().
 		Model(&m)
 
 	if p.Search != "" {
