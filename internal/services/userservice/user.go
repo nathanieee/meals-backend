@@ -6,7 +6,7 @@ import (
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/models/helper"
-	userrepository "project-skbackend/internal/repositories/user"
+	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
@@ -14,7 +14,7 @@ import (
 
 type (
 	UserService struct {
-		userrepo userrepository.IUserRepository
+		userrepo userrepo.IUserRepository
 	}
 
 	IUserService interface {
@@ -26,7 +26,7 @@ type (
 )
 
 func NewUserService(
-	userrepo userrepository.IUserRepository,
+	userrepo userrepo.IUserRepository,
 ) *UserService {
 	return &UserService{
 		userrepo: userrepo,

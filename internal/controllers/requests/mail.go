@@ -2,7 +2,7 @@ package requests
 
 import (
 	"encoding/json"
-	"fmt"
+	"project-skbackend/packages/utils/utlogger"
 )
 
 type (
@@ -18,7 +18,7 @@ type (
 func (s SendEmailRequest) ToString() string {
 	json, err := json.Marshal(s)
 	if err != nil {
-		fmt.Printf("Error: %s", err)
+		utlogger.LogError(err)
 		return ""
 	}
 	return string(json)

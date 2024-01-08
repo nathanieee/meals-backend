@@ -1,10 +1,10 @@
-package mmbrrepository
+package memberrepo
 
 import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/repositories/pagination"
+	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
@@ -112,7 +112,7 @@ func (r *MemberRepository) FindAll(p utpagination.Pagination) (*utpagination.Pag
 			)
 	}
 
-	result = result.Group("id").Scopes(pagination.Paginate(&m, &p, result)).Find(&m)
+	result = result.Group("id").Scopes(paginationrepo.Paginate(&m, &p, result)).Find(&m)
 
 	if result.Error != nil {
 		utlogger.LogError(result.Error)

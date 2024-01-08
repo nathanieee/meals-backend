@@ -5,26 +5,28 @@ import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
-	authservice "project-skbackend/internal/services/auth"
+	"project-skbackend/internal/services/authservice"
 	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/uttoken"
 
 	"github.com/gin-gonic/gin"
 )
 
-type authRoutes struct {
-	cfg     *configs.Config
-	authsvc authservice.IAuthService
-}
+type (
+	authRoutes struct {
+		cfg   *configs.Config
+		sauth authservice.IAuthService
+	}
+)
 
 func newAuthRoutes(
 	rg *gin.RouterGroup,
 	cfg *configs.Config,
-	authsvc authservice.IAuthService,
+	sauth authservice.IAuthService,
 ) {
 	r := &authRoutes{
-		cfg:     cfg,
-		authsvc: authsvc,
+		cfg:   cfg,
+		sauth: sauth,
 	}
 
 	usergrp := rg.Group("auth")
@@ -61,7 +63,7 @@ func (r *authRoutes) login(
 		return
 	}
 
-	user, token, err := r.authsvc.Login(req)
+	user, token, err := r.sauth.Login(req)
 	if err != nil {
 		utresponse.GeneralInternalServerError(
 			"login",
@@ -107,7 +109,7 @@ func (r *authRoutes) register(
 		return
 	}
 
-	user, token, err := r.authsvc.Register(req)
+	user, token, err := r.sauth.Register(req)
 	if err != nil {
 		utresponse.GeneralInternalServerError(
 			"register",
@@ -160,7 +162,7 @@ func (r *authRoutes) sendVerifyEmail(
 	}
 
 	token := uttoken.GenerateRandomToken()
-	err := r.authsvc.SendVerificationEmail(loggedInUser.ID, token)
+	err := r.sauth.SendVerificationEmail(loggedInUser.ID, token)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Message: "Error sending verification email",
@@ -191,7 +193,7 @@ func (r *authRoutes) verifyToken(
 		return
 	}
 
-	err = r.authsvc.VerifyToken(req)
+	err = r.sauth.VerifyToken(req)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusBadRequest, utresponse.ErrorRes{
 			Message: "Cannot verify token",
@@ -222,7 +224,7 @@ func (r *authRoutes) forgotPassword(
 		return
 	}
 
-	err = r.authsvc.ForgotPassword(req)
+	err = r.sauth.ForgotPassword(req)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusBadRequest, utresponse.ErrorRes{
 			Message: "Something went wrong",
@@ -255,7 +257,7 @@ func (r *authRoutes) resetPassword(
 		return
 	}
 
-	err = r.authsvc.ResetPassword(req)
+	err = r.sauth.ResetPassword(req)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusBadRequest, utresponse.ErrorRes{
 			Message: "Something went wrong",
@@ -285,7 +287,7 @@ func (r *authRoutes) refreshAuthToken(
 		return
 	}
 
-	user, token, err := r.authsvc.RefreshAuthToken(refreshToken)
+	user, token, err := r.sauth.RefreshAuthToken(refreshToken)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
 			Message: "Something went wrong",

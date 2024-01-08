@@ -2,12 +2,14 @@ package configs
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/custom"
 	"project-skbackend/packages/utils/utlogger"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,116 +25,80 @@ func checkEnumIsExist(db *gorm.DB, key string) bool {
 	return count > 0
 }
 
-func SeedEnum(db *gorm.DB) error {
-	if !checkEnumIsExist(db, "allergens_enum") {
-		err := db.Exec(
-			`CREATE TYPE allergens_enum 
-			AS ENUM (
-				'` + string(consttypes.A_FOOD) + `',
-				'` + string(consttypes.A_MEDICAL) + `',
-				'` + string(consttypes.A_ENVIRONMENTAL) + `',
-				'` + string(consttypes.A_CONTACT) + `'
-			);`,
-		).Error
+func createEnum(db *gorm.DB, enumname string, enumvalues ...string) error {
+	if !checkEnumIsExist(db, enumname) {
+		values := make([]string, len(enumvalues))
+		for i, v := range enumvalues {
+			values[i] = string(v)
+		}
 
+		query := fmt.Sprintf("CREATE TYPE %s AS ENUM ('%s');", enumname, strings.Join(values, "','"))
+		err := db.Exec(query).Error
 		if err != nil {
 			utlogger.LogError(err)
 			return err
 		}
 	}
-
-	if !checkEnumIsExist(db, "gender_enum") {
-		err := db.Exec(
-			`CREATE TYPE gender_enum
-			AS ENUM (
-				'` + string(consttypes.G_MALE) + `',
-				'` + string(consttypes.G_FEMALE) + `',
-				'` + string(consttypes.G_OTHER) + `'
-			);`,
-		).Error
-
-		if err != nil {
-			utlogger.LogError(err)
-			return err
-		}
-	}
-
-	if !checkEnumIsExist(db, "meal_status_enum") {
-		err := db.Exec(
-			`CREATE TYPE meal_status_enum 
-			AS ENUM (
-				'` + string(consttypes.MS_ACTIVE) + `',
-				'` + string(consttypes.MS_INACTIVE) + `',
-				'` + string(consttypes.MS_OUTOFSTOCK) + `'
-			);`,
-		).Error
-
-		if err != nil {
-			utlogger.LogError(err)
-			return err
-		}
-	}
-
-	if !checkEnumIsExist(db, "donation_status_enum") {
-		err := db.Exec(
-			`CREATE TYPE donation_status_enum 
-			AS ENUM (
-				'` + string(consttypes.DS_ACCEPTED) + `',
-				'` + string(consttypes.DS_REJECTED) + `'
-			);`,
-		).Error
-
-		if err != nil {
-			utlogger.LogError(err)
-			return err
-		}
-	}
-
-	if !checkEnumIsExist(db, "image_type_enum") {
-		err := db.Exec(
-			`CREATE TYPE image_type_enum 
-			AS ENUM (
-				'` + string(consttypes.IT_PROFILE) + `',
-				'` + string(consttypes.IT_MEAL) + `'
-			);`,
-		).Error
-
-		if err != nil {
-			utlogger.LogError(err)
-			return err
-		}
-	}
-
-	if !checkEnumIsExist(db, "patron_type_enum") {
-		err := db.Exec(
-			`CREATE TYPE patron_type_enum 
-			AS ENUM (
-				'` + string(consttypes.PT_ORGANIZATION) + `',
-				'` + string(consttypes.PT_PERSONAL) + `'
-			);`,
-		).Error
-
-		if err != nil {
-			utlogger.LogError(err)
-			return err
-		}
-	}
-
-	if !checkEnumIsExist(db, "organization_type_enum") {
-		err := db.Exec(
-			`CREATE TYPE organization_type_enum 
-			AS ENUM (
-				'` + string(consttypes.OT_NURSINGHOME) + `'
-			);`,
-		).Error
-
-		if err != nil {
-			utlogger.LogError(err)
-			return err
-		}
-	}
-
 	return nil
+}
+
+func SeedAllergensEnum(db *gorm.DB) error {
+	return createEnum(db,
+		"allergens_enum",
+		string(consttypes.A_FOOD),
+		string(consttypes.A_MEDICAL),
+		string(consttypes.A_ENVIRONMENTAL),
+		string(consttypes.A_CONTACT),
+	)
+}
+
+func SeedGenderEnum(db *gorm.DB) error {
+	return createEnum(db,
+		"gender_enum",
+		string(consttypes.G_MALE),
+		string(consttypes.G_FEMALE),
+		string(consttypes.G_OTHER),
+	)
+}
+
+func SeedMealStatusEnum(db *gorm.DB) error {
+	return createEnum(db,
+		"meal_status_enum",
+		string(consttypes.MS_ACTIVE),
+		string(consttypes.MS_INACTIVE),
+		string(consttypes.MS_OUTOFSTOCK),
+	)
+}
+
+func SeedDonationStatusEnum(db *gorm.DB) error {
+	return createEnum(db,
+		"donation_status_enum",
+		string(consttypes.DS_ACCEPTED),
+		string(consttypes.DS_REJECTED),
+	)
+}
+
+func SeedImageTypeEnum(db *gorm.DB) error {
+	return createEnum(db,
+		"image_type_enum",
+		string(consttypes.IT_PROFILE),
+		string(consttypes.IT_MEAL),
+	)
+}
+
+func SeedPatronTypeEnum(db *gorm.DB) error {
+	return createEnum(db,
+		"patron_type_enum",
+		string(consttypes.PT_ORGANIZATION),
+		string(consttypes.PT_PERSONAL),
+	)
+}
+
+func SeedOrganizationTypeEnum(db *gorm.DB) error {
+	return createEnum(db,
+		"organization_type_enum",
+		string(consttypes.OT_NURSINGHOME),
+	)
 }
 
 func SeedAdminCredentials(db *gorm.DB) error {

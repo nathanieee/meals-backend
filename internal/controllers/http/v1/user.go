@@ -6,8 +6,8 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/middlewares"
-	mailservice "project-skbackend/internal/services/mail"
-	userservice "project-skbackend/internal/services/user"
+	"project-skbackend/internal/services/mailservice"
+	"project-skbackend/internal/services/userservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utrequest"
 	"project-skbackend/packages/utils/utresponse"
@@ -17,23 +17,25 @@ import (
 	"gorm.io/gorm"
 )
 
-type userRoutes struct {
-	cfg     *configs.Config
-	usersvc userservice.IUserService
-	mailsvc mailservice.IMailService
-}
+type (
+	userRoutes struct {
+		cfg   *configs.Config
+		suser userservice.IUserService
+		smail mailservice.IMailService
+	}
+)
 
 func newUserRoutes(
 	rg *gin.RouterGroup,
 	db *gorm.DB,
 	cfg *configs.Config,
-	usersvc userservice.IUserService,
-	mailsvc mailservice.IMailService,
+	suser userservice.IUserService,
+	smail mailservice.IMailService,
 ) {
 	r := &userRoutes{
-		cfg:     cfg,
-		usersvc: usersvc,
-		mailsvc: mailsvc,
+		cfg:   cfg,
+		suser: suser,
+		smail: smail,
 	}
 
 	admingrp := rg.Group("users")
@@ -68,7 +70,7 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 		return
 	}
 
-	ures, err := r.usersvc.Create(req)
+	ures, err := r.suser.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utresponse.ErrorResponse(ctx, http.StatusConflict, utresponse.ErrorRes{
@@ -95,7 +97,7 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 func (r *userRoutes) getUser(ctx *gin.Context) {
 	paginationReq := utrequest.GeneratePaginationFromRequest(ctx)
 
-	users, err := r.usersvc.FindAll(paginationReq)
+	users, err := r.suser.FindAll(paginationReq)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Message: "users not found",
@@ -132,7 +134,7 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := r.usersvc.FindByID(loggedInUser.ID)
+	user, err := r.suser.FindByID(loggedInUser.ID)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Message: "User not found",
@@ -178,7 +180,7 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 		return
 	}
 
-	err := r.usersvc.Delete(loggedInUser.ID)
+	err := r.suser.Delete(loggedInUser.ID)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Message: "Something went wrong",

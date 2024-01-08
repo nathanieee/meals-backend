@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
-	mmbrservice "project-skbackend/internal/services/member"
+	"project-skbackend/internal/services/memberservice"
 	"project-skbackend/packages/utils/utrequest"
 	"project-skbackend/packages/utils/utresponse"
 	"strings"
@@ -13,20 +13,22 @@ import (
 	"gorm.io/gorm"
 )
 
-type memberRoutes struct {
-	cfg     *configs.Config
-	membsvc mmbrservice.IMemberService
-}
+type (
+	memberRoutes struct {
+		cfg     *configs.Config
+		smember memberservice.IMemberService
+	}
+)
 
 func newMemberRoutes(
 	rg *gin.RouterGroup,
 	db *gorm.DB,
 	cfg *configs.Config,
-	membsvc mmbrservice.IMemberService,
+	smember memberservice.IMemberService,
 ) {
 	r := &memberRoutes{
 		cfg:     cfg,
-		membsvc: membsvc,
+		smember: smember,
 	}
 
 	admgrp := rg.Group("members")
@@ -52,7 +54,7 @@ func (r *memberRoutes) createMember(ctx *gin.Context) {
 		return
 	}
 
-	meres, err := r.membsvc.Create(req)
+	meres, err := r.smember.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utresponse.ErrorResponse(ctx, http.StatusConflict, utresponse.ErrorRes{
@@ -79,7 +81,7 @@ func (r *memberRoutes) createMember(ctx *gin.Context) {
 func (r *memberRoutes) getMembers(ctx *gin.Context) {
 	paginationReq := utrequest.GeneratePaginationFromRequest(ctx)
 
-	members, err := r.membsvc.FindAll(paginationReq)
+	members, err := r.smember.FindAll(paginationReq)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Message: "members not found",

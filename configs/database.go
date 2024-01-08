@@ -10,11 +10,11 @@ import (
 )
 
 func (db DB) GetDbConnectionUrl() string {
-	connectionUrl := fmt.Sprintf(
+	url := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		db.Host, db.User, db.Password, db.DatabaseName, db.Port, db.SslMode,
 	)
-	return connectionUrl
+	return url
 }
 
 func (db DB) DBSetup(gdb *gorm.DB) error {
@@ -40,10 +40,27 @@ func (db DB) DBSetup(gdb *gorm.DB) error {
 }
 
 func (db DB) AutoSeedEnum(gdb *gorm.DB) error {
-	err := SeedEnum(gdb)
-	if err != nil {
-		utlogger.LogError(err)
-		return err
+	seedfuncs := []func(*gorm.DB) error{
+		SeedAllergensEnum,
+		SeedGenderEnum,
+		SeedMealStatusEnum,
+		SeedDonationStatusEnum,
+		SeedImageTypeEnum,
+		SeedPatronTypeEnum,
+		SeedOrganizationTypeEnum,
+	}
+
+	var errs []error
+
+	for _, seedfunc := range seedfuncs {
+		if err := seedfunc(gdb); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if len(errs) > 0 {
+		utlogger.LogError(errs...)
+		return errors.New("error seeding enum")
 	}
 
 	return nil
@@ -91,7 +108,8 @@ func (db DB) AutoSeedTable(gdb *gorm.DB) error {
 	}
 
 	if len(errs) > 0 {
-		return errors.New("Error seeding table")
+		utlogger.LogError(errs...)
+		return errors.New("error seeding table")
 	}
 
 	return nil

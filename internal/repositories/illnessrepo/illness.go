@@ -1,4 +1,4 @@
-package ilnsrepository
+package illnessrepo
 
 import (
 	"project-skbackend/internal/models"

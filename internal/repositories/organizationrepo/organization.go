@@ -1,4 +1,4 @@
-package orgrepository
+package organizationrepo
 
 import (
 	"project-skbackend/internal/models"

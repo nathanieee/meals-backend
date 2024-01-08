@@ -1,10 +1,10 @@
-package admnrepository
+package adminrepo
 
 import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/repositories/pagination"
+	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
@@ -74,7 +74,7 @@ func (r *AdminRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagi
 		result = result.Where("date(created_at) between ? and ?", p.Filter.CreatedFrom.Format(consttypes.DATEFORMAT), p.Filter.CreatedTo.Format(consttypes.DATEFORMAT))
 	}
 
-	result = result.Group("id").Scopes(pagination.Paginate(&a, &p, result)).Find(&ares)
+	result = result.Group("id").Scopes(paginationrepo.Paginate(&a, &p, result)).Find(&ares)
 
 	if result.Error != nil {
 		utlogger.LogError(result.Error)

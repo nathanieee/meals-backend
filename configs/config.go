@@ -76,7 +76,7 @@ func newConfig() (*Config, error) {
 	cfg := &Config{}
 	err := cleanenv.ReadConfig(".env", cfg)
 	if err != nil {
-		fmt.Println("Using Environment Variable")
+		fmt.Println("using environment variable")
 	}
 
 	err = cleanenv.ReadEnv(cfg)
@@ -84,5 +84,6 @@ func newConfig() (*Config, error) {
 		utlogger.LogError(err)
 		return nil, err
 	}
+
 	return cfg, nil
 }

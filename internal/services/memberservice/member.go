@@ -1,15 +1,15 @@
-package mmbrservice
+package memberservice
 
 import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	allgrepository "project-skbackend/internal/repositories/allergy"
-	crgvrrepository "project-skbackend/internal/repositories/caregiver"
-	illrepository "project-skbackend/internal/repositories/illness"
-	mmbrrepository "project-skbackend/internal/repositories/member"
-	orgrepository "project-skbackend/internal/repositories/organization"
-	userrepository "project-skbackend/internal/repositories/user"
+	"project-skbackend/internal/repositories/allergyrepo"
+	"project-skbackend/internal/repositories/caregiverrepo"
+	"project-skbackend/internal/repositories/illnessrepo"
+	"project-skbackend/internal/repositories/memberrepo"
+	"project-skbackend/internal/repositories/organizationrepo"
+	"project-skbackend/internal/repositories/userrepo"
 
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -18,12 +18,12 @@ import (
 
 type (
 	MemberService struct {
-		membrepo  mmbrrepository.IMemberRepository
-		userrepo  userrepository.IUserRepository
-		crgvrrepo crgvrrepository.ICaregiverRepository
-		allgrepo  allgrepository.IAllergyRepository
-		illrepo   illrepository.IIllnessRepository
-		orgrepo   orgrepository.OrganizationRepository
+		membrepo  memberrepo.IMemberRepository
+		userrepo  userrepo.IUserRepository
+		crgvrrepo caregiverrepo.ICaregiverRepository
+		allgrepo  allergyrepo.IAllergyRepository
+		illrepo   illnessrepo.IIllnessRepository
+		orgrepo   organizationrepo.OrganizationRepository
 	}
 
 	IMemberService interface {
@@ -33,12 +33,12 @@ type (
 )
 
 func NewMemberService(
-	membrepo mmbrrepository.IMemberRepository,
-	userrepo userrepository.IUserRepository,
-	crgvrrepo crgvrrepository.ICaregiverRepository,
-	allgrepo allgrepository.IAllergyRepository,
-	illrepo illrepository.IIllnessRepository,
-	orgrepo orgrepository.OrganizationRepository,
+	membrepo memberrepo.IMemberRepository,
+	userrepo userrepo.IUserRepository,
+	crgvrrepo caregiverrepo.ICaregiverRepository,
+	allgrepo allergyrepo.IAllergyRepository,
+	illrepo illnessrepo.IIllnessRepository,
+	orgrepo organizationrepo.OrganizationRepository,
 ) *MemberService {
 	return &MemberService{
 		membrepo:  membrepo,

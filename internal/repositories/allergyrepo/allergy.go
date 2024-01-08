@@ -1,4 +1,4 @@
-package allgrepository
+package allergyrepo
 
 import (
 	"project-skbackend/internal/models"

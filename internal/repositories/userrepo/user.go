@@ -1,10 +1,10 @@
-package userrepository
+package userrepo
 
 import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/repositories/pagination"
+	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
@@ -103,7 +103,7 @@ func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 
 	result = result.
 		Group("id").
-		Scopes(pagination.Paginate(&user, &p, result)).
+		Scopes(paginationrepo.Paginate(&user, &p, result)).
 		Find(&ures)
 
 	if result.Error != nil {

@@ -1,10 +1,10 @@
-package crgvrrepository
+package caregiverrepo
 
 import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/repositories/pagination"
+	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
@@ -91,7 +91,7 @@ func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.
 
 	result = result.
 		Group("id").
-		Scopes(pagination.Paginate(&cg, &p, result)).
+		Scopes(paginationrepo.Paginate(&cg, &p, result)).
 		Find(&cgres)
 
 	if result.Error != nil {

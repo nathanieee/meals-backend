@@ -6,8 +6,8 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	userrepository "project-skbackend/internal/repositories/user"
-	mailservice "project-skbackend/internal/services/mail"
+	"project-skbackend/internal/repositories/userrepo"
+	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/uttoken"
 	"strings"
@@ -21,7 +21,7 @@ import (
 type (
 	AuthService struct {
 		cfg      *configs.Config
-		userrepo userrepository.IUserRepository
+		userrepo userrepo.IUserRepository
 		mailsvc  mailservice.IMailService
 	}
 
@@ -39,7 +39,7 @@ type (
 
 func NewAuthService(
 	cfg *configs.Config,
-	userrepo userrepository.IUserRepository,
+	userrepo userrepo.IUserRepository,
 	mailsvc mailservice.IMailService,
 ) *AuthService {
 	return &AuthService{

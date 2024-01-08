@@ -32,7 +32,7 @@ func Run(cfg *configs.Config) {
 	di := di.NewDependencyInjection(db, cfg)
 	handler := gin.New()
 	v1.NewRouter(handler, db, cfg, di)
-	httpServer := servers.NewServer(handler, servers.Port(cfg.HTTP.Port))
+	httpserver := servers.NewServer(handler, servers.Port(cfg.HTTP.Port))
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
@@ -40,11 +40,12 @@ func Run(cfg *configs.Config) {
 	select {
 	case s := <-interrupt:
 		fmt.Printf("app run: %s", s.String())
-	case err := <-httpServer.Notify():
+	case err := <-httpserver.Notify():
+		utlogger.LogError(err)
 		fmt.Errorf("%w", err)
 	}
 
-	err = httpServer.Shutdown()
+	err = httpserver.Shutdown()
 	if err != nil {
 		utlogger.LogError(err)
 		fmt.Errorf("%w", err)

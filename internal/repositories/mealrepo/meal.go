@@ -1,4 +1,4 @@
-package mealrepository
+package mealrepo
 
 import (
 	"gorm.io/gorm"

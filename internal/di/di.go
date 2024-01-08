@@ -2,16 +2,16 @@ package di
 
 import (
 	"project-skbackend/configs"
-	allgrepository "project-skbackend/internal/repositories/allergy"
-	crgvrrepository "project-skbackend/internal/repositories/caregiver"
-	illrepository "project-skbackend/internal/repositories/illness"
-	mmbrrepository "project-skbackend/internal/repositories/member"
-	orgrepository "project-skbackend/internal/repositories/organization"
-	userrepository "project-skbackend/internal/repositories/user"
-	authservice "project-skbackend/internal/services/auth"
-	mailservice "project-skbackend/internal/services/mail"
-	mmbrservice "project-skbackend/internal/services/member"
-	userservice "project-skbackend/internal/services/user"
+	"project-skbackend/internal/repositories/allergyrepo"
+	"project-skbackend/internal/repositories/caregiverrepo"
+	"project-skbackend/internal/repositories/illnessrepo"
+	"project-skbackend/internal/repositories/memberrepo"
+	"project-skbackend/internal/repositories/organizationrepo"
+	"project-skbackend/internal/repositories/userrepo"
+	"project-skbackend/internal/services/authservice"
+	"project-skbackend/internal/services/mailservice"
+	"project-skbackend/internal/services/memberservice"
+	"project-skbackend/internal/services/userservice"
 
 	"gorm.io/gorm"
 )
@@ -20,41 +20,41 @@ type DependencyInjection struct {
 	UserService   *userservice.UserService
 	AuthService   *authservice.AuthService
 	MailService   *mailservice.MailService
-	MemberService *mmbrservice.MemberService
+	MemberService *memberservice.MemberService
 }
 
 func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjection {
 
-	/* ---------------------------------- user ---------------------------------- */
-	user := userrepository.NewUserRepository(db)
-	us := userservice.NewUserService(user)
+	/* ---------------------------------- ruser ---------------------------------- */
+	ruser := userrepo.NewUserRepository(db)
+	suser := userservice.NewUserService(ruser)
 
 	/* ---------------------------------- mail ---------------------------------- */
-	mais := mailservice.NewMailService(cfg)
+	smail := mailservice.NewMailService(cfg)
 
 	/* ---------------------------------- auth ---------------------------------- */
-	auts := authservice.NewAuthService(cfg, user, mais)
+	sauth := authservice.NewAuthService(cfg, ruser, smail)
 
 	/* ---------------------------- caregiver service --------------------------- */
-	carr := crgvrrepository.NewCaregiverRepository(db)
+	rcaregiver := caregiverrepo.NewCaregiverRepository(db)
 
 	/* --------------------------------- allergy -------------------------------- */
-	allr := allgrepository.NewAllergyRepository(db)
+	rallergy := allergyrepo.NewAllergyRepository(db)
 
 	/* --------------------------------- illness -------------------------------- */
-	illr := illrepository.NewIllnessRepository(db)
+	rillness := illnessrepo.NewIllnessRepository(db)
 
 	/* ------------------------------ organization ------------------------------ */
-	orgr := orgrepository.NewOrganizationRepository(db)
+	rorganization := organizationrepo.NewOrganizationRepository(db)
 
 	/* ----------------------------- member service ----------------------------- */
-	memr := mmbrrepository.NewMemberRepository(db)
-	mems := mmbrservice.NewMemberService(memr, user, carr, allr, illr, *orgr)
+	rmember := memberrepo.NewMemberRepository(db)
+	smember := memberservice.NewMemberService(rmember, ruser, rcaregiver, rallergy, rillness, *rorganization)
 
 	return &DependencyInjection{
-		UserService:   us,
-		AuthService:   auts,
-		MailService:   mais,
-		MemberService: mems,
+		UserService:   suser,
+		AuthService:   sauth,
+		MailService:   smail,
+		MemberService: smember,
 	}
 }
