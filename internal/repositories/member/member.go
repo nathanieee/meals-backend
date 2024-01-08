@@ -94,17 +94,19 @@ func (r *MemberRepository) FindAll(p utpagination.Pagination) (*utpagination.Pag
 
 	result := r.
 		preload(r.db).
+		Debug().
 		Model(&m)
 
 	if p.Search != "" {
 		result = result.
-			Where("first_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search)).
-			Or("last_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search))
+			Where(r.db.
+				Where("first_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search)).
+				Or("last_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search)))
 	}
 
 	if !p.Filter.CreatedFrom.IsZero() && !p.Filter.CreatedTo.IsZero() {
 		result = result.
-			Where("date(created_at) between ? and ?",
+			Where("date(created_at) BETWEEN ? and ?",
 				p.Filter.CreatedFrom.Format(consttypes.DATEFORMAT),
 				p.Filter.CreatedTo.Format(consttypes.DATEFORMAT),
 			)

@@ -55,8 +55,8 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (ur *UserRepository) Create(user models.User) (*models.User, error) {
-	err := ur.db.Create(&user).Error
+func (r *UserRepository) Create(user models.User) (*models.User, error) {
+	err := r.db.Create(&user).Error
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
@@ -65,8 +65,8 @@ func (ur *UserRepository) Create(user models.User) (*models.User, error) {
 	return &user, nil
 }
 
-func (ur *UserRepository) Update(user models.User, uid uuid.UUID) (*models.User, error) {
-	err := ur.db.
+func (r *UserRepository) Update(user models.User, uid uuid.UUID) (*models.User, error) {
+	err := r.db.
 		Model(&user).
 		Where("id = ?", uid).
 		Updates(user).Error
@@ -79,17 +79,18 @@ func (ur *UserRepository) Update(user models.User, uid uuid.UUID) (*models.User,
 	return &user, nil
 }
 
-func (ur *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
+func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var user []models.User
 	var ures []responses.UserResponse
 
-	result := ur.db.Model(&user).
+	result := r.db.Model(&user).
 		Select(SELECTED_FIELDS)
 
 	if p.Search != "" {
 		result = result.
-			Where("full_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search)).
-			Or("email LIKE ?", fmt.Sprintf("%%%s%%", p.Search))
+			Where(r.db.
+				Where("first_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search)).
+				Or("last_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search)))
 	}
 
 	if !p.Filter.CreatedFrom.IsZero() && !p.Filter.CreatedTo.IsZero() {
@@ -114,9 +115,9 @@ func (ur *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagi
 	return &p, nil
 }
 
-func (ur *UserRepository) FindByID(uid uuid.UUID) (*models.User, error) {
+func (r *UserRepository) FindByID(uid uuid.UUID) (*models.User, error) {
 	var user models.User
-	err := ur.db.
+	err := r.db.
 		Model(&models.User{}).
 		Select(SELECTED_FIELDS).
 		Group("id").
@@ -130,9 +131,9 @@ func (ur *UserRepository) FindByID(uid uuid.UUID) (*models.User, error) {
 	return &user, nil
 }
 
-func (ur *UserRepository) FindByEmail(email string) (*models.User, error) {
+func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 	var user models.User
-	err := ur.db.
+	err := r.db.
 		Model(&models.User{}).
 		Select(SELECTED_FIELDS).
 		Where("email = ?", email).
@@ -147,8 +148,8 @@ func (ur *UserRepository) FindByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
-func (ur *UserRepository) Delete(user models.User) error {
-	err := ur.db.
+func (r *UserRepository) Delete(user models.User) error {
+	err := r.db.
 		Delete(&user).Error
 
 	if err != nil {
@@ -159,8 +160,8 @@ func (ur *UserRepository) Delete(user models.User) error {
 	return nil
 }
 
-func (ur *UserRepository) FirstOrCreate(user models.User) (*models.User, error) {
-	err := ur.db.FirstOrCreate(&user, user).Error
+func (r *UserRepository) FirstOrCreate(user models.User) (*models.User, error) {
+	err := r.db.FirstOrCreate(&user, user).Error
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err

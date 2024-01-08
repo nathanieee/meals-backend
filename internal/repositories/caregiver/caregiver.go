@@ -77,8 +77,9 @@ func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.
 
 	if p.Search != "" {
 		result = result.
-			Where("first_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search)).
-			Or("last_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search))
+			Where(r.db.
+				Where("first_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search)).
+				Or("last_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search)))
 	}
 
 	if !p.Filter.CreatedFrom.IsZero() && !p.Filter.CreatedTo.IsZero() {
