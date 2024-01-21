@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
+	"project-skbackend/internal/models/helper"
 	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -36,13 +37,14 @@ type (
 	}
 
 	IUserRepository interface {
+		Create(u models.User) (*models.User, error)
+		Read() ([]*models.User, error)
+		Update(u models.User) (*models.User, error)
+		Delete(u models.User) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		Create(user models.User) (*models.User, error)
-		Update(user models.User, uid uuid.UUID) (*models.User, error)
 		FindByID(uid uuid.UUID) (*models.User, error)
 		FindByEmail(email string) (*models.User, error)
-		Delete(user models.User) error
-		FirstOrCreate(user models.User) (*models.User, error)
+		FirstOrCreate(u models.User) (*models.User, error)
 	}
 )
 
@@ -55,42 +57,78 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) Create(user models.User) (*models.User, error) {
-	err := r.db.Create(&user).Error
-	if err != nil {
-		utlogger.LogError(err)
-		return nil, err
-	}
-
-	return &user, nil
+func (r *UserRepository) preload() *gorm.DB {
+	return r.db.
+		Preload(clause.Associations).
+		Preload("Address").
+		Preload("UserImage.Image")
 }
 
-func (r *UserRepository) Update(user models.User, uid uuid.UUID) (*models.User, error) {
-	err := r.db.
-		Model(&user).
-		Where("id = ?", uid).
-		Updates(user).Error
+func (r *UserRepository) Create(u models.User) (*models.User, error) {
+	err := r.db.Create(&u).Error
+	if err != nil {
+		utlogger.LogError(err)
+		return nil, err
+	}
+
+	return &u, nil
+}
+
+func (r *UserRepository) Read() ([]*models.User, error) {
+	var u []*models.User
+
+	err := r.
+		preload().
+		Select(SELECTED_FIELDS).
+		Find(&u).Error
 
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
 	}
 
-	return &user, nil
+	return u, nil
+}
+
+func (r *UserRepository) Update(u models.User) (*models.User, error) {
+	err := r.db.
+		Save(&u).Error
+
+	if err != nil {
+		utlogger.LogError(err)
+		return nil, err
+	}
+
+	return &u, nil
+}
+
+func (r *UserRepository) Delete(u models.User) error {
+	err := r.db.
+		Delete(&u).Error
+
+	if err != nil {
+		utlogger.LogError(err)
+		return err
+	}
+
+	return nil
 }
 
 func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
-	var user []models.User
+	var u []models.User
 	var ures []responses.UserResponse
 
-	result := r.db.Model(&user).
+	result := r.
+		preload().
+		Model(&u).
 		Select(SELECTED_FIELDS)
 
+	p.Search = fmt.Sprintf("%%%s%%", p.Search)
 	if p.Search != "" {
 		result = result.
 			Where(r.db.
-				Where("first_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search)).
-				Or("last_name LIKE ?", fmt.Sprintf("%%%s%%", p.Search)))
+				Where(&models.User{Email: p.Search}),
+			)
 	}
 
 	if !p.Filter.CreatedFrom.IsZero() && !p.Filter.CreatedTo.IsZero() {
@@ -103,7 +141,7 @@ func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 
 	result = result.
 		Group("id").
-		Scopes(paginationrepo.Paginate(&user, &p, result)).
+		Scopes(paginationrepo.Paginate(&u, &p, result)).
 		Find(&ures)
 
 	if result.Error != nil {
@@ -116,56 +154,45 @@ func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 }
 
 func (r *UserRepository) FindByID(uid uuid.UUID) (*models.User, error) {
-	var user models.User
-	err := r.db.
-		Model(&models.User{}).
+	var u models.User
+	err := r.
+		preload().
 		Select(SELECTED_FIELDS).
-		Group("id").
-		First(&user, uid).Error
+		Where(&models.User{Model: helper.Model{ID: uid}}).
+		First(&u).Error
 
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
 	}
 
-	return &user, nil
+	return &u, nil
 }
 
 func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
-	var user models.User
-	err := r.db.
-		Model(&models.User{}).
+	var u models.User
+	err := r.
+		preload().
 		Select(SELECTED_FIELDS).
-		Where("email = ?", email).
-		Group("id").
-		Take(&user).Error
+		Where(&models.User{Email: email}).
+		First(&u).Error
 
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
 	}
 
-	return &user, nil
+	return &u, nil
 }
 
-func (r *UserRepository) Delete(user models.User) error {
+func (r *UserRepository) FirstOrCreate(u models.User) (*models.User, error) {
 	err := r.db.
-		Delete(&user).Error
+		FirstOrCreate(&u, u).Error
 
-	if err != nil {
-		utlogger.LogError(err)
-		return err
-	}
-
-	return nil
-}
-
-func (r *UserRepository) FirstOrCreate(user models.User) (*models.User, error) {
-	err := r.db.FirstOrCreate(&user, user).Error
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
 	}
 
-	return &user, nil
+	return &u, nil
 }

@@ -3,7 +3,7 @@ package responses
 import (
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/custom"
+	"project-skbackend/packages/customs"
 
 	"github.com/google/uuid"
 )
@@ -16,6 +16,6 @@ type (
 		Gender      consttypes.Gender `json:"gender"`
 		FirstName   string            `json:"first_name"`
 		LastName    string            `json:"last_name"`
-		DateOfBirth custom.CDT_DATE   `json:"date_of_birth"`
+		DateOfBirth customs.CDT_DATE  `json:"date_of_birth"`
 	}
 )

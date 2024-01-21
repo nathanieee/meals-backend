@@ -3,7 +3,7 @@ package models
 import (
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/custom"
+	"project-skbackend/packages/customs"
 
 	"github.com/google/uuid"
 )
@@ -16,6 +16,6 @@ type (
 		FirstName   string            `json:"first_name" gorm:"not null" binding:"required" example:"Jonathan"`
 		LastName    string            `json:"last_name" gorm:"not null" binding:"required" example:"Vince"`
 		Gender      consttypes.Gender `json:"gender" gorm:"not null; type:gender_enum" binding:"required" example:"Male"`
-		DateOfBirth custom.CDT_DATE   `json:"date_of_birth" gorm:"not null" binding:"required" example:"2000-12-30"`
+		DateOfBirth customs.CDT_DATE  `json:"date_of_birth" gorm:"not null" binding:"required" example:"2000-12-30"`
 	}
 )

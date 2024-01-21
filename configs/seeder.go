@@ -7,7 +7,7 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/custom"
+	custom "project-skbackend/packages/customs"
 	"project-skbackend/packages/utils/utlogger"
 	"strings"
 	"time"

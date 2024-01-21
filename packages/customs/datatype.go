@@ -1,4 +1,4 @@
-package custom
+package customs
 
 import (
 	"database/sql/driver"

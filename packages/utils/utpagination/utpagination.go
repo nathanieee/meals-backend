@@ -1,6 +1,10 @@
 package utpagination
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type (
 	Pagination struct {
@@ -18,5 +22,6 @@ type (
 	Filter struct {
 		CreatedFrom time.Time
 		CreatedTo   time.Time
+		PartnerID   *uuid.UUID
 	}
 )

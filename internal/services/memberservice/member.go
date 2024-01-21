@@ -4,6 +4,7 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
+	"project-skbackend/internal/models/helper"
 	"project-skbackend/internal/repositories/allergyrepo"
 	"project-skbackend/internal/repositories/caregiverrepo"
 	"project-skbackend/internal/repositories/illnessrepo"
@@ -14,6 +15,8 @@ import (
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
+
+	"github.com/google/uuid"
 )
 
 type (
@@ -29,6 +32,8 @@ type (
 	IMemberService interface {
 		Create(req requests.CreateMemberRequest) (*responses.MemberResponse, error)
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
+		FindByID(id uuid.UUID) (*responses.MemberResponse, error)
+		Delete(id uuid.UUID) error
 	}
 )
 
@@ -119,4 +124,30 @@ func (mes *MemberService) FindAll(preq utpagination.Pagination) (*utpagination.P
 	}
 
 	return members, nil
+}
+
+func (mes *MemberService) FindByID(id uuid.UUID) (*responses.MemberResponse, error) {
+	member, err := mes.membrepo.FindByID(id)
+	if err != nil {
+		utlogger.LogError(err)
+		return nil, err
+	}
+
+	mres := member.ToResponse()
+
+	return mres, nil
+}
+
+func (mes *MemberService) Delete(id uuid.UUID) error {
+	member := models.Member{
+		Model: helper.Model{ID: id},
+	}
+
+	err := mes.membrepo.Delete(member)
+	if err != nil {
+		utlogger.LogError(err)
+		return err
+	}
+
+	return nil
 }

@@ -140,12 +140,10 @@ func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
 		return err
 	}
 
-	userUpdate := models.User{
-		Password:           req.Password,
-		ResetPasswordToken: 0,
-	}
+	user.Password = req.Password
+	user.ResetPasswordToken = 0
 
-	_, err = a.userrepo.Update(userUpdate, user.ID)
+	_, err = a.userrepo.Update(*user)
 	if err != nil {
 		return err
 	}
@@ -163,17 +161,16 @@ func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 		return err
 	}
 
-	userUpdate := models.User{
-		ResetPasswordToken:  token,
-		ResetPasswordSentAt: time.Now().UTC(),
-	}
+	user.ResetPasswordToken = token
+	user.ResetPasswordSentAt = time.Now().UTC()
 
-	_, err = a.userrepo.Update(userUpdate, user.ID)
+	_, err = a.userrepo.Update(*user)
 	if err != nil {
 		return err
 	}
 
-	emreq := requests.SendEmailRequest{ // TODO - change this request accordingly
+	// TODO - change this request to reset password and sent correct data.
+	emreq := requests.SendEmailRequest{
 		Template: "email_verification.html",
 		Subject:  "Reset Password",
 		Email:    user.Email,
@@ -198,17 +195,16 @@ func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
 		return err
 	}
 
-	userUpdate := models.User{
-		ConfirmationToken:  token,
-		ConfirmationSentAt: time.Now().UTC(),
-	}
+	user.ConfirmationToken = token
+	user.ConfirmationSentAt = time.Now().UTC()
 
-	_, err = a.userrepo.Update(userUpdate, user.ID)
+	_, err = a.userrepo.Update(*user)
 	if err != nil {
 		return err
 	}
 
-	emreq := requests.SendEmailRequest{ // TODO - change this request accordingly
+	// TODO - change this request to send correct data.
+	emreq := requests.SendEmailRequest{
 		Template: "email_verification.html",
 		Subject:  "Reset Password",
 		Email:    user.Email,
@@ -241,11 +237,9 @@ func (a *AuthService) VerifyToken(req requests.VerifyTokenRequest) error {
 		return err
 	}
 
-	userUpdate := models.User{
-		ConfirmedAt: time.Now().UTC(),
-	}
+	user.ConfirmedAt = time.Now().UTC()
 
-	_, err = a.userrepo.Update(userUpdate, user.ID)
+	_, err = a.userrepo.Update(*user)
 	if err != nil {
 		return err
 	}

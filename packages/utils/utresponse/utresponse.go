@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"project-skbackend/packages/custom"
+	custom "project-skbackend/packages/customs"
 	"project-skbackend/packages/utils/uttoken"
 
 	"github.com/gin-gonic/gin"

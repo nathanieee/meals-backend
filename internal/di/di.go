@@ -24,8 +24,12 @@ type DependencyInjection struct {
 }
 
 func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjection {
+	/* -------------------------------- database -------------------------------- */
+	if cfg.DB.LogMode {
+		db = db.Debug()
+	}
 
-	/* ---------------------------------- ruser ---------------------------------- */
+	/* ---------------------------------- user ---------------------------------- */
 	ruser := userrepo.NewUserRepository(db)
 	suser := userservice.NewUserService(ruser)
 
@@ -35,7 +39,7 @@ func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjecti
 	/* ---------------------------------- auth ---------------------------------- */
 	sauth := authservice.NewAuthService(cfg, ruser, smail)
 
-	/* ---------------------------- caregiver service --------------------------- */
+	/* -------------------------------- caregiver ------------------------------- */
 	rcaregiver := caregiverrepo.NewCaregiverRepository(db)
 
 	/* --------------------------------- allergy -------------------------------- */
@@ -47,7 +51,7 @@ func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjecti
 	/* ------------------------------ organization ------------------------------ */
 	rorganization := organizationrepo.NewOrganizationRepository(db)
 
-	/* ----------------------------- member service ----------------------------- */
+	/* --------------------------------- member --------------------------------- */
 	rmember := memberrepo.NewMemberRepository(db)
 	smember := memberservice.NewMemberService(rmember, ruser, rcaregiver, rallergy, rillness, *rorganization)
 
