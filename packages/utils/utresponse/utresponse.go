@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"project-skbackend/packages/consttypes"
 	custom "project-skbackend/packages/customs"
 	"project-skbackend/packages/utils/uttoken"
 
@@ -17,9 +18,10 @@ import (
 
 type (
 	SuccessRes struct {
-		Message string              `json:"message"`
-		Data    any                 `json:"data,omitempty"`
-		Header  uttoken.TokenHeader `json:"-"`
+		Status  consttypes.ResponseStatusType `json:"status" default:""`
+		Message string                        `json:"message"`
+		Data    any                           `json:"data,omitempty"`
+		Header  uttoken.TokenHeader           `json:"-"`
 	}
 )
 
@@ -27,8 +29,8 @@ func SuccessResponse(ctx *gin.Context, code int, res SuccessRes) {
 	if res.Header != (uttoken.TokenHeader{}) {
 		ctx.Header("refresh-token", res.Header.RefreshToken)
 		ctx.Header("refresh-token-expired", res.Header.RefreshTokenExpires.String())
-		ctx.Header("Authorization", "Bearer "+res.Header.AuthToken)
-		ctx.Header("expired-at", res.Header.AuthTokenExpires.String())
+		ctx.Header("Authorization", "Bearer "+res.Header.AccessToken)
+		ctx.Header("expired-at", res.Header.AccessTokenExpires.String())
 	}
 	ctx.JSON(code, res)
 }
@@ -38,16 +40,21 @@ func SuccessResponse(ctx *gin.Context, code int, res SuccessRes) {
 /* -------------------------------------------------------------------------- */
 
 type (
-	ValidationErrorMsg struct {
+	ValidationErrorMessage struct {
 		Namespace string `json:"namespace"`
 		Field     string `json:"field"`
 		Message   string `json:"message"`
 	}
 
 	ErrorRes struct {
-		Message string `json:"message"`
-		Debug   error  `json:"debug,omitempty"`
-		Errors  any    `json:"errors"`
+		Status  consttypes.ResponseStatusType `json:"status"`
+		Message string                        `json:"message"`
+		Data    ErrorData                     `json:"data,omitempty"`
+	}
+
+	ErrorData struct {
+		Debug  error `json:"debug,omitempty"`
+		Errors any   `json:"errors"`
 	}
 )
 
@@ -102,13 +109,13 @@ func getErrorMsg(fe validator.FieldError) string {
 	return "unknown error"
 }
 
-func ValidationResponse(err error) []ValidationErrorMsg {
+func ValidationResponse(err error) []ValidationErrorMessage {
 	var ve validator.ValidationErrors
 
 	if errors.As(err, &ve) {
-		out := make([]ValidationErrorMsg, len(ve))
+		out := make([]ValidationErrorMessage, len(ve))
 		for i, fe := range ve {
-			out[i] = ValidationErrorMsg{fe.Namespace(), fmt.Sprintf("%s", fe.Field()), getErrorMsg(fe)}
+			out[i] = ValidationErrorMessage{fe.Namespace(), fmt.Sprintf("%s", fe.Field()), getErrorMsg(fe)}
 			fmt.Println(err)
 		}
 		return out
@@ -118,25 +125,34 @@ func ValidationResponse(err error) []ValidationErrorMsg {
 }
 
 func GeneralInputRequiredError(message custom.CDT_STRING, ctx *gin.Context, err any) {
-	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
-		Message: message.SuffixSpaceCheck() + "(input required)",
-		Debug:   nil,
-		Errors:  err,
+	ErrorResponse(ctx, http.StatusUnprocessableEntity, ErrorRes{
+		Status:  consttypes.RST_ERROR,
+		Message: message.SuffixSpaceCheck(),
+		Data: ErrorData{
+			Debug:  nil,
+			Errors: err,
+		},
 	})
 }
 
 func GeneralInternalServerError(message custom.CDT_STRING, ctx *gin.Context, err any) {
 	ErrorResponse(ctx, http.StatusInternalServerError, ErrorRes{
-		Message: message.SuffixSpaceCheck() + "(internal server error)",
-		Debug:   nil,
-		Errors:  err,
+		Status:  consttypes.RST_ERROR,
+		Message: message.SuffixSpaceCheck(),
+		Data: ErrorData{
+			Debug:  nil,
+			Errors: err,
+		},
 	})
 }
 
-func GeneralInvalidRequest(message custom.CDT_STRING, ctx *gin.Context, ve []ValidationErrorMsg, err *error) {
+func GeneralInvalidRequest(message custom.CDT_STRING, ctx *gin.Context, ve []ValidationErrorMessage, err *error) {
 	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
-		Message: message.SuffixSpaceCheck() + "(invalid request)",
-		Debug:   *err,
-		Errors:  ve,
+		Status:  consttypes.RST_ERROR,
+		Message: message.SuffixSpaceCheck(),
+		Data: ErrorData{
+			Debug:  *err,
+			Errors: ve,
+		},
 	})
 }

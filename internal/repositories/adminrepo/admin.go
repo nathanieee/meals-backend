@@ -11,6 +11,7 @@ import (
 	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -136,12 +137,15 @@ func (r *AdminRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagi
 	result = result.
 		Group("id").
 		Scopes(paginationrepo.Paginate(&a, &p, result)).
-		Find(&ares)
+		Find(&a)
 
 	if err := result.Error; err != nil {
 		utlogger.LogError(err)
 		return nil, err
 	}
+
+	// * copy the data from model to response
+	copier.Copy(&ares, &a)
 
 	p.Data = ares
 	return &p, nil

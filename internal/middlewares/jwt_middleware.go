@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/packages/consttypes"
@@ -16,8 +17,8 @@ import (
 )
 
 func extractToken(c *gin.Context) (string, error) {
-	bearerToken := c.Request.Header.Get("Authorization")
-	err := errors.New("no Authorization token detected")
+	var bearerToken = c.Request.Header.Get("Authorization")
+	var err = errors.New("no Authorization token detected")
 
 	// Apple already reserved header for Authorization
 	// https://developer.apple.com/documentation/foundation/nsurlrequest
@@ -27,6 +28,13 @@ func extractToken(c *gin.Context) (string, error) {
 
 	if len(strings.Split(bearerToken, " ")) == 2 {
 		bearerToken = strings.Split(bearerToken, " ")[1]
+
+		accessToken, err := c.Cookie("access_token")
+		if err != nil {
+			return "", err
+		} else if accessToken == "" {
+			return "", fmt.Errorf("you are not logged in")
+		}
 	}
 
 	if bearerToken == "" {
@@ -41,31 +49,40 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 		extractedToken, err := extractToken(ctx)
 		if err != nil {
 			utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
+				Status:  consttypes.RST_ERROR,
 				Message: "Invalid extract token",
-				Debug:   err,
-				Errors:  err.Error(),
+				Data: utresponse.ErrorData{
+					Debug:  err,
+					Errors: err.Error(),
+				},
 			})
 			ctx.Abort()
 			return
 		}
 
-		parsedToken, err := uttoken.ParseToken(extractedToken, cfg.App.Secret)
+		parsedToken, err := uttoken.ParseToken(extractedToken, cfg.AccessToken.PublicKey)
 		if err != nil {
 			utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
+				Status:  consttypes.RST_ERROR,
 				Message: "Invalid parse token",
-				Debug:   err,
-				Errors:  err.Error(),
+				Data: utresponse.ErrorData{
+					Debug:  err,
+					Errors: err.Error(),
+				},
 			})
 			ctx.Abort()
 			return
 		}
 
 		if !slices.Contains(allowedLevel, uint(consttypes.UR_USER)) {
-			if !slices.Contains(allowedLevel, uint(parsedToken.User.Role)) || (time.Now().Unix() >= parsedToken.Expire) {
+			if !slices.Contains(allowedLevel, uint(parsedToken.User.Role)) || (time.Now().Unix() >= parsedToken.Expires.Unix()) {
 				utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
+					Status:  consttypes.RST_ERROR,
 					Message: "Invalid token",
-					Debug:   nil,
-					Errors:  "You're not authorized to access this",
+					Data: utresponse.ErrorData{
+						Debug:  nil,
+						Errors: "You're not authorized to access this",
+					},
 				})
 				ctx.Abort()
 				return
@@ -75,9 +92,12 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 		if !utrequest.CheckWhitelistUrl(ctx.Request.URL.Path) {
 			if parsedToken.User.ConfirmedAt == (time.Time{}) && !strings.Contains(ctx.Request.URL.Path, "verify") {
 				utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
+					Status:  consttypes.RST_ERROR,
 					Message: "Invalid token",
-					Debug:   nil,
-					Errors:  "This account is not verified",
+					Data: utresponse.ErrorData{
+						Debug:  nil,
+						Errors: "This account is not verified",
+					},
 				})
 				ctx.Abort()
 				return
@@ -85,6 +105,7 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 		}
 
 		ctx.Set("user", *parsedToken.User)
+		ctx.Set("access_token_uuid", parsedToken.TokenUUID.String())
 		ctx.Next()
 	}
 }

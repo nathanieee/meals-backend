@@ -21,9 +21,9 @@ type (
 		Email                  string              `json:"email" gorm:"not null;unique" example:"email@email.com"`
 		Password               string              `json:"-" gorm:"size:255;not null;" binding:"required" example:"password"`
 		Role                   consttypes.UserRole `json:"role" gorm:"not null" example:"0" default:"0"`
-		ResetPasswordToken     int                 `json:"-"`
+		ResetPasswordToken     string              `json:"-"`
 		ResetPasswordSentAt    time.Time           `json:"-"`
-		ConfirmationToken      int                 `json:"-"`
+		ConfirmationToken      string              `json:"-"`
 		ConfirmedAt            time.Time           `json:"confirmed_at"`
 		ConfirmationSentAt     time.Time           `json:"-"`
 		RefreshToken           string              `json:"-"`
@@ -68,8 +68,8 @@ func (u *User) ToResponse() *responses.UserResponse {
 
 func (u *User) ToAuthResponse(token *uttoken.TokenHeader) *responses.AuthResponse {
 	aures := responses.AuthResponse{
-		Token:   token.AuthToken,
-		Expires: token.AuthTokenExpires,
+		Token:   token.AccessToken,
+		Expires: token.AccessTokenExpires,
 	}
 
 	err := copier.Copy(&aures, &u)

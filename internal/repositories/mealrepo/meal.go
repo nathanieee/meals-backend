@@ -11,6 +11,7 @@ import (
 	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -135,20 +136,23 @@ func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 			)
 	}
 
-	if p.Filter.PartnerID != nil {
+	if p.Filter.Partner.ID != nil {
 		result = result.
-			Where(&models.Meal{PartnerID: *p.Filter.PartnerID})
+			Where(&models.Meal{PartnerID: *p.Filter.Partner.ID})
 	}
 
 	result = result.
 		Group("id").
 		Scopes(paginationrepo.Paginate(&ml, &p, result)).
-		Find(&mlres)
+		Find(&ml)
 
 	if err := result.Error; err != nil {
 		utlogger.LogError(err)
 		return nil, err
 	}
+
+	// * copy the data from model to response
+	copier.Copy(&mlres, &ml)
 
 	p.Data = mlres
 	return &p, result.Error

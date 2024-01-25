@@ -13,6 +13,7 @@ import (
 	"project-skbackend/internal/services/memberservice"
 	"project-skbackend/internal/services/userservice"
 
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -23,7 +24,7 @@ type DependencyInjection struct {
 	MemberService *memberservice.MemberService
 }
 
-func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjection {
+func NewDependencyInjection(db *gorm.DB, cfg *configs.Config, rdb *redis.Client) *DependencyInjection {
 	/* -------------------------------- database -------------------------------- */
 	if cfg.DB.LogMode {
 		db = db.Debug()
@@ -37,7 +38,7 @@ func NewDependencyInjection(db *gorm.DB, cfg *configs.Config) *DependencyInjecti
 	smail := mailservice.NewMailService(cfg)
 
 	/* ---------------------------------- auth ---------------------------------- */
-	sauth := authservice.NewAuthService(cfg, ruser, smail)
+	sauth := authservice.NewAuthService(cfg, ruser, smail, rdb)
 
 	/* -------------------------------- caregiver ------------------------------- */
 	rcaregiver := caregiverrepo.NewCaregiverRepository(db)

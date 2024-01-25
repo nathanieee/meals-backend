@@ -11,6 +11,7 @@ import (
 	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -137,12 +138,15 @@ func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.
 	result = result.
 		Group("id").
 		Scopes(paginationrepo.Paginate(&cg, &p, result)).
-		Find(&cgres)
+		Find(&cg)
 
-	if result.Error != nil {
+	if err := result.Error; err != nil {
 		utlogger.LogError(result.Error)
 		return nil, result.Error
 	}
+
+	// * copy the data from model to response
+	copier.Copy(&cgres, &cg)
 
 	p.Data = cgres
 	return &p, nil

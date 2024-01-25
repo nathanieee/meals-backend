@@ -11,7 +11,7 @@ type (
 		Subject  string `binding:"required"`
 		Name     string
 		Email    string `binding:"required,email"`
-		Token    int
+		Token    string
 	}
 )
 

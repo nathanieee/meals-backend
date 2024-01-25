@@ -1,20 +1,21 @@
 package uttoken
 
 import (
-	"encoding/hex"
+	"encoding/base64"
 	"errors"
 	"fmt"
-	"math/rand"
 	"project-skbackend/internal/controllers/responses"
+	"project-skbackend/packages/utils/utlogger"
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 )
 
 type (
 	TokenHeader struct {
-		AuthToken           string
-		AuthTokenExpires    time.Time
+		AccessToken         string
+		AccessTokenExpires  time.Time
 		RefreshToken        string
 		RefreshTokenExpires time.Time
 	}
@@ -24,75 +25,108 @@ type (
 		Authorized bool                    `json:"authorized"`
 		User       *responses.UserResponse `json:"user"`
 		Expire     int64                   `json:"expire"`
+		TokenUUID  uuid.UUID               `json:"token_uuid"`
 	}
 
 	Token struct {
-		Token   string    `json:"token"`
-		Expires time.Time `json:"expires"`
+		Token     *string                 `json:"token"`
+		TokenUUID uuid.UUID               `json:"token_uuid"`
+		Expires   *time.Time              `json:"expires"`
+		User      *responses.UserResponse `json:"user"`
 	}
 )
 
-func GenerateToken(ures *responses.UserResponse, lifespan int, duration string, secret string) (*Token, error) {
-	token := &Token{}
-	expTime := time.Time{}
+func GenerateToken(
+	ures *responses.UserResponse,
+	lifespan int,
+	timeunit,
+	privateKey string,
+) (*Token, error) {
+	expTime := time.Now().Add(getDuration(lifespan, timeunit))
+	tokenUUID := uuid.New()
 
-	switch duration {
-	case "minute":
-		expTime = time.Now().Add(time.Minute * time.Duration(lifespan))
-	case "second":
-		expTime = time.Now().Add(time.Second * time.Duration(lifespan))
-	default:
-		expTime = time.Now().Add(time.Hour * time.Duration(lifespan))
+	claims := TokenClaims{
+		Authorized: true,
+		User:       ures,
+		Expire:     expTime.Unix(),
+		TokenUUID:  tokenUUID,
 	}
 
-	claims := TokenClaims{}
-	claims.Authorized = true
-	claims.User = ures
-	claims.Expire = expTime.Unix()
-	unsignedToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := unsignedToken.SignedString([]byte(secret))
+	token := &Token{
+		TokenUUID: tokenUUID,
+		Expires:   &expTime,
+		User:      ures,
+	}
 
-	token.Token = signedToken
-	token.Expires = expTime.UTC()
-
-	return token, err
-}
-
-func ParseToken(tokenString string, secret string) (*TokenClaims, error) {
-	claims := &TokenClaims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(secret), nil
-	})
+	decodedPrivateKey, err := base64.StdEncoding.DecodeString(privateKey)
 	if err != nil {
-		return nil, err
+		utlogger.LogError(err)
+		return nil, fmt.Errorf("could not decode token private key: %w", err)
 	}
 
-	claims, ok := token.Claims.(*TokenClaims)
-	if ok && token.Valid {
-		return claims, nil
+	key, err := jwt.ParseRSAPrivateKeyFromPEM(decodedPrivateKey)
+	if err != nil {
+		utlogger.LogError(err)
+		return nil, fmt.Errorf("could not parse token private key: %w", err)
 	}
 
-	return nil, errors.New("token invalid")
+	newToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(key)
+	if err != nil {
+		utlogger.LogError(err)
+		return nil, fmt.Errorf("could not create token: %w", err)
+	}
+
+	token.Token = &newToken
+
+	return token, nil
 }
 
-func GenerateRandomStringToken(length int) string {
-	rand.Seed(time.Now().UnixNano())
-	b := make([]byte, length)
-
-	if _, err := rand.Read(b); err != nil {
-		return ""
+func getDuration(lifespan int, timeunit string) time.Duration {
+	switch timeunit {
+	case "minutes":
+		return time.Minute * time.Duration(lifespan)
+	case "seconds":
+		return time.Second * time.Duration(lifespan)
+	default:
+		return time.Hour * time.Duration(lifespan)
 	}
-
-	return hex.EncodeToString(b)
 }
 
-func GenerateRandomToken() int {
-	min := 10000000
-	max := 99999999
-	// set seed
-	rand.Seed(time.Now().UnixNano())
-	return rand.Intn(max-min+1) + min
+func ParseToken(token string, publicKey string) (*Token, error) {
+	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey)
+	if err != nil {
+		utlogger.LogError(err)
+		return nil, fmt.Errorf("could not decode token public key: %w", err)
+	}
+
+	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedPublicKey)
+	if err != nil {
+		utlogger.LogError(err)
+		return nil, fmt.Errorf("could not parse token public key: %w", err)
+	}
+
+	claims := &TokenClaims{}
+	parsedToken, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %s", token.Header["alg"])
+		}
+		return key, nil
+	})
+
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			return nil, errors.New("invalid token signature")
+		}
+		return nil, fmt.Errorf("could not parse token: %w", err)
+	}
+
+	claims, ok := parsedToken.Claims.(*TokenClaims)
+	if !ok || !parsedToken.Valid {
+		return nil, fmt.Errorf("invalid token: %w", err)
+	}
+
+	return &Token{
+		TokenUUID: claims.TokenUUID,
+		User:      claims.User,
+	}, nil
 }

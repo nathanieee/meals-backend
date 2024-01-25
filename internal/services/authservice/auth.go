@@ -1,39 +1,44 @@
 package authservice
 
 import (
-	"encoding/json"
+	"fmt"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/mailservice"
-	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utlogger"
+	"project-skbackend/packages/utils/utstring"
 	"project-skbackend/packages/utils/uttoken"
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type (
 	AuthService struct {
-		cfg      *configs.Config
-		userrepo userrepo.IUserRepository
-		mailsvc  mailservice.IMailService
+		cfg               *configs.Config
+		userrepo          userrepo.IUserRepository
+		mailsvc           mailservice.IMailService
+		rdb               *redis.Client
+		verifyTokenLength int
 	}
 
 	IAuthService interface {
-		Login(req requests.LoginRequest) (*responses.UserResponse, *uttoken.TokenHeader, error)
-		Register(req requests.RegisterRequest) (*responses.UserResponse, *uttoken.TokenHeader, error)
+		Login(req requests.LoginRequest, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error)
+		Register(req requests.RegisterRequest, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error)
 		ForgotPassword(req requests.ForgotPasswordRequest) error
 		ResetPassword(req requests.ResetPasswordRequest) error
-		SendVerificationEmail(id uuid.UUID, token int) error
+		SendVerificationEmail(id uuid.UUID, token string) error
+		SendResetPasswordEmail(id uuid.UUID, token string) error
 		VerifyToken(req requests.VerifyTokenRequest) error
-		SendResetPasswordEmail(id uuid.UUID, token int) error
-		RefreshAuthToken(token string) (*responses.UserResponse, *uttoken.TokenHeader, error)
+		RefreshAuthToken(token string, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error)
 	}
 )
 
@@ -41,68 +46,59 @@ func NewAuthService(
 	cfg *configs.Config,
 	userrepo userrepo.IUserRepository,
 	mailsvc mailservice.IMailService,
+	rdb *redis.Client,
 ) *AuthService {
 	return &AuthService{
-		cfg:      cfg,
-		userrepo: userrepo,
-		mailsvc:  mailsvc,
+		cfg:               cfg,
+		userrepo:          userrepo,
+		mailsvc:           mailsvc,
+		rdb:               rdb,
+		verifyTokenLength: cfg.VerifyTokenLength,
 	}
 }
 
-func (a *AuthService) Login(req requests.LoginRequest) (*responses.UserResponse, *uttoken.TokenHeader, error) {
-	user, err := a.userrepo.FindByEmail(req.Email)
+func (s *AuthService) Login(req requests.LoginRequest, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error) {
+	user, err := s.userrepo.FindByEmail(req.Email)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil, err
-		}
-
+		utlogger.LogError(err)
 		return nil, nil, err
 	}
 
 	err = verifyPassword(*user, req.Password)
 	if err != nil {
+		utlogger.LogError(err)
 		return nil, nil, err
 	}
 
-	tokenHeader, err := a.generateAuthTokens(user)
+	tokenHeader, err := s.generateAuthTokens(user, ctx)
 	if err != nil {
+		utlogger.LogError(err)
 		return nil, nil, err
 	}
 
 	return user.ToResponse(), tokenHeader, nil
 }
 
-func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserResponse, *uttoken.TokenHeader, error) {
-	var user *models.User
+func (s *AuthService) Register(req requests.RegisterRequest, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error) {
 	req.Email = strings.ToLower(req.Email)
 
-	user, err := a.userrepo.FindByEmail(req.Email)
-	if err != nil && err == gorm.ErrRecordNotFound {
+	user, err := s.userrepo.FindByEmail(req.Email)
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, nil, err
 	}
 
 	if user != nil {
-		return nil, nil, err
+		return user.ToResponse(), nil, err
 	}
 
-	user = &models.User{
-		Email:    req.Email,
-		Password: req.Password,
-		Role:     consttypes.UR_USER,
-	}
+	user = req.ToUserModel()
 
-	user, err = a.userrepo.Create(*user)
+	user, err = s.userrepo.Create(*user)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	marshaledUser, _ := json.Marshal(user)
-	err = json.Unmarshal(marshaledUser, &user)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	token, err := a.generateAuthTokens(user)
+	token, err := s.generateAuthTokens(user, ctx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -110,15 +106,19 @@ func (a *AuthService) Register(req requests.RegisterRequest) (*responses.UserRes
 	return user.ToResponse(), token, nil
 }
 
-func (a *AuthService) ForgotPassword(req requests.ForgotPasswordRequest) error {
-	user, err := a.userrepo.FindByEmail(req.Email)
+func (s *AuthService) ForgotPassword(req requests.ForgotPasswordRequest) error {
+	user, err := s.userrepo.FindByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return err
 	}
 
-	token := uttoken.GenerateRandomToken()
+	token, err := utstring.GenerateRandomToken(s.verifyTokenLength)
+	if err != nil {
+		utlogger.LogError(err)
+		return err
+	}
 
-	err = a.SendResetPasswordEmail(user.ID, token)
+	err = s.SendResetPasswordEmail(user.ID, token)
 	if err != nil {
 		return err
 	}
@@ -126,8 +126,8 @@ func (a *AuthService) ForgotPassword(req requests.ForgotPasswordRequest) error {
 	return nil
 }
 
-func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
-	user, err := a.userrepo.FindByEmail(req.Email)
+func (s *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
+	user, err := s.userrepo.FindByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return err
 	}
@@ -141,9 +141,9 @@ func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
 	}
 
 	user.Password = req.Password
-	user.ResetPasswordToken = 0
+	user.ResetPasswordToken = ""
 
-	_, err = a.userrepo.Update(*user)
+	_, err = s.userrepo.Update(*user)
 	if err != nil {
 		return err
 	}
@@ -151,8 +151,8 @@ func (a *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
 	return nil
 }
 
-func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
-	user, err := a.userrepo.FindByID(id)
+func (s *AuthService) SendResetPasswordEmail(id uuid.UUID, token string) error {
+	user, err := s.userrepo.FindByID(id)
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 	user.ResetPasswordToken = token
 	user.ResetPasswordSentAt = time.Now().UTC()
 
-	_, err = a.userrepo.Update(*user)
+	_, err = s.userrepo.Update(*user)
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 		Token:    token,
 	}
 
-	err = a.mailsvc.SendVerificationEmail(emreq)
+	err = s.mailsvc.SendVerificationEmail(emreq)
 	if err != nil {
 		return err
 	}
@@ -185,8 +185,8 @@ func (a *AuthService) SendResetPasswordEmail(id uuid.UUID, token int) error {
 	return nil
 }
 
-func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
-	user, err := a.userrepo.FindByID(id)
+func (s *AuthService) SendVerificationEmail(id uuid.UUID, token string) error {
+	user, err := s.userrepo.FindByID(id)
 	if err != nil {
 		return err
 	}
@@ -198,7 +198,7 @@ func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
 	user.ConfirmationToken = token
 	user.ConfirmationSentAt = time.Now().UTC()
 
-	_, err = a.userrepo.Update(*user)
+	_, err = s.userrepo.Update(*user)
 	if err != nil {
 		return err
 	}
@@ -211,7 +211,7 @@ func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
 		Token:    token,
 	}
 
-	err = a.mailsvc.SendVerificationEmail(emreq)
+	err = s.mailsvc.SendVerificationEmail(emreq)
 	if err != nil {
 		return err
 	}
@@ -219,8 +219,8 @@ func (a *AuthService) SendVerificationEmail(id uuid.UUID, token int) error {
 	return nil
 }
 
-func (a *AuthService) VerifyToken(req requests.VerifyTokenRequest) error {
-	user, err := a.userrepo.FindByEmail(req.Email)
+func (s *AuthService) VerifyToken(req requests.VerifyTokenRequest) error {
+	user, err := s.userrepo.FindByEmail(req.Email)
 	if err != nil {
 		return err
 	}
@@ -239,7 +239,7 @@ func (a *AuthService) VerifyToken(req requests.VerifyTokenRequest) error {
 
 	user.ConfirmedAt = time.Now().UTC()
 
-	_, err = a.userrepo.Update(*user)
+	_, err = s.userrepo.Update(*user)
 	if err != nil {
 		return err
 	}
@@ -247,26 +247,56 @@ func (a *AuthService) VerifyToken(req requests.VerifyTokenRequest) error {
 	return nil
 }
 
-func (a *AuthService) RefreshAuthToken(refreshToken string) (*responses.UserResponse, *uttoken.TokenHeader, error) {
-	parsedToken, err := uttoken.ParseToken(refreshToken, a.cfg.App.Secret)
+func (s *AuthService) RefreshAuthToken(refreshToken string, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error) {
+	now := time.Now()
+	parsedToken, err := uttoken.ParseToken(refreshToken, s.cfg.JWT.RefreshToken.PublicKey)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	user, err := a.userrepo.FindByID(parsedToken.User.ID)
+	user, err := s.userrepo.FindByID(parsedToken.User.ID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("the user with id %s does not exist", parsedToken.User.ID)
 		}
 
 		return nil, nil, err
 	}
 
-	if time.Now().Unix() >= parsedToken.Expire {
+	if time.Now().Unix() >= parsedToken.Expires.Unix() {
 		return nil, nil, err
 	}
 
-	tokenHeader, err := a.generateAuthTokens(user)
+	accessToken, err := uttoken.
+		GenerateToken(
+			user.ToResponse(),
+			s.cfg.JWT.AccessToken.Life,
+			s.cfg.JWT.TimeUnit,
+			s.cfg.JWT.AccessToken.PrivateKey,
+		)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// * setting the access token into redis
+	err = s.rdb.Set(ctx, accessToken.TokenUUID.String(), user.ID, time.Unix(accessToken.Expires.Unix(), 0).Sub(now)).Err()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// * setting the cookie for access token
+	ctx.SetCookie(
+		"access_token",
+		*accessToken.Token,
+		int(accessToken.Expires.Unix()),
+		"/",
+		s.cfg.API.Domain,
+		false,
+		true,
+	)
+
+	tokenHeader, err := s.generateAuthTokens(user, ctx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -289,23 +319,72 @@ func verifyPassword(user models.User, password string) error {
 	return err
 }
 
-func (a *AuthService) generateAuthTokens(user *models.User) (*uttoken.TokenHeader, error) {
-	refreshToken, err := uttoken.GenerateToken(user.ToResponse(), a.cfg.App.RefreshTokenLifespan, a.cfg.App.TokenLifespanDuration, a.cfg.App.Secret)
+func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*uttoken.TokenHeader, error) {
+	now := time.Now()
+	refreshToken, err := uttoken.
+		GenerateToken(
+			user.ToResponse(),
+			s.cfg.JWT.RefreshToken.Life,
+			s.cfg.JWT.TimeUnit,
+			s.cfg.JWT.RefreshToken.PrivateKey,
+		)
+
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := uttoken.GenerateToken(user.ToResponse(), a.cfg.App.TokenLifespan, a.cfg.App.TokenLifespanDuration, a.cfg.App.Secret)
+	accessToken, err := uttoken.
+		GenerateToken(
+			user.ToResponse(),
+			s.cfg.JWT.AccessToken.Life,
+			s.cfg.JWT.TimeUnit,
+			s.cfg.JWT.AccessToken.PrivateKey,
+		)
+
 	if err != nil {
 		return nil, err
 	}
 
 	tokenHeader := uttoken.TokenHeader{
-		AuthToken:           token.Token,
-		AuthTokenExpires:    token.Expires,
-		RefreshToken:        refreshToken.Token,
-		RefreshTokenExpires: refreshToken.Expires,
+		AccessToken:         *accessToken.Token,
+		AccessTokenExpires:  *accessToken.Expires,
+		RefreshToken:        *refreshToken.Token,
+		RefreshTokenExpires: *refreshToken.Expires,
 	}
+
+	// * setting the access token into redis
+	err = s.rdb.Set(ctx, accessToken.TokenUUID.String(), user.ID, time.Unix(accessToken.Expires.Unix(), 0).Sub(now)).Err()
+	if err != nil {
+		return nil, err
+	}
+
+	// * setting the cookie for access token
+	ctx.SetCookie(
+		"access_token",
+		*accessToken.Token,
+		int(accessToken.Expires.Unix()),
+		"/",
+		s.cfg.API.Domain,
+		false,
+		true,
+	)
+
+	// * setting the refresh token into redis
+	err = s.rdb.Set(ctx, refreshToken.TokenUUID.String(), user.ID, time.Unix(refreshToken.Expires.Unix(), 0).Sub(now)).Err()
+	if err != nil {
+		return nil, err
+	}
+
+	// * setting the cookie for refresh token
+	ctx.SetCookie(
+		"refresh_token",
+		*refreshToken.Token,
+		int(refreshToken.Expires.Unix()),
+		"/",
+		s.cfg.API.Domain,
+		false,
+		true,
+	)
 
 	return &tokenHeader, err
 }

@@ -1,12 +1,12 @@
 version: "3.9"
 
 networks:
-  meals-backend-network:
-    name: meals-backend-network
+  meals-network:
+    name: meals-network
 
 services:
-  meals-db:
-    container_name: meals-pg-container
+  meals-pg:
+    container_name: meals-pg
     image: postgres:13-alpine
     ports:
       - "${DB_PORT}:5432"
@@ -17,23 +17,40 @@ services:
     volumes:
       - meals-pg-volume:/var/lib/postgresql/data/
     networks:
-      - meals-backend-network
+      - meals-network
     restart: always
 
-  meals-server:
-    container_name: meals-go-container
+  meals-go:
+    container_name: meals-go
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "${HTTP_PORT}:${HTTP_PORT}"
     networks:
-      - meals-backend-network
+      - meals-network
     depends_on:
-      - meals-db
+      - meals-pg
+      - meals-redis
     volumes:
       - .:/app:rw,delegated
     restart: always
 
+  meals-redis:
+    container_name: meals-redis
+    image: redis:alpine
+    ports:
+      - '${REDIS_PORT}:6379'
+    volumes:
+      - meals-redis-volume:/data
+    networks:
+      - meals-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
 volumes:
   meals-pg-volume:
+  meals-redis-volume:

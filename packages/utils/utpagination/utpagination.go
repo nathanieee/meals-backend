@@ -22,6 +22,10 @@ type (
 	Filter struct {
 		CreatedFrom time.Time
 		CreatedTo   time.Time
-		PartnerID   *uuid.UUID
+		Partner     Partner
+	}
+
+	Partner struct {
+		ID *uuid.UUID
 	}
 )

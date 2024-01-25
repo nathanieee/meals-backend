@@ -33,7 +33,9 @@ func Run(cfg *configs.Config) {
 		fmt.Errorf("app - Run - DB setup: %w", err)
 	}
 
-	di := di.NewDependencyInjection(db, cfg)
+	rdb := cfg.Redis.GetRedisClient()
+
+	di := di.NewDependencyInjection(db, cfg, rdb)
 	handler := gin.New()
 	v1.NewRouter(handler, db, cfg, di)
 	httpserver := servers.NewServer(handler, servers.Port(cfg.HTTP.Port))

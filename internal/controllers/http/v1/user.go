@@ -62,11 +62,12 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 
-		utresponse.ErrorResponse(ctx, http.StatusBadRequest, utresponse.ErrorRes{
-			Message: "Invalid request",
-			Debug:   err,
-			Errors:  ve,
-		})
+		utresponse.GeneralInvalidRequest(
+			"create user",
+			ctx,
+			ve,
+			&err,
+		)
 		return
 	}
 
@@ -74,15 +75,21 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utresponse.ErrorResponse(ctx, http.StatusConflict, utresponse.ErrorRes{
+				Status:  consttypes.RST_ERROR,
 				Message: "Duplicate email",
-				Debug:   err,
-				Errors:  err.Error(),
+				Data: utresponse.ErrorData{
+					Debug:  err,
+					Errors: err.Error(),
+				},
 			})
 		} else {
 			utresponse.ErrorResponse(ctx, http.StatusInternalServerError, utresponse.ErrorRes{
+				Status:  consttypes.RST_ERROR,
 				Message: "Something went wrong",
-				Debug:   err,
-				Errors:  err.Error(),
+				Data: utresponse.ErrorData{
+					Debug:  err,
+					Errors: err.Error(),
+				},
 			})
 		}
 		return
@@ -100,9 +107,12 @@ func (r *userRoutes) getUser(ctx *gin.Context) {
 	users, err := r.suser.FindAll(paginationReq)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
+			Status:  consttypes.RST_ERROR,
 			Message: "users not found",
-			Debug:   nil,
-			Errors:  nil,
+			Data: utresponse.ErrorData{
+				Debug:  err,
+				Errors: err.Error(),
+			},
 		})
 		return
 	}
@@ -117,9 +127,12 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 	ctxUser, exists := ctx.Get("user")
 	if !exists {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
+			Status:  consttypes.RST_ERROR,
 			Message: "Error getting user",
-			Debug:   nil,
-			Errors:  "User not found",
+			Data: utresponse.ErrorData{
+				Debug:  nil,
+				Errors: "user not found",
+			},
 		})
 		return
 	}
@@ -127,9 +140,12 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 	loggedInUser, ok := ctxUser.(responses.UserResponse)
 	if !ok {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
+			Status:  consttypes.RST_ERROR,
 			Message: "Error getting user",
-			Debug:   nil,
-			Errors:  "Unable to assert User ID",
+			Data: utresponse.ErrorData{
+				Debug:  nil,
+				Errors: "unable to assert user id",
+			},
 		})
 		return
 	}
@@ -137,9 +153,12 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 	user, err := r.suser.FindByID(loggedInUser.ID)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
+			Status:  consttypes.RST_ERROR,
 			Message: "User not found",
-			Debug:   nil,
-			Errors:  "User not found",
+			Data: utresponse.ErrorData{
+				Debug:  nil,
+				Errors: "user not found",
+			},
 		})
 		return
 	}
@@ -154,9 +173,12 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 	ctxUser, exists := ctx.Get("user")
 	if !exists {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
+			Status:  consttypes.RST_ERROR,
 			Message: "Error getting user",
-			Debug:   nil,
-			Errors:  "User not found",
+			Data: utresponse.ErrorData{
+				Debug:  nil,
+				Errors: "user not found",
+			},
 		})
 		return
 	}
@@ -164,18 +186,24 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 	loggedInUser, ok := ctxUser.(responses.UserResponse)
 	if !ok {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
+			Status:  consttypes.RST_ERROR,
 			Message: "Error getting user",
-			Debug:   nil,
-			Errors:  "Unable to assert User ID",
+			Data: utresponse.ErrorData{
+				Debug:  nil,
+				Errors: "unable to assert user id",
+			},
 		})
 		return
 	}
 
 	if loggedInUser.Role == consttypes.UR_ADMIN {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
+			Status:  consttypes.RST_ERROR,
 			Message: "Something went wrong",
-			Debug:   nil,
-			Errors:  "Admin role can't be deleted",
+			Data: utresponse.ErrorData{
+				Debug:  nil,
+				Errors: "unable to assert user id",
+			},
 		})
 		return
 	}
@@ -183,9 +211,12 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 	err := r.suser.Delete(loggedInUser.ID)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
+			Status:  consttypes.RST_ERROR,
 			Message: "Something went wrong",
-			Debug:   err,
-			Errors:  "Something went wrong while deleting user",
+			Data: utresponse.ErrorData{
+				Debug:  nil,
+				Errors: "failed deleting user",
+			},
 		})
 		return
 	}

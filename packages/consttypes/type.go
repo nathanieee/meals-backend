@@ -1,9 +1,10 @@
 package consttypes
 
 type (
-	ImageType        string
-	PatronType       string
-	OrganizationType string
+	ImageType          string
+	PatronType         string
+	OrganizationType   string
+	ResponseStatusType string
 )
 
 const (
@@ -14,4 +15,8 @@ const (
 	PT_PERSONAL     PatronType = "Personal"
 
 	OT_NURSINGHOME OrganizationType = "Nursing Home"
+
+	RST_SUCCESS ResponseStatusType = "success"
+	RST_FAIL    ResponseStatusType = "fail"
+	RST_ERROR   ResponseStatusType = "error"
 )

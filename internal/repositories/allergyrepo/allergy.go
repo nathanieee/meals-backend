@@ -11,6 +11,7 @@ import (
 	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -131,12 +132,14 @@ func (r *AllergyRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 	result = result.
 		Group("id").
 		Scopes(paginationrepo.Paginate(&al, &p, result)).
-		Find(&alres)
+		Find(&al)
 
 	if err := result.Error; err != nil {
 		utlogger.LogError(err)
 		return nil, err
 	}
+
+	copier.Copy(&alres, &al)
 
 	p.Data = alres
 	return &p, nil

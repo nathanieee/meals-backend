@@ -71,7 +71,7 @@ func (m *MailService) SendVerificationEmail(req requests.SendEmailRequest) error
 	t.Execute(&body, struct {
 		Name    string
 		Message string
-		Token   int
+		Token   string
 	}{
 		Name:    req.Name,
 		Message: "This is a message",

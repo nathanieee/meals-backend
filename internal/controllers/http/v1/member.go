@@ -5,6 +5,7 @@ import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/services/memberservice"
+	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utrequest"
 	"project-skbackend/packages/utils/utresponse"
 	"strings"
@@ -58,9 +59,12 @@ func (r *memberRoutes) createMember(ctx *gin.Context) {
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utresponse.ErrorResponse(ctx, http.StatusConflict, utresponse.ErrorRes{
+				Status:  consttypes.RST_ERROR,
 				Message: "duplicate email",
-				Debug:   err,
-				Errors:  err.Error(),
+				Data: utresponse.ErrorData{
+					Debug:  err,
+					Errors: err.Error(),
+				},
 			})
 		} else {
 			utresponse.GeneralInternalServerError(
@@ -73,6 +77,7 @@ func (r *memberRoutes) createMember(ctx *gin.Context) {
 	}
 
 	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
+		Status:  consttypes.RST_SUCCESS,
 		Message: "success creating new member",
 		Data:    meres,
 	})
@@ -84,14 +89,18 @@ func (r *memberRoutes) getMembers(ctx *gin.Context) {
 	members, err := r.smember.FindAll(paginationReq)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
+			Status:  consttypes.RST_ERROR,
 			Message: "members not found",
-			Debug:   err,
-			Errors:  err.Error(),
+			Data: utresponse.ErrorData{
+				Debug:  err,
+				Errors: err.Error(),
+			},
 		})
 		return
 	}
 
 	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
+		Status:  consttypes.RST_SUCCESS,
 		Message: "success get members",
 		Data:    members,
 	})
