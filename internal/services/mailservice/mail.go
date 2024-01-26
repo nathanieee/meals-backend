@@ -26,7 +26,7 @@ type (
 	}
 
 	IMailService interface {
-		SendVerificationEmail(req requests.SendEmailRequest) error
+		SendVerificationEmail(req requests.SendEmail) error
 	}
 )
 
@@ -48,7 +48,7 @@ func NewMailService(
 	}
 }
 
-func (m *MailService) SendVerificationEmail(req requests.SendEmailRequest) error {
+func (m *MailService) SendVerificationEmail(req requests.SendEmail) error {
 	to := []string{req.Email}
 	temfile := req.Template
 

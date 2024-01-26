@@ -31,13 +31,13 @@ type (
 	}
 
 	IAuthService interface {
-		Login(req requests.LoginRequest, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error)
-		Register(req requests.RegisterRequest, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error)
-		ForgotPassword(req requests.ForgotPasswordRequest) error
-		ResetPassword(req requests.ResetPasswordRequest) error
+		Login(req requests.Login, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error)
+		Register(req requests.Register, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error)
+		ForgotPassword(req requests.ForgotPassword) error
+		ResetPassword(req requests.ResetPassword) error
 		SendVerificationEmail(id uuid.UUID, token string) error
 		SendResetPasswordEmail(id uuid.UUID, token string) error
-		VerifyToken(req requests.VerifyTokenRequest) error
+		VerifyToken(req requests.VerifyToken) error
 		RefreshAuthToken(token string, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error)
 	}
 )
@@ -57,7 +57,7 @@ func NewAuthService(
 	}
 }
 
-func (s *AuthService) Login(req requests.LoginRequest, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error) {
+func (s *AuthService) Login(req requests.Login, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error) {
 	user, err := s.userrepo.FindByEmail(req.Email)
 	if err != nil {
 		utlogger.LogError(err)
@@ -79,7 +79,7 @@ func (s *AuthService) Login(req requests.LoginRequest, ctx *gin.Context) (*respo
 	return user.ToResponse(), tokenHeader, nil
 }
 
-func (s *AuthService) Register(req requests.RegisterRequest, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error) {
+func (s *AuthService) Register(req requests.Register, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error) {
 	req.Email = strings.ToLower(req.Email)
 
 	user, err := s.userrepo.FindByEmail(req.Email)
@@ -106,7 +106,7 @@ func (s *AuthService) Register(req requests.RegisterRequest, ctx *gin.Context) (
 	return user.ToResponse(), token, nil
 }
 
-func (s *AuthService) ForgotPassword(req requests.ForgotPasswordRequest) error {
+func (s *AuthService) ForgotPassword(req requests.ForgotPassword) error {
 	user, err := s.userrepo.FindByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return err
@@ -126,7 +126,7 @@ func (s *AuthService) ForgotPassword(req requests.ForgotPasswordRequest) error {
 	return nil
 }
 
-func (s *AuthService) ResetPassword(req requests.ResetPasswordRequest) error {
+func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
 	user, err := s.userrepo.FindByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return err
@@ -170,7 +170,7 @@ func (s *AuthService) SendResetPasswordEmail(id uuid.UUID, token string) error {
 	}
 
 	// TODO - change this request to reset password and sent correct data.
-	emreq := requests.SendEmailRequest{
+	emreq := requests.SendEmail{
 		Template: "email_verification.html",
 		Subject:  "Reset Password",
 		Email:    user.Email,
@@ -204,7 +204,7 @@ func (s *AuthService) SendVerificationEmail(id uuid.UUID, token string) error {
 	}
 
 	// TODO - change this request to send correct data.
-	emreq := requests.SendEmailRequest{
+	emreq := requests.SendEmail{
 		Template: "email_verification.html",
 		Subject:  "Reset Password",
 		Email:    user.Email,
@@ -219,7 +219,7 @@ func (s *AuthService) SendVerificationEmail(id uuid.UUID, token string) error {
 	return nil
 }
 
-func (s *AuthService) VerifyToken(req requests.VerifyTokenRequest) error {
+func (s *AuthService) VerifyToken(req requests.VerifyToken) error {
 	user, err := s.userrepo.FindByEmail(req.Email)
 	if err != nil {
 		return err

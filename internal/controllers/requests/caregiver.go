@@ -10,8 +10,8 @@ import (
 )
 
 type (
-	CreateCaregiverRequest struct {
-		User        CreateUserRequest `json:"user"`
+	CreateCaregiver struct {
+		User        CreateUser        `json:"user"`
 		Gender      consttypes.Gender `json:"gender" gorm:"not null" binding:"required" example:"Male"`
 		FirstName   string            `json:"first_name" gorm:"not null" binding:"required" example:"Jonathan"`
 		LastName    string            `json:"last_name" gorm:"not null" binding:"required" example:"Vince"`
@@ -19,7 +19,7 @@ type (
 	}
 )
 
-func (req *CreateCaregiverRequest) ToModel() *models.Caregiver {
+func (req *CreateCaregiver) ToModel() *models.Caregiver {
 	user := req.User.ToModel(consttypes.UR_CAREGIVER)
 	caregiver := models.Caregiver{
 		User: *user,

@@ -1,7 +1,7 @@
 package requests
 
 type (
-	CreateAddressRequest struct {
+	CreateAddress struct {
 		Name        string  `json:"name" binding:"required"`
 		Address     string  `json:"address" binding:"required"`
 		Description string  `json:"description" binding:"required"`

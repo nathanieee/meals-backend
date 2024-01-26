@@ -20,11 +20,11 @@ type (
 	}
 
 	IUserService interface {
-		Create(req requests.CreateUserRequest) (*responses.UserResponse, error)
+		Create(req requests.CreateUser) (*responses.UserResponse, error)
 		FindByID(uid uuid.UUID) (*responses.UserResponse, error)
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		Delete(uid uuid.UUID) error
-		Update(req requests.UpdateUserRequest, uid uuid.UUID) (*responses.UserResponse, error)
+		Update(req requests.UpdateUser, uid uuid.UUID) (*responses.UserResponse, error)
 	}
 )
 
@@ -36,7 +36,7 @@ func NewUserService(
 	}
 }
 
-func (s *UserService) Create(req requests.CreateUserRequest) (*responses.UserResponse, error) {
+func (s *UserService) Create(req requests.CreateUser) (*responses.UserResponse, error) {
 	var ures *responses.UserResponse
 
 	u := &models.User{
@@ -94,7 +94,7 @@ func (s *UserService) Delete(uid uuid.UUID) error {
 	return nil
 }
 
-func (s *UserService) Update(req requests.UpdateUserRequest, uid uuid.UUID) (*responses.UserResponse, error) {
+func (s *UserService) Update(req requests.UpdateUser, uid uuid.UUID) (*responses.UserResponse, error) {
 	u := req.ToModel(consttypes.UR_USER, uid)
 
 	u, err := s.userrepo.Update(*u)

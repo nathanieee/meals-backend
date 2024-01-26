@@ -40,7 +40,7 @@ func newMemberRoutes(
 }
 
 func (r *memberRoutes) createMember(ctx *gin.Context) {
-	var req requests.CreateMemberRequest
+	var req requests.CreateMember
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {

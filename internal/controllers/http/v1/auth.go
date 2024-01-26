@@ -50,7 +50,7 @@ func newAuthRoutes(
 func (r *authRoutes) login(
 	ctx *gin.Context,
 ) {
-	var req requests.LoginRequest
+	var req requests.Login
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -97,7 +97,7 @@ func (r *authRoutes) login(
 func (r *authRoutes) register(
 	ctx *gin.Context,
 ) {
-	var req requests.RegisterRequest
+	var req requests.Register
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -206,7 +206,7 @@ func (r *authRoutes) sendVerifyEmail(
 func (r *authRoutes) verifyToken(
 	ctx *gin.Context,
 ) {
-	var req requests.VerifyTokenRequest
+	var req requests.VerifyToken
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -244,7 +244,7 @@ func (r *authRoutes) verifyToken(
 func (r *authRoutes) forgotPassword(
 	ctx *gin.Context,
 ) {
-	var req requests.ForgotPasswordRequest
+	var req requests.ForgotPassword
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -282,7 +282,7 @@ func (r *authRoutes) forgotPassword(
 func (r *authRoutes) resetPassword(
 	ctx *gin.Context,
 ) {
-	var req requests.ResetPasswordRequest
+	var req requests.ResetPassword
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {

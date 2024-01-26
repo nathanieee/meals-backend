@@ -30,7 +30,7 @@ type (
 	}
 
 	IMemberService interface {
-		Create(req requests.CreateMemberRequest) (*responses.MemberResponse, error)
+		Create(req requests.CreateMember) (*responses.MemberResponse, error)
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
 		FindByID(id uuid.UUID) (*responses.MemberResponse, error)
 		Delete(id uuid.UUID) error
@@ -55,7 +55,7 @@ func NewMemberService(
 	}
 }
 
-func (mes *MemberService) Create(req requests.CreateMemberRequest) (*responses.MemberResponse, error) {
+func (mes *MemberService) Create(req requests.CreateMember) (*responses.MemberResponse, error) {
 	var illnesses []*models.MemberIllness
 	var allergies []*models.MemberAllergy
 	var caregiver *models.Caregiver

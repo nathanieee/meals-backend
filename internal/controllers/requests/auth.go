@@ -8,38 +8,38 @@ import (
 )
 
 type (
-	LoginRequest struct {
+	Login struct {
 		Email    string `json:"email" binding:"required,email" example:"email@email.com"`
 		Password string `json:"password" binding:"required" example:"password"`
 	}
 
-	RegisterRequest struct {
+	Register struct {
 		Email    string `json:"email" binding:"required,email" example:"email@email.com"`
 		Password string `json:"password" binding:"required" example:"password"`
 	}
 
-	VerifyTokenRequest struct {
+	VerifyToken struct {
 		Token string `json:"token" binding:"required,number" example:""`
 		Email string `json:"email" binding:"required,email" example:"email@email.com"`
 	}
 
-	ForgotPasswordRequest struct {
+	ForgotPassword struct {
 		Email string `json:"email" binding:"required,email" example:"email@email.com"`
 	}
 
-	ResetPasswordRequest struct {
+	ResetPassword struct {
 		Email           string `json:"email" binding:"required,email" example:"email@email.com"`
 		Password        string `json:"password" binding:"required"`
 		ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=Password"`
 		Token           string `json:"token" binding:"required"`
 	}
 
-	ResetPasswordRedirectRequest struct {
+	ResetPasswordRedirect struct {
 		ResetToken string `uri:"token" binding:"required"`
 	}
 )
 
-func (r *RegisterRequest) ToUserModel() *models.User {
+func (r *Register) ToUserModel() *models.User {
 	var u models.User
 	err := copier.Copy(&u, &r)
 	if err != nil {

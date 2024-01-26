@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	SendEmailRequest struct {
+	SendEmail struct {
 		Template string `binding:"required,oneof=email_veification.html"`
 		Subject  string `binding:"required"`
 		Name     string
@@ -15,7 +15,7 @@ type (
 	}
 )
 
-func (s SendEmailRequest) ToString() string {
+func (s SendEmail) ToString() string {
 	json, err := json.Marshal(s)
 	if err != nil {
 		utlogger.LogError(err)

@@ -10,18 +10,18 @@ import (
 )
 
 type (
-	CreateUserRequest struct {
+	CreateUser struct {
 		Email    string `json:"email" binding:"required,email" example:"email@email.com"`
 		Password string `json:"password" binding:"required" example:"password"`
 	}
 
-	UpdateUserRequest struct {
-		Email   string               `json:"email" binding:"required,email" example:"email@email.com"`
-		Address CreateAddressRequest `json:"address" binding:"required"`
+	UpdateUser struct {
+		Email   string        `json:"email" binding:"required,email" example:"email@email.com"`
+		Address CreateAddress `json:"address" binding:"required"`
 	}
 )
 
-func (req *CreateUserRequest) ToModel(role consttypes.UserRole) *models.User {
+func (req *CreateUser) ToModel(role consttypes.UserRole) *models.User {
 	user := models.User{
 		Role: role,
 	}
@@ -34,7 +34,7 @@ func (req *CreateUserRequest) ToModel(role consttypes.UserRole) *models.User {
 	return &user
 }
 
-func (req *UpdateUserRequest) ToModel(role consttypes.UserRole, uid uuid.UUID) *models.User {
+func (req *UpdateUser) ToModel(role consttypes.UserRole, uid uuid.UUID) *models.User {
 	user := models.User{
 		Role: role,
 	}
