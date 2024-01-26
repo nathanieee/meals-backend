@@ -117,7 +117,7 @@ func (r *UserRepository) Delete(u models.User) error {
 
 func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var u []models.User
-	var ures []responses.UserResponse
+	var ures []responses.User
 
 	result := r.
 		preload().

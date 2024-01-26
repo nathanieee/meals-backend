@@ -31,14 +31,14 @@ type (
 	}
 
 	IAuthService interface {
-		Login(req requests.Login, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error)
-		Register(req requests.Register, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error)
+		Login(req requests.Login, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
+		Register(req requests.Register, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
 		ForgotPassword(req requests.ForgotPassword) error
 		ResetPassword(req requests.ResetPassword) error
 		SendVerificationEmail(id uuid.UUID, token string) error
 		SendResetPasswordEmail(id uuid.UUID, token string) error
 		VerifyToken(req requests.VerifyToken) error
-		RefreshAuthToken(token string, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error)
+		RefreshAuthToken(token string, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
 	}
 )
 
@@ -57,7 +57,7 @@ func NewAuthService(
 	}
 }
 
-func (s *AuthService) Login(req requests.Login, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error) {
+func (s *AuthService) Login(req requests.Login, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
 	user, err := s.userrepo.FindByEmail(req.Email)
 	if err != nil {
 		utlogger.LogError(err)
@@ -79,7 +79,7 @@ func (s *AuthService) Login(req requests.Login, ctx *gin.Context) (*responses.Us
 	return user.ToResponse(), tokenHeader, nil
 }
 
-func (s *AuthService) Register(req requests.Register, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error) {
+func (s *AuthService) Register(req requests.Register, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
 	req.Email = strings.ToLower(req.Email)
 
 	user, err := s.userrepo.FindByEmail(req.Email)
@@ -247,7 +247,7 @@ func (s *AuthService) VerifyToken(req requests.VerifyToken) error {
 	return nil
 }
 
-func (s *AuthService) RefreshAuthToken(refreshToken string, ctx *gin.Context) (*responses.UserResponse, *uttoken.TokenHeader, error) {
+func (s *AuthService) RefreshAuthToken(refreshToken string, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
 	now := time.Now()
 	parsedToken, err := uttoken.ParseToken(refreshToken, s.cfg.JWT.RefreshToken.PublicKey)
 	if err != nil {

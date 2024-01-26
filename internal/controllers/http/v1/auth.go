@@ -74,7 +74,7 @@ func (r *authRoutes) login(
 		return
 	}
 
-	res := responses.AuthResponse{
+	res := responses.Auth{
 		ID:                 user.ID,
 		Email:              user.Email,
 		Role:               user.Role,
@@ -121,7 +121,7 @@ func (r *authRoutes) register(
 		return
 	}
 
-	res := responses.AuthResponse{
+	res := responses.Auth{
 		ID:                 user.ID,
 		Email:              user.Email,
 		Role:               user.Role,
@@ -157,7 +157,7 @@ func (r *authRoutes) sendVerifyEmail(
 		return
 	}
 
-	loggedInUser, ok := ctxUser.(responses.UserResponse)
+	loggedInUser, ok := ctxUser.(responses.User)
 	if !ok {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Status:  consttypes.RST_ERROR,
@@ -347,7 +347,7 @@ func (r *authRoutes) refreshAuthToken(
 		return
 	}
 
-	res := responses.AuthResponse{
+	res := responses.Auth{
 		ID:          user.ID,
 		Email:       user.Email,
 		Role:        user.Role,

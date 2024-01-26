@@ -9,10 +9,10 @@ import (
 )
 
 type (
-	AdminResponse struct {
+	Admin struct {
 		helper.Model
 		UserID      uuid.UUID         `json:"-"`
-		User        UserResponse      `json:"user"`
+		User        User              `json:"user"`
 		FirstName   string            `json:"first_name"`
 		LastName    string            `json:"last_name"`
 		Gender      consttypes.Gender `json:"gender"`

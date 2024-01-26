@@ -8,7 +8,7 @@ import (
 )
 
 type (
-	AuthResponse struct {
+	Auth struct {
 		ID                 uuid.UUID           `json:"id"`
 		Email              string              `json:"email"`
 		Role               consttypes.UserRole `json:"role"`

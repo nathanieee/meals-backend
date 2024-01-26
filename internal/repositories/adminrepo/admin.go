@@ -110,7 +110,7 @@ func (r *AdminRepository) Delete(a models.Admin) error {
 
 func (r *AdminRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var a []models.Admin
-	var ares []responses.AdminResponse
+	var ares []responses.Admin
 
 	result := r.
 		preload().

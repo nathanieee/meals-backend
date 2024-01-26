@@ -9,10 +9,10 @@ import (
 )
 
 type (
-	UserResponse struct {
+	User struct {
 		helper.Model
-		Address                []*AddressResponse  `json:"address,omitempty"`
-		UserImage              *UserImageResponse  `json:"user_image,omitempty"`
+		Address                []*Address          `json:"address,omitempty"`
+		UserImage              *UserImage          `json:"user_image,omitempty"`
 		Email                  string              `json:"email"`
 		Password               string              `json:"-"`
 		Role                   consttypes.UserRole `json:"role"`
@@ -25,10 +25,10 @@ type (
 		RefreshTokenExpiration string              `json:"-"`
 	}
 
-	UserImageResponse struct {
+	UserImage struct {
 		helper.Model
-		UserID  uuid.UUID     `json:"user_id"`
-		ImageID uuid.UUID     `json:"image_id"`
-		Image   ImageResponse `json:"image"`
+		UserID  uuid.UUID `json:"user_id"`
+		ImageID uuid.UUID `json:"image_id"`
+		Image   Image     `json:"image"`
 	}
 )

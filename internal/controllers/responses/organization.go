@@ -8,10 +8,10 @@ import (
 )
 
 type (
-	OrganizationResponse struct {
+	Organization struct {
 		helper.Model
 		UserID uuid.UUID                   `json:"-"`
-		User   UserResponse                `json:"user"`
+		User   User                        `json:"user"`
 		Type   consttypes.OrganizationType `json:"type"`
 		Name   string                      `json:"name"`
 	}

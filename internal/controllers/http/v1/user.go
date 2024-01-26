@@ -137,7 +137,7 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 		return
 	}
 
-	loggedInUser, ok := ctxUser.(responses.UserResponse)
+	loggedInUser, ok := ctxUser.(responses.User)
 	if !ok {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Status:  consttypes.RST_ERROR,
@@ -183,7 +183,7 @@ func (r *userRoutes) deleteUser(ctx *gin.Context) {
 		return
 	}
 
-	loggedInUser, ok := ctxUser.(responses.UserResponse)
+	loggedInUser, ok := ctxUser.(responses.User)
 	if !ok {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Status:  consttypes.RST_ERROR,

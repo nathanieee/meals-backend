@@ -20,11 +20,11 @@ type (
 	}
 
 	IUserService interface {
-		Create(req requests.CreateUser) (*responses.UserResponse, error)
-		FindByID(uid uuid.UUID) (*responses.UserResponse, error)
+		Create(req requests.CreateUser) (*responses.User, error)
+		FindByID(uid uuid.UUID) (*responses.User, error)
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		Delete(uid uuid.UUID) error
-		Update(req requests.UpdateUser, uid uuid.UUID) (*responses.UserResponse, error)
+		Update(req requests.UpdateUser, uid uuid.UUID) (*responses.User, error)
 	}
 )
 
@@ -36,8 +36,8 @@ func NewUserService(
 	}
 }
 
-func (s *UserService) Create(req requests.CreateUser) (*responses.UserResponse, error) {
-	var ures *responses.UserResponse
+func (s *UserService) Create(req requests.CreateUser) (*responses.User, error) {
+	var ures *responses.User
 
 	u := &models.User{
 		Email:    req.Email,
@@ -60,7 +60,7 @@ func (s *UserService) Create(req requests.CreateUser) (*responses.UserResponse, 
 	return ures, err
 }
 
-func (s *UserService) FindByID(uid uuid.UUID) (*responses.UserResponse, error) {
+func (s *UserService) FindByID(uid uuid.UUID) (*responses.User, error) {
 	u, err := s.userrepo.FindByID(uid)
 	if err != nil {
 		utlogger.LogError(err)
@@ -94,7 +94,7 @@ func (s *UserService) Delete(uid uuid.UUID) error {
 	return nil
 }
 
-func (s *UserService) Update(req requests.UpdateUser, uid uuid.UUID) (*responses.UserResponse, error) {
+func (s *UserService) Update(req requests.UpdateUser, uid uuid.UUID) (*responses.User, error) {
 	u := req.ToModel(consttypes.UR_USER, uid)
 
 	u, err := s.userrepo.Update(*u)

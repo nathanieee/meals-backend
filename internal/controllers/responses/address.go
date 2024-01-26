@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	AddressResponse struct {
+	Address struct {
 		helper.Model
 		UserID      uuid.UUID `json:"-"`
 		Name        string    `json:"name"`

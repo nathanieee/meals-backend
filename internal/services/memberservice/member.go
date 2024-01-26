@@ -30,9 +30,9 @@ type (
 	}
 
 	IMemberService interface {
-		Create(req requests.CreateMember) (*responses.MemberResponse, error)
+		Create(req requests.CreateMember) (*responses.Member, error)
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*responses.MemberResponse, error)
+		FindByID(id uuid.UUID) (*responses.Member, error)
 		Delete(id uuid.UUID) error
 	}
 )
@@ -55,7 +55,7 @@ func NewMemberService(
 	}
 }
 
-func (mes *MemberService) Create(req requests.CreateMember) (*responses.MemberResponse, error) {
+func (mes *MemberService) Create(req requests.CreateMember) (*responses.Member, error) {
 	var illnesses []*models.MemberIllness
 	var allergies []*models.MemberAllergy
 	var caregiver *models.Caregiver
@@ -126,7 +126,7 @@ func (mes *MemberService) FindAll(preq utpagination.Pagination) (*utpagination.P
 	return members, nil
 }
 
-func (mes *MemberService) FindByID(id uuid.UUID) (*responses.MemberResponse, error) {
+func (mes *MemberService) FindByID(id uuid.UUID) (*responses.Member, error) {
 	member, err := mes.membrepo.FindByID(id)
 	if err != nil {
 		utlogger.LogError(err)

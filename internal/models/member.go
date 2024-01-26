@@ -46,8 +46,8 @@ type (
 	}
 )
 
-func (m *Member) ToResponse() *responses.MemberResponse {
-	mres := responses.MemberResponse{}
+func (m *Member) ToResponse() *responses.Member {
+	mres := responses.Member{}
 
 	if err := copier.Copy(&mres, &m); err != nil {
 		utlogger.LogError(err)

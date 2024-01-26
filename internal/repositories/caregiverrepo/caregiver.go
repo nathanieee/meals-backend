@@ -111,7 +111,7 @@ func (r *CaregiverRepository) Delete(cg models.Caregiver) error {
 
 func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var cg []models.Caregiver
-	var cgres []responses.CaregiverResponse
+	var cgres []responses.Caregiver
 
 	result := r.
 		preload().

@@ -112,7 +112,7 @@ func (r *MealRepository) Delete(ml models.Meal) error {
 
 func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var ml []models.Meal
-	var mlres []responses.MealResponse
+	var mlres []responses.Meal
 
 	result := r.
 		preload().

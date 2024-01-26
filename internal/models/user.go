@@ -56,8 +56,8 @@ func (u *User) BeforeUpdate(tx *gorm.DB) error {
 	return u.hashPasswordIfNeeded()
 }
 
-func (u *User) ToResponse() *responses.UserResponse {
-	var ures responses.UserResponse
+func (u *User) ToResponse() *responses.User {
+	var ures responses.User
 	err := copier.Copy(&ures, &u)
 	if err != nil {
 		utlogger.LogError(err)
@@ -66,8 +66,8 @@ func (u *User) ToResponse() *responses.UserResponse {
 	return &ures
 }
 
-func (u *User) ToAuthResponse(token *uttoken.TokenHeader) *responses.AuthResponse {
-	aures := responses.AuthResponse{
+func (u *User) ToAuth(token *uttoken.TokenHeader) *responses.Auth {
+	aures := responses.Auth{
 		Token:   token.AccessToken,
 		Expires: token.AccessTokenExpires,
 	}

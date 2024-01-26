@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	ImageResponse struct {
+	Image struct {
 		helper.Model
 		Name string               `json:"name"`
 		Path string               `json:"path"`

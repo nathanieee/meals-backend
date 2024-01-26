@@ -9,10 +9,10 @@ import (
 )
 
 type (
-	CaregiverResponse struct {
+	Caregiver struct {
 		helper.Model
 		UserID      uuid.UUID         `json:"-"`
-		User        UserResponse      `json:"user"`
+		User        User              `json:"user"`
 		Gender      consttypes.Gender `json:"gender"`
 		FirstName   string            `json:"first_name"`
 		LastName    string            `json:"last_name"`

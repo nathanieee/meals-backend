@@ -22,22 +22,22 @@ type (
 
 	TokenClaims struct {
 		jwt.StandardClaims
-		Authorized bool                    `json:"authorized"`
-		User       *responses.UserResponse `json:"user"`
-		Expire     int64                   `json:"expire"`
-		TokenUUID  uuid.UUID               `json:"token_uuid"`
+		Authorized bool            `json:"authorized"`
+		User       *responses.User `json:"user"`
+		Expire     int64           `json:"expire"`
+		TokenUUID  uuid.UUID       `json:"token_uuid"`
 	}
 
 	Token struct {
-		Token     *string                 `json:"token"`
-		TokenUUID uuid.UUID               `json:"token_uuid"`
-		Expires   *time.Time              `json:"expires"`
-		User      *responses.UserResponse `json:"user"`
+		Token     *string         `json:"token"`
+		TokenUUID uuid.UUID       `json:"token_uuid"`
+		Expires   *time.Time      `json:"expires"`
+		User      *responses.User `json:"user"`
 	}
 )
 
 func GenerateToken(
-	ures *responses.UserResponse,
+	ures *responses.User,
 	lifespan int,
 	timeunit,
 	privateKey string,

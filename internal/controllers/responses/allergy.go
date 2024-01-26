@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	AllergyResponse struct {
+	Allergy struct {
 		helper.Model
 		Name        string               `json:"name"`
 		Description string               `json:"description"`

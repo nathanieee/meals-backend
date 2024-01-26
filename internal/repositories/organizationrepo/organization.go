@@ -106,7 +106,7 @@ func (r *OrganizationRepository) Delete(o models.Organization) error {
 
 func (r *OrganizationRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var o []models.Organization
-	var ores []responses.OrganizationResponse
+	var ores []responses.Organization
 
 	result := r.
 		preload().

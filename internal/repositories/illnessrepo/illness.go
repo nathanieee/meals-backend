@@ -103,7 +103,7 @@ func (r *IllnessRepository) Delete(ill models.Illness) error {
 
 func (r *IllnessRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var ill []models.Illness
-	var illres []responses.IllnessResponse
+	var illres []responses.Illness
 
 	result := r.
 		preload().
