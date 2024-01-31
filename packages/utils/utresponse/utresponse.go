@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"project-skbackend/packages/consttypes"
-	custom "project-skbackend/packages/customs"
 	"project-skbackend/packages/utils/uttoken"
 
 	"github.com/gin-gonic/gin"
@@ -124,10 +123,10 @@ func ValidationResponse(err error) []ValidationErrorMessage {
 	return nil
 }
 
-func GeneralInputRequiredError(message custom.CDT_STRING, ctx *gin.Context, err any) {
+func GeneralInputRequiredError(message string, ctx *gin.Context, err any) {
 	ErrorResponse(ctx, http.StatusUnprocessableEntity, ErrorRes{
 		Status:  consttypes.RST_ERROR,
-		Message: message.SuffixSpaceCheck(),
+		Message: message,
 		Data: ErrorData{
 			Debug:  nil,
 			Errors: err,
@@ -135,10 +134,10 @@ func GeneralInputRequiredError(message custom.CDT_STRING, ctx *gin.Context, err 
 	})
 }
 
-func GeneralInternalServerError(message custom.CDT_STRING, ctx *gin.Context, err any) {
+func GeneralInternalServerError(message string, ctx *gin.Context, err any) {
 	ErrorResponse(ctx, http.StatusInternalServerError, ErrorRes{
 		Status:  consttypes.RST_ERROR,
-		Message: message.SuffixSpaceCheck(),
+		Message: message,
 		Data: ErrorData{
 			Debug:  nil,
 			Errors: err,
@@ -146,10 +145,10 @@ func GeneralInternalServerError(message custom.CDT_STRING, ctx *gin.Context, err
 	})
 }
 
-func GeneralInvalidRequest(message custom.CDT_STRING, ctx *gin.Context, ve []ValidationErrorMessage, err *error) {
+func GeneralInvalidRequest(message string, ctx *gin.Context, ve []ValidationErrorMessage, err *error) {
 	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
 		Status:  consttypes.RST_ERROR,
-		Message: message.SuffixSpaceCheck(),
+		Message: message,
 		Data: ErrorData{
 			Debug:  *err,
 			Errors: ve,

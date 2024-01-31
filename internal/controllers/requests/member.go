@@ -27,6 +27,9 @@ type (
 	}
 
 	UpdateMember struct {
+		ID          uuid.UUID         `json:"id" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		User        UpdateUser        `json:"user"`
+		Caregiver   *UpdateCaregiver  `json:"caregiver"`
 		Height      float64           `json:"height" gorm:"not null" binding:"required" example:"100"`
 		Weight      float64           `json:"weight" gorm:"not null" binding:"required" example:"150"`
 		FirstName   string            `json:"first_name" gorm:"not null" binding:"required" example:"Jonathan"`

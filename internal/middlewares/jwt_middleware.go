@@ -75,7 +75,7 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 		}
 
 		if !slices.Contains(allowedLevel, uint(consttypes.UR_USER)) {
-			if !slices.Contains(allowedLevel, uint(parsedToken.User.Role)) || (time.Now().Unix() >= parsedToken.Expires.Unix()) {
+			if !slices.Contains(allowedLevel, uint(parsedToken.User.Role)) || (consttypes.DateNow.Unix() >= parsedToken.Expires.Unix()) {
 				utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
 					Status:  consttypes.RST_ERROR,
 					Message: "Invalid token",

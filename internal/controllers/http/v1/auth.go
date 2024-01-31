@@ -14,7 +14,7 @@ import (
 )
 
 type (
-	authRoutes struct {
+	authroutes struct {
 		cfg   *configs.Config
 		sauth authservice.IAuthService
 	}
@@ -25,7 +25,7 @@ func newAuthRoutes(
 	cfg *configs.Config,
 	sauth authservice.IAuthService,
 ) {
-	r := &authRoutes{
+	r := &authroutes{
 		cfg:   cfg,
 		sauth: sauth,
 	}
@@ -47,7 +47,7 @@ func newAuthRoutes(
 	}
 }
 
-func (r *authRoutes) login(
+func (r *authroutes) login(
 	ctx *gin.Context,
 ) {
 	var req requests.Login
@@ -94,7 +94,7 @@ func (r *authRoutes) login(
 	})
 }
 
-func (r *authRoutes) register(
+func (r *authroutes) register(
 	ctx *gin.Context,
 ) {
 	var req requests.Register
@@ -141,7 +141,7 @@ func (r *authRoutes) register(
 	})
 }
 
-func (r *authRoutes) sendVerifyEmail(
+func (r *authroutes) sendVerifyEmail(
 	ctx *gin.Context,
 ) {
 	ctxUser, exists := ctx.Get("user")
@@ -203,7 +203,7 @@ func (r *authRoutes) sendVerifyEmail(
 	})
 }
 
-func (r *authRoutes) verifyToken(
+func (r *authroutes) verifyToken(
 	ctx *gin.Context,
 ) {
 	var req requests.VerifyToken
@@ -241,7 +241,7 @@ func (r *authRoutes) verifyToken(
 	})
 }
 
-func (r *authRoutes) forgotPassword(
+func (r *authroutes) forgotPassword(
 	ctx *gin.Context,
 ) {
 	var req requests.ForgotPassword
@@ -279,7 +279,7 @@ func (r *authRoutes) forgotPassword(
 	})
 }
 
-func (r *authRoutes) resetPassword(
+func (r *authroutes) resetPassword(
 	ctx *gin.Context,
 ) {
 	var req requests.ResetPassword
@@ -317,7 +317,7 @@ func (r *authRoutes) resetPassword(
 	})
 }
 
-func (r *authRoutes) refreshAuthToken(
+func (r *authroutes) refreshAuthToken(
 	ctx *gin.Context,
 ) {
 	refreshToken, err := ctx.Cookie("refresh_token")

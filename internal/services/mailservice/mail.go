@@ -39,7 +39,7 @@ func NewMailService(
 		host:    cfg.Mail.SMTPHost,
 		port:    cfg.Mail.SMTPPort,
 		address: cfg.Mail.SMTPHost + ":" + cfg.Mail.SMTPPort,
-		temdir:  cfg.Mail.TemplateDirectory,
+		temdir:  cfg.Mail.TemplateDir,
 	}
 
 	return &MailService{
@@ -48,15 +48,15 @@ func NewMailService(
 	}
 }
 
-func (m *MailService) SendVerificationEmail(req requests.SendEmail) error {
+func (s *MailService) SendVerificationEmail(req requests.SendEmail) error {
 	to := []string{req.Email}
 	temfile := req.Template
 
 	/* ------------------------ setup plain auth setting ------------------------ */
-	auth := smtp.PlainAuth("", m.mailset.from, m.mailset.pass, m.mailset.host)
+	auth := smtp.PlainAuth("", s.mailset.from, s.mailset.pass, s.mailset.host)
 
 	/* -------------------------- setup parse template -------------------------- */
-	t, err := template.ParseFiles(m.mailset.temdir + temfile)
+	t, err := template.ParseFiles(s.mailset.temdir + temfile)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (m *MailService) SendVerificationEmail(req requests.SendEmail) error {
 	})
 
 	/* ------------------------------- send email ------------------------------- */
-	err = smtp.SendMail(m.mailset.address, auth, m.mailset.from, to, body.Bytes())
+	err = smtp.SendMail(s.mailset.address, auth, s.mailset.from, to, body.Bytes())
 	if err != nil {
 		return err
 	}

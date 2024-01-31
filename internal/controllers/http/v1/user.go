@@ -18,7 +18,7 @@ import (
 )
 
 type (
-	userRoutes struct {
+	userroutes struct {
 		cfg   *configs.Config
 		suser userservice.IUserService
 		smail mailservice.IMailService
@@ -32,7 +32,7 @@ func newUserRoutes(
 	suser userservice.IUserService,
 	smail mailservice.IMailService,
 ) {
-	r := &userRoutes{
+	r := &userroutes{
 		cfg:   cfg,
 		suser: suser,
 		smail: smail,
@@ -55,7 +55,7 @@ func newUserRoutes(
 	}
 }
 
-func (r *userRoutes) createUser(ctx *gin.Context) {
+func (r *userroutes) createUser(ctx *gin.Context) {
 	var req requests.CreateUser
 
 	err := ctx.ShouldBindJSON(&req)
@@ -101,7 +101,7 @@ func (r *userRoutes) createUser(ctx *gin.Context) {
 	})
 }
 
-func (r *userRoutes) getUser(ctx *gin.Context) {
+func (r *userroutes) getUser(ctx *gin.Context) {
 	paginationReq := utrequest.GeneratePaginationFromRequest(ctx)
 
 	users, err := r.suser.FindAll(paginationReq)
@@ -123,7 +123,7 @@ func (r *userRoutes) getUser(ctx *gin.Context) {
 	})
 }
 
-func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
+func (r *userroutes) getCurrentUser(ctx *gin.Context) {
 	ctxUser, exists := ctx.Get("user")
 	if !exists {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
@@ -169,7 +169,7 @@ func (r *userRoutes) getCurrentUser(ctx *gin.Context) {
 	})
 }
 
-func (r *userRoutes) deleteUser(ctx *gin.Context) {
+func (r *userroutes) deleteUser(ctx *gin.Context) {
 	ctxUser, exists := ctx.Get("user")
 	if !exists {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{

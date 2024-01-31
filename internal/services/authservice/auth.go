@@ -8,6 +8,7 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/mailservice"
+	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utstring"
 	"project-skbackend/packages/utils/uttoken"
@@ -136,7 +137,7 @@ func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
 		return err
 	}
 
-	if !time.Now().UTC().Before(user.ResetPasswordSentAt.Add(time.Minute * 5)) {
+	if !consttypes.DateNow.Before(user.ResetPasswordSentAt.Add(time.Minute * 5)) {
 		return err
 	}
 
@@ -157,12 +158,12 @@ func (s *AuthService) SendResetPasswordEmail(id uuid.UUID, token string) error {
 		return err
 	}
 
-	if time.Now().UTC().Before(user.ResetPasswordSentAt.Add(time.Minute * 5)) {
+	if consttypes.DateNow.Before(user.ResetPasswordSentAt.Add(time.Minute * 5)) {
 		return err
 	}
 
 	user.ResetPasswordToken = token
-	user.ResetPasswordSentAt = time.Now().UTC()
+	user.ResetPasswordSentAt = consttypes.DateNow
 
 	_, err = s.userrepo.Update(*user)
 	if err != nil {
@@ -191,12 +192,12 @@ func (s *AuthService) SendVerificationEmail(id uuid.UUID, token string) error {
 		return err
 	}
 
-	if time.Now().UTC().Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
+	if consttypes.DateNow.Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
 		return err
 	}
 
 	user.ConfirmationToken = token
-	user.ConfirmationSentAt = time.Now().UTC()
+	user.ConfirmationSentAt = consttypes.DateNow
 
 	_, err = s.userrepo.Update(*user)
 	if err != nil {
@@ -225,7 +226,7 @@ func (s *AuthService) VerifyToken(req requests.VerifyToken) error {
 		return err
 	}
 
-	if !time.Now().UTC().Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
+	if !consttypes.DateNow.Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
 		return err
 	}
 
@@ -237,7 +238,7 @@ func (s *AuthService) VerifyToken(req requests.VerifyToken) error {
 		return err
 	}
 
-	user.ConfirmedAt = time.Now().UTC()
+	user.ConfirmedAt = consttypes.DateNow
 
 	_, err = s.userrepo.Update(*user)
 	if err != nil {
@@ -248,7 +249,7 @@ func (s *AuthService) VerifyToken(req requests.VerifyToken) error {
 }
 
 func (s *AuthService) RefreshAuthToken(refreshToken string, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
-	now := time.Now()
+	now := consttypes.DateNow
 	parsedToken, err := uttoken.ParseToken(refreshToken, s.cfg.JWT.RefreshToken.PublicKey)
 	if err != nil {
 		return nil, nil, err
@@ -263,7 +264,7 @@ func (s *AuthService) RefreshAuthToken(refreshToken string, ctx *gin.Context) (*
 		return nil, nil, err
 	}
 
-	if time.Now().Unix() >= parsedToken.Expires.Unix() {
+	if now.Unix() >= parsedToken.Expires.Unix() {
 		return nil, nil, err
 	}
 
@@ -320,7 +321,7 @@ func verifyPassword(user models.User, password string) error {
 }
 
 func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*uttoken.TokenHeader, error) {
-	now := time.Now()
+	now := consttypes.DateNow
 	refreshToken, err := uttoken.
 		GenerateToken(
 			user.ToResponse(),

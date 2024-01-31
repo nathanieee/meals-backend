@@ -55,7 +55,7 @@ func NewMemberService(
 	}
 }
 
-func (mes *MemberService) Create(req requests.CreateMember) (*responses.Member, error) {
+func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, error) {
 	var illnesses []*models.MemberIllness
 	var allergies []*models.MemberAllergy
 	var caregiver *models.Caregiver
@@ -71,7 +71,7 @@ func (mes *MemberService) Create(req requests.CreateMember) (*responses.Member, 
 
 	// * check the organization id and assign it to the object.
 	if req.OrganizationID != nil {
-		organization, err = mes.orgrepo.FindByID(*req.OrganizationID)
+		organization, err = s.orgrepo.FindByID(*req.OrganizationID)
 		if err != nil {
 			utlogger.LogError(err)
 			return nil, err
@@ -80,7 +80,7 @@ func (mes *MemberService) Create(req requests.CreateMember) (*responses.Member, 
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
-		illness, err := mes.illrepo.FindByID(ill)
+		illness, err := s.illrepo.FindByID(ill)
 		if err != nil {
 			utlogger.LogError(err)
 			return nil, err
@@ -93,7 +93,7 @@ func (mes *MemberService) Create(req requests.CreateMember) (*responses.Member, 
 
 	// * find allergy object and append to the array.
 	for _, all := range req.AllergyID {
-		allergy, err := mes.allgrepo.FindByID(all)
+		allergy, err := s.allgrepo.FindByID(all)
 		if err != nil {
 			utlogger.LogError(err)
 			return nil, err
@@ -105,7 +105,7 @@ func (mes *MemberService) Create(req requests.CreateMember) (*responses.Member, 
 	}
 
 	member := req.ToModel(*user, *caregiver, allergies, illnesses, organization)
-	member, err = mes.membrepo.Create(*member)
+	member, err = s.membrepo.Create(*member)
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
@@ -116,8 +116,8 @@ func (mes *MemberService) Create(req requests.CreateMember) (*responses.Member, 
 	return mres, nil
 }
 
-func (mes *MemberService) FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error) {
-	members, err := mes.membrepo.FindAll(preq)
+func (s *MemberService) FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error) {
+	members, err := s.membrepo.FindAll(preq)
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
@@ -126,8 +126,8 @@ func (mes *MemberService) FindAll(preq utpagination.Pagination) (*utpagination.P
 	return members, nil
 }
 
-func (mes *MemberService) FindByID(id uuid.UUID) (*responses.Member, error) {
-	member, err := mes.membrepo.FindByID(id)
+func (s *MemberService) FindByID(id uuid.UUID) (*responses.Member, error) {
+	member, err := s.membrepo.FindByID(id)
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
@@ -138,12 +138,12 @@ func (mes *MemberService) FindByID(id uuid.UUID) (*responses.Member, error) {
 	return mres, nil
 }
 
-func (mes *MemberService) Delete(id uuid.UUID) error {
+func (s *MemberService) Delete(id uuid.UUID) error {
 	member := models.Member{
 		Model: helper.Model{ID: id},
 	}
 
-	err := mes.membrepo.Delete(member)
+	err := s.membrepo.Delete(member)
 	if err != nil {
 		utlogger.LogError(err)
 		return err

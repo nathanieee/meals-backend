@@ -7,10 +7,10 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
-	custom "project-skbackend/packages/customs"
+	"project-skbackend/packages/customs"
+
 	"project-skbackend/packages/utils/utlogger"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -104,8 +104,6 @@ func SeedOrganizationTypeEnum(db *gorm.DB) error {
 func SeedAdminCredentials(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Admin{}) {
 		if err := db.First(&models.User{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			date := time.Now()
-
 			admins := []*models.Admin{
 				{
 					User: models.User{
@@ -116,7 +114,7 @@ func SeedAdminCredentials(db *gorm.DB) error {
 					FirstName:   os.Getenv("ADMIN_FIRSTNAME"),
 					LastName:    os.Getenv("ADMIN_LASTNAME"),
 					Gender:      consttypes.G_MALE,
-					DateOfBirth: custom.CDT_DATE(date),
+					DateOfBirth: customs.CDT_DATE{Time: consttypes.DateNow},
 				},
 			}
 
@@ -130,8 +128,6 @@ func SeedAdminCredentials(db *gorm.DB) error {
 func SeedCaregiverCredentials(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Caregiver{}) {
 		if err := db.First(&models.Caregiver{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			date := time.Now()
-
 			caregivers := []*models.Caregiver{
 				{
 					User: models.User{
@@ -142,7 +138,7 @@ func SeedCaregiverCredentials(db *gorm.DB) error {
 					FirstName:   "Care",
 					LastName:    "Giver",
 					Gender:      consttypes.G_FEMALE,
-					DateOfBirth: custom.CDT_DATE(date),
+					DateOfBirth: customs.CDT_DATE{Time: consttypes.DateNow},
 				},
 			}
 

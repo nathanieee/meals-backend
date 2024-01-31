@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
+	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )
@@ -42,7 +44,7 @@ func GenerateToken(
 	timeunit,
 	privateKey string,
 ) (*Token, error) {
-	expTime := time.Now().Add(getDuration(lifespan, timeunit))
+	expTime := consttypes.DateNow.Add(getDuration(lifespan, timeunit))
 	tokenUUID := uuid.New()
 
 	claims := TokenClaims{
@@ -129,4 +131,9 @@ func ParseToken(token string, publicKey string) (*Token, error) {
 		TokenUUID: claims.TokenUUID,
 		User:      claims.User,
 	}, nil
+}
+
+func GetUser(ctx *gin.Context) (*responses.User, error) {
+	claims := ctx.MustGet("claims").(*TokenClaims)
+	return claims.User, nil
 }

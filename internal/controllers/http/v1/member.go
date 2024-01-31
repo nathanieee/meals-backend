@@ -15,7 +15,7 @@ import (
 )
 
 type (
-	memberRoutes struct {
+	memberroutes struct {
 		cfg     *configs.Config
 		smember memberservice.IMemberService
 	}
@@ -27,7 +27,7 @@ func newMemberRoutes(
 	cfg *configs.Config,
 	smember memberservice.IMemberService,
 ) {
-	r := &memberRoutes{
+	r := &memberroutes{
 		cfg:     cfg,
 		smember: smember,
 	}
@@ -39,13 +39,12 @@ func newMemberRoutes(
 	}
 }
 
-func (r *memberRoutes) createMember(ctx *gin.Context) {
+func (r *memberroutes) createMember(ctx *gin.Context) {
 	var req requests.CreateMember
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
-
 		utresponse.GeneralInvalidRequest(
 			"create member",
 			ctx,
@@ -53,6 +52,22 @@ func (r *memberRoutes) createMember(ctx *gin.Context) {
 			&err,
 		)
 		return
+	}
+
+	// * get the user image
+	file := req.User.Image
+	if file != nil {
+		// * check if the file is an image
+		err := file.IsImage()
+		if err != nil {
+			utresponse.GeneralInvalidRequest(
+				"file image validation",
+				ctx,
+				nil,
+				&err,
+			)
+			return
+		}
 	}
 
 	meres, err := r.smember.Create(req)
@@ -83,7 +98,7 @@ func (r *memberRoutes) createMember(ctx *gin.Context) {
 	})
 }
 
-func (r *memberRoutes) getMembers(ctx *gin.Context) {
+func (r *memberroutes) getMembers(ctx *gin.Context) {
 	paginationReq := utrequest.GeneratePaginationFromRequest(ctx)
 
 	members, err := r.smember.FindAll(paginationReq)

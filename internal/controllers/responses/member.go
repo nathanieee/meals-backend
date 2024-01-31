@@ -18,7 +18,7 @@ type (
 		OrganizationID *uuid.UUID        `json:"-"`
 		Organization   *Organization     `json:"organization,omitempty"`
 		Illness        []*MemberIllness  `json:"illness,omitempty"`
-		Allergy        []*MemberAdmin    `json:"allergy,omitempty"`
+		Allergy        []*MemberAllergy  `json:"allergy,omitempty"`
 		Height         float64           `json:"height"`
 		Weight         float64           `json:"weight"`
 		BMI            float64           `json:"bmi"`
@@ -34,9 +34,9 @@ type (
 		Illness   Illness   `json:"illness"`
 	}
 
-	MemberAdmin struct {
+	MemberAllergy struct {
 		helper.Model
 		AllergyID uuid.UUID `json:"allergy_id"`
-		Allergy   Admin     `json:"allergy"`
+		Allergy   Allergy   `json:"allergy"`
 	}
 )
