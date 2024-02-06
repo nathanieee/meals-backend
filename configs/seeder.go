@@ -149,6 +149,28 @@ func SeedCaregiverCredentials(db *gorm.DB) error {
 	return nil
 }
 
+func SeedOrganizationCredential(db *gorm.DB) error {
+	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Organization{}) {
+		if err := db.First(&models.Organization{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			organizations := []*models.Organization{
+				{
+					User: models.User{
+						Email:    "organization@test.com",
+						Password: "password",
+						Role:     consttypes.UR_ORGANIZATION,
+					},
+					Type: consttypes.OT_NURSINGHOME,
+					Name: "Nursing Home",
+				},
+			}
+
+			db.Create(organizations)
+		}
+	}
+
+	return nil
+}
+
 func SeedAllergyData(db *gorm.DB) error {
 	// * source: https://en.wikipedia.org/wiki/List_of_allergens
 	if db.Migrator().HasTable(&models.Allergy{}) {

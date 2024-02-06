@@ -20,13 +20,10 @@ var (
 	SELECTED_FIELDS = `
 		id,
 		email,
-		role,
 		password,
+		role,
 		reset_password_token,
 		reset_password_sent_at,
-		confirmation_token,
-		confirmed_at,
-		confirmation_sent_at,
 		created_at,
 		updated_at
 	`
@@ -52,8 +49,8 @@ type (
 func NewUserRepository(db *gorm.DB) *UserRepository {
 	db.
 		Preload(clause.Associations).
-		Preload("UserImages.Images").
-		Preload("Addresses")
+		Preload("Image.Image").
+		Preload("Address")
 
 	return &UserRepository{db: db}
 }

@@ -17,15 +17,12 @@ type (
 	User struct {
 		helper.Model
 		Address                []*Address          `json:"address,omitempty"`
-		UserImage              *UserImage          `json:"user_image,omitempty"`
+		Image                  *UserImage          `json:"image,omitempty"`
 		Email                  string              `json:"email" gorm:"not null;unique" example:"email@email.com"`
 		Password               string              `json:"-" gorm:"size:255;not null;" binding:"required" example:"password"`
 		Role                   consttypes.UserRole `json:"role" gorm:"not null" example:"0" default:"0"`
 		ResetPasswordToken     string              `json:"-"`
 		ResetPasswordSentAt    time.Time           `json:"-"`
-		ConfirmationToken      string              `json:"-"`
-		ConfirmedAt            time.Time           `json:"confirmed_at"`
-		ConfirmationSentAt     time.Time           `json:"-"`
 		RefreshToken           string              `json:"-"`
 		RefreshTokenExpiration string              `json:"-"`
 	}

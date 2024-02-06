@@ -8,7 +8,6 @@ import (
 	"project-skbackend/internal/services/authservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utresponse"
-	"project-skbackend/packages/utils/utstring"
 
 	"github.com/gin-gonic/gin"
 )
@@ -35,12 +34,6 @@ func newAuthRoutes(
 		usergrp.POST("login", r.login)
 		usergrp.POST("register", r.register)
 
-		verifgrp := usergrp.Group("verify")
-		{
-			verifgrp.POST("", r.verifyToken)
-			verifgrp.POST("send", r.sendVerifyEmail)
-		}
-
 		usergrp.POST("forgot-password", r.forgotPassword)
 		usergrp.POST("reset-password", r.resetPassword)
 		usergrp.GET("refresh-token", r.refreshAuthToken)
@@ -56,10 +49,11 @@ func (r *authroutes) login(
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 
-		utresponse.GeneralInputRequiredError(
+		utresponse.GeneralInvalidRequest(
 			"login",
 			ctx,
 			ve,
+			err,
 		)
 		return
 	}
@@ -69,22 +63,12 @@ func (r *authroutes) login(
 		utresponse.GeneralInternalServerError(
 			"login",
 			ctx,
-			err.Error(),
+			err,
 		)
 		return
 	}
 
-	res := responses.Auth{
-		ID:                 user.ID,
-		Email:              user.Email,
-		Role:               user.Role,
-		ConfirmationSentAt: user.ConfirmationSentAt,
-		ConfirmedAt:        user.ConfirmedAt,
-		CreatedAt:          user.CreatedAt,
-		UpdatedAt:          user.UpdatedAt,
-		Token:              token.AccessToken,
-		Expires:            token.AccessTokenExpires,
-	}
+	res := token.ToAuthResponse(*user)
 
 	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
 		Status:  consttypes.RST_SUCCESS,
@@ -103,10 +87,11 @@ func (r *authroutes) register(
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 
-		utresponse.GeneralInputRequiredError(
+		utresponse.GeneralInvalidRequest(
 			"register",
 			ctx,
 			ve,
+			err,
 		)
 		return
 	}
@@ -116,128 +101,18 @@ func (r *authroutes) register(
 		utresponse.GeneralInternalServerError(
 			"register",
 			ctx,
-			err.Error(),
+			err,
 		)
 		return
 	}
 
-	res := responses.Auth{
-		ID:                 user.ID,
-		Email:              user.Email,
-		Role:               user.Role,
-		ConfirmationSentAt: user.ConfirmationSentAt,
-		ConfirmedAt:        user.ConfirmedAt,
-		CreatedAt:          user.CreatedAt,
-		UpdatedAt:          user.UpdatedAt,
-		Token:              token.AccessToken,
-		Expires:            token.AccessTokenExpires,
-	}
+	res := token.ToAuthResponse(*user)
 
 	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
 		Status:  consttypes.RST_SUCCESS,
 		Message: "register successful",
 		Data:    res,
 		Header:  *token,
-	})
-}
-
-func (r *authroutes) sendVerifyEmail(
-	ctx *gin.Context,
-) {
-	ctxUser, exists := ctx.Get("user")
-	if !exists {
-		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
-			Status:  consttypes.RST_FAIL,
-			Message: "Error getting user",
-			Data: utresponse.ErrorData{
-				Debug:  nil,
-				Errors: utresponse.ErrUserNotFound,
-			},
-		})
-		return
-	}
-
-	loggedInUser, ok := ctxUser.(responses.User)
-	if !ok {
-		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
-			Status:  consttypes.RST_ERROR,
-			Message: "Error getting user",
-			Data: utresponse.ErrorData{
-				Debug:  nil,
-				Errors: utresponse.ErrUserIDNotFound,
-			},
-		})
-		return
-	}
-
-	token, err := utstring.GenerateRandomToken(r.cfg.VerifyTokenLength)
-	if err != nil {
-		utresponse.ErrorResponse(ctx, http.StatusInternalServerError, utresponse.ErrorRes{
-			Status:  consttypes.RST_ERROR,
-			Message: "Error generating token",
-			Data: utresponse.ErrorData{
-				Debug:  err,
-				Errors: err.Error(),
-			},
-		})
-		return
-	}
-
-	err = r.sauth.SendVerificationEmail(loggedInUser.ID, token)
-	if err != nil {
-		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
-			Status:  consttypes.RST_ERROR,
-			Message: "Error sending verification email",
-			Data: utresponse.ErrorData{
-				Debug:  err,
-				Errors: err.Error(),
-			},
-		})
-		return
-	}
-
-	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
-		Status:  consttypes.RST_SUCCESS,
-		Message: "send verification email successful",
-		Data:    nil,
-	})
-}
-
-func (r *authroutes) verifyToken(
-	ctx *gin.Context,
-) {
-	var req requests.VerifyToken
-
-	err := ctx.ShouldBindJSON(&req)
-	if err != nil {
-		utresponse.ErrorResponse(ctx, http.StatusBadRequest, utresponse.ErrorRes{
-			Status:  consttypes.RST_FAIL,
-			Message: "Invalid request",
-			Data: utresponse.ErrorData{
-				Debug:  err,
-				Errors: err.Error(),
-			},
-		})
-		return
-	}
-
-	err = r.sauth.VerifyToken(req)
-	if err != nil {
-		utresponse.ErrorResponse(ctx, http.StatusBadRequest, utresponse.ErrorRes{
-			Status:  consttypes.RST_FAIL,
-			Message: "Cannot verify token",
-			Data: utresponse.ErrorData{
-				Debug:  err,
-				Errors: err.Error(),
-			},
-		})
-		return
-	}
-
-	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
-		Status:  consttypes.RST_SUCCESS,
-		Message: "verification successful",
-		Data:    nil,
 	})
 }
 
@@ -292,7 +167,7 @@ func (r *authroutes) resetPassword(
 			"reset password",
 			ctx,
 			ve,
-			&err,
+			err,
 		)
 		return
 	}

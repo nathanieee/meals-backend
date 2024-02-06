@@ -36,9 +36,7 @@ type (
 		Register(req requests.Register, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
 		ForgotPassword(req requests.ForgotPassword) error
 		ResetPassword(req requests.ResetPassword) error
-		SendVerificationEmail(id uuid.UUID, token string) error
 		SendResetPasswordEmail(id uuid.UUID, token string) error
-		VerifyToken(req requests.VerifyToken) error
 		RefreshAuthToken(token string, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
 	}
 )
@@ -186,68 +184,6 @@ func (s *AuthService) SendResetPasswordEmail(id uuid.UUID, token string) error {
 	return nil
 }
 
-func (s *AuthService) SendVerificationEmail(id uuid.UUID, token string) error {
-	user, err := s.userrepo.FindByID(id)
-	if err != nil {
-		return err
-	}
-
-	if consttypes.DateNow.Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
-		return err
-	}
-
-	user.ConfirmationToken = token
-	user.ConfirmationSentAt = consttypes.DateNow
-
-	_, err = s.userrepo.Update(*user)
-	if err != nil {
-		return err
-	}
-
-	// TODO - change this request to send correct data.
-	emreq := requests.SendEmail{
-		Template: "email_verification.html",
-		Subject:  "Reset Password",
-		Email:    user.Email,
-		Token:    token,
-	}
-
-	err = s.mailsvc.SendVerificationEmail(emreq)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *AuthService) VerifyToken(req requests.VerifyToken) error {
-	user, err := s.userrepo.FindByEmail(req.Email)
-	if err != nil {
-		return err
-	}
-
-	if !consttypes.DateNow.Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
-		return err
-	}
-
-	if !user.ConfirmedAt.Equal(time.Time{}) {
-		return err
-	}
-
-	if req.Token != user.ConfirmationToken {
-		return err
-	}
-
-	user.ConfirmedAt = consttypes.DateNow
-
-	_, err = s.userrepo.Update(*user)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (s *AuthService) RefreshAuthToken(refreshToken string, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
 	now := consttypes.DateNow
 	parsedToken, err := uttoken.ParseToken(refreshToken, s.cfg.JWT.RefreshToken.PublicKey)
@@ -309,15 +245,10 @@ func verifyPassword(user models.User, password string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 
 	if err != nil {
-		switch err {
-		case bcrypt.ErrMismatchedHashAndPassword:
-			return err
-		default:
-			return err
-		}
+		return err
 	}
 
-	return err
+	return nil
 }
 
 func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*uttoken.TokenHeader, error) {
@@ -346,12 +277,7 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 		return nil, err
 	}
 
-	tokenHeader := uttoken.TokenHeader{
-		AccessToken:         *accessToken.Token,
-		AccessTokenExpires:  *accessToken.Expires,
-		RefreshToken:        *refreshToken.Token,
-		RefreshTokenExpires: *refreshToken.Expires,
-	}
+	tokenHeader := uttoken.NewTokenHeader(*accessToken, *refreshToken)
 
 	// * setting the access token into redis
 	err = s.rdb.Set(ctx, accessToken.TokenUUID.String(), user.ID, time.Unix(accessToken.Expires.Unix(), 0).Sub(now)).Err()
@@ -387,5 +313,5 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 		true,
 	)
 
-	return &tokenHeader, err
+	return tokenHeader, err
 }

@@ -17,8 +17,8 @@ type (
 		Caregiver      *Caregiver        `json:"caregiver,omitempty"`
 		OrganizationID *uuid.UUID        `json:"-"`
 		Organization   *Organization     `json:"organization,omitempty"`
-		Illness        []*MemberIllness  `json:"illness,omitempty"`
-		Allergy        []*MemberAllergy  `json:"allergy,omitempty"`
+		Illness        []*MemberIllness  `json:"illnesses,omitempty"`
+		Allergy        []*MemberAllergy  `json:"allergies,omitempty"`
 		Height         float64           `json:"height"`
 		Weight         float64           `json:"weight"`
 		BMI            float64           `json:"bmi"`
@@ -29,14 +29,14 @@ type (
 	}
 
 	MemberIllness struct {
-		helper.Model
-		IllnessID uuid.UUID `json:"illness_id"`
-		Illness   Illness   `json:"illness"`
+		helper.Model `json:"-"`
+		IllnessID    uuid.UUID `json:"-"`
+		Illness      Illness   `json:"illness"`
 	}
 
 	MemberAllergy struct {
-		helper.Model
-		AllergyID uuid.UUID `json:"allergy_id"`
-		Allergy   Allergy   `json:"allergy"`
+		helper.Model `json:"-"`
+		AllergyID    uuid.UUID `json:"-"`
+		Allergy      Allergy   `json:"allergy"`
 	}
 )

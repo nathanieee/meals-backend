@@ -70,18 +70,17 @@ var (
 	ErrTokenExpired      = errors.New("token is expired")
 	ErrTokenUnverifiable = errors.New("token is unverifiable")
 	ErrTokenMismatch     = errors.New("token is mismatch")
-	ErrTokenIsNotTheSame = errors.New("this token is not the same")
 
 	// User
 	ErrUserNotFound         = errors.New("user not found")
 	ErrIncorrectPassword    = errors.New("incorrect password")
-	ErrUserIDNotFound       = errors.New("unable to assert user ID")
+	ErrUserIDNotFound       = errors.New("user ID is not found")
 	ErrUserAlreadyExist     = errors.New("user already exists")
 	ErrUserAlreadyConfirmed = errors.New("this user is already confirmed")
 
 	// Email
-	ErrSendEmailResetRequest        = errors.New("you already requested a reset password email in less than 5 minutes")
-	ErrSendEmailVerificationRequest = errors.New("you already requested a verification message in less than 5 minutes")
+	ErrSendEmailResetRequest        = errors.New("a request for a password reset email was generated just under 5 minutes ago")
+	ErrSendEmailVerificationRequest = errors.New("a request for a verification email was generated just under 5 minutes ago")
 )
 
 func ErrorResponse(ctx *gin.Context, code int, res ErrorRes) {
@@ -123,35 +122,68 @@ func ValidationResponse(err error) []ValidationErrorMessage {
 	return nil
 }
 
-func GeneralInputRequiredError(message string, ctx *gin.Context, err any) {
-	ErrorResponse(ctx, http.StatusUnprocessableEntity, ErrorRes{
+func GeneralInputRequiredError(message string, ctx *gin.Context, err error) {
+	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
 		Status:  consttypes.RST_ERROR,
 		Message: message,
 		Data: ErrorData{
 			Debug:  nil,
-			Errors: err,
+			Errors: err.Error(),
 		},
 	})
 }
 
-func GeneralInternalServerError(message string, ctx *gin.Context, err any) {
+func GeneralInternalServerError(message string, ctx *gin.Context, err error) {
 	ErrorResponse(ctx, http.StatusInternalServerError, ErrorRes{
 		Status:  consttypes.RST_ERROR,
 		Message: message,
 		Data: ErrorData{
 			Debug:  nil,
-			Errors: err,
+			Errors: err.Error(),
 		},
 	})
 }
 
-func GeneralInvalidRequest(message string, ctx *gin.Context, ve []ValidationErrorMessage, err *error) {
+func GeneralInvalidRequest(message string, ctx *gin.Context, ve []ValidationErrorMessage, err error) {
 	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
-		Status:  consttypes.RST_ERROR,
+		Status:  consttypes.RST_FAIL,
 		Message: message,
 		Data: ErrorData{
-			Debug:  *err,
+			Debug:  err,
 			Errors: ve,
+		},
+	})
+}
+
+func GeneralNotFound(entity string, ctx *gin.Context, err error) {
+	ErrorResponse(ctx, http.StatusNotFound, ErrorRes{
+		Status:  consttypes.RST_FAIL,
+		Message: fmt.Sprintf("%s not found", entity),
+		Data: ErrorData{
+			Debug:  nil,
+			Errors: err.Error(),
+		},
+	})
+}
+
+func GeneralFailedCreate(entity string, ctx *gin.Context, err error) {
+	ErrorResponse(ctx, http.StatusUnprocessableEntity, ErrorRes{
+		Status:  consttypes.RST_FAIL,
+		Message: fmt.Sprintf("failed to create %s", entity),
+		Data: ErrorData{
+			Debug:  nil,
+			Errors: err.Error(),
+		},
+	})
+}
+
+func GeneralFailedUpdate(entity string, ctx *gin.Context, err error) {
+	ErrorResponse(ctx, http.StatusUnprocessableEntity, ErrorRes{
+		Status:  consttypes.RST_FAIL,
+		Message: fmt.Sprintf("failed to update %s", entity),
+		Data: ErrorData{
+			Debug:  nil,
+			Errors: err.Error(),
 		},
 	})
 }

@@ -6,7 +6,6 @@ import (
 	"project-skbackend/packages/customs"
 	"project-skbackend/packages/utils/utlogger"
 
-	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 )
 
@@ -20,7 +19,6 @@ type (
 	}
 
 	UpdateCaregiver struct {
-		ID          uuid.UUID         `json:"id" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
 		User        UpdateUser        `json:"user"`
 		Gender      consttypes.Gender `json:"gender" gorm:"not null" binding:"required" example:"Male"`
 		FirstName   string            `json:"first_name" gorm:"not null" binding:"required" example:"Jonathan"`
@@ -35,6 +33,15 @@ func (req *CreateCaregiver) ToModel() *models.Caregiver {
 		User: *user,
 	}
 
+	if err := copier.Copy(&caregiver, &req); err != nil {
+		utlogger.LogError(err)
+		return nil
+	}
+
+	return &caregiver
+}
+
+func (req *UpdateCaregiver) ToModel(caregiver models.Caregiver) *models.Caregiver {
 	if err := copier.Copy(&caregiver, &req); err != nil {
 		utlogger.LogError(err)
 		return nil

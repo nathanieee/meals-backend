@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -36,6 +37,7 @@ func newMemberRoutes(
 	{
 		admgrp.POST("", r.createMember)
 		admgrp.GET("", r.getMembers)
+		admgrp.PUT("/:uuid", r.updateMember)
 	}
 }
 
@@ -46,10 +48,10 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
-			"create member",
+			"create member failed",
 			ctx,
 			ve,
-			&err,
+			err,
 		)
 		return
 	}
@@ -61,10 +63,10 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 		err := file.IsImage()
 		if err != nil {
 			utresponse.GeneralInvalidRequest(
-				"file image validation",
+				"file validation failed",
 				ctx,
 				nil,
-				&err,
+				err,
 			)
 			return
 		}
@@ -93,7 +95,7 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 
 	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
 		Status:  consttypes.RST_SUCCESS,
-		Message: "success creating new member",
+		Message: "success creating a new member",
 		Data:    meres,
 	})
 }
@@ -103,14 +105,11 @@ func (r *memberroutes) getMembers(ctx *gin.Context) {
 
 	members, err := r.smember.FindAll(paginationReq)
 	if err != nil {
-		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
-			Status:  consttypes.RST_ERROR,
-			Message: "members not found",
-			Data: utresponse.ErrorData{
-				Debug:  err,
-				Errors: err.Error(),
-			},
-		})
+		utresponse.GeneralNotFound(
+			"members",
+			ctx,
+			err,
+		)
 		return
 	}
 
@@ -118,5 +117,57 @@ func (r *memberroutes) getMembers(ctx *gin.Context) {
 		Status:  consttypes.RST_SUCCESS,
 		Message: "success get members",
 		Data:    members,
+	})
+}
+
+func (r *memberroutes) updateMember(ctx *gin.Context) {
+	var req requests.UpdateMember
+
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			"member",
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	uuid, err := uuid.Parse(ctx.Param("uuid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			utresponse.ErrConvertFailed.Error(),
+			ctx,
+			err,
+		)
+		return
+	}
+
+	_, err = r.smember.FindByID(uuid)
+	if err != nil {
+		utresponse.GeneralNotFound(
+			"member",
+			ctx,
+			err,
+		)
+		return
+	}
+
+	mres, err := r.smember.Update(uuid, req)
+	if err != nil {
+		utresponse.GeneralFailedUpdate(
+			"member",
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
+		Status:  consttypes.RST_SUCCESS,
+		Message: "success update member",
+		Data:    mres,
 	})
 }

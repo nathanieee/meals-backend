@@ -53,7 +53,7 @@ func (r *AdminRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
 		Preload("User.Address").
-		Preload("User.UserImage.Image")
+		Preload("User.Image.Image")
 }
 
 func (r *AdminRepository) Create(a models.Admin) (*models.Admin, error) {

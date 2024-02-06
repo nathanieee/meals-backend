@@ -12,7 +12,7 @@ type (
 	User struct {
 		helper.Model
 		Address                []*Address          `json:"address,omitempty"`
-		UserImage              *UserImage          `json:"user_image,omitempty"`
+		Image                  *UserImage          `json:"image,omitempty"`
 		Email                  string              `json:"email"`
 		Password               string              `json:"-"`
 		Role                   consttypes.UserRole `json:"role"`
@@ -27,8 +27,8 @@ type (
 
 	UserImage struct {
 		helper.Model
-		UserID  uuid.UUID `json:"user_id"`
-		ImageID uuid.UUID `json:"image_id"`
+		UserID  uuid.UUID `json:"-"`
+		ImageID uuid.UUID `json:"-"`
 		Image   Image     `json:"image"`
 	}
 )

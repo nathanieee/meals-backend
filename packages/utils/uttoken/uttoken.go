@@ -38,6 +38,29 @@ type (
 	}
 )
 
+func NewTokenHeader(access Token, refresh Token) *TokenHeader {
+	return &TokenHeader{
+		AccessToken:         *access.Token,
+		AccessTokenExpires:  *access.Expires,
+		RefreshToken:        *refresh.Token,
+		RefreshTokenExpires: *refresh.Expires,
+	}
+}
+
+func (token *TokenHeader) ToAuthResponse(user responses.User) *responses.Auth {
+	return &responses.Auth{
+		ID:                 user.ID,
+		Email:              user.Email,
+		Role:               user.Role,
+		ConfirmationSentAt: user.ConfirmationSentAt,
+		ConfirmedAt:        user.ConfirmedAt,
+		CreatedAt:          user.CreatedAt,
+		UpdatedAt:          user.UpdatedAt,
+		Token:              token.AccessToken,
+		Expires:            token.AccessTokenExpires,
+	}
+}
+
 func GenerateToken(
 	ures *responses.User,
 	lifespan int,

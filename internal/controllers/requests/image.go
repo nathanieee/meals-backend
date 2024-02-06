@@ -6,7 +6,6 @@ import (
 	"mime/multipart"
 	"project-skbackend/packages/utils/utlogger"
 
-	"github.com/google/uuid"
 	"github.com/h2non/filetype"
 )
 
@@ -16,7 +15,6 @@ type (
 	}
 
 	UpdateImage struct {
-		ID    uuid.UUID             `json:"id" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
 		Image *multipart.FileHeader `json:"image" form:"image" binding:"required"`
 	}
 )
