@@ -66,7 +66,7 @@ func (r *userroutes) createUser(ctx *gin.Context) {
 			"create user",
 			ctx,
 			ve,
-			&err,
+			err,
 		)
 		return
 	}
