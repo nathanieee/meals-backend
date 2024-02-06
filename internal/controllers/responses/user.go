@@ -12,7 +12,7 @@ type (
 	User struct {
 		helper.Model
 		Address                []*Address          `json:"address,omitempty"`
-		Image                  *UserImage          `json:"image,omitempty"`
+		UserImage              *UserImage          `json:"image,omitempty"`
 		Email                  string              `json:"email"`
 		Password               string              `json:"-"`
 		Role                   consttypes.UserRole `json:"role"`

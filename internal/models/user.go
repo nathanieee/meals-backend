@@ -17,7 +17,7 @@ type (
 	User struct {
 		helper.Model
 		Address                []*Address          `json:"address,omitempty"`
-		Image                  *UserImage          `json:"image,omitempty"`
+		UserImage              *UserImage          `json:"user_image,omitempty"`
 		Email                  string              `json:"email" gorm:"not null;unique" example:"email@email.com"`
 		Password               string              `json:"-" gorm:"size:255;not null;" binding:"required" example:"password"`
 		Role                   consttypes.UserRole `json:"role" gorm:"not null" example:"0" default:"0"`
