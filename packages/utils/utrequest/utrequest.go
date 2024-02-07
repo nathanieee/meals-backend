@@ -6,7 +6,6 @@ import (
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utmath"
 	"project-skbackend/packages/utils/utpagination"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -30,8 +29,6 @@ func CheckWhitelistUrl(url string) bool {
 }
 
 func GeneratePaginationFromRequest(ctx *gin.Context) utpagination.Pagination {
-	// Initializing default
-	//	var mode string
 	limit := 10
 	page := 1
 	search := ""
@@ -100,35 +97,7 @@ func GeneratePaginationFromRequest(ctx *gin.Context) utpagination.Pagination {
 	}
 }
 
-func GetExtensionType(ext string) string {
-	images := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
-	video := map[string]bool{".mp4": true}
-	sound := map[string]bool{".mp3": true}
-
-	filetype := "others"
-
-	if images[ext] {
-		filetype = "image"
-	} else if video[ext] {
-		filetype = "video"
-	} else if sound[ext] {
-		filetype = "sound"
-	}
-
-	return filetype
-}
-
-func ValidateExtension(ext string) error {
-	valid := map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".mp4": true, ".mp3": true}
-
-	if valid[ext] {
-		return nil
-	} else {
-		keys := reflect.ValueOf(valid).MapKeys()
-		return fmt.Errorf("only allowed file extension : %s", keys)
-	}
-}
-
+// TODO - needs to use this function to validate file sizes in the future
 func GetReadableFileSize(size float64, ext string) error {
 	suffixes[0] = "B"
 	suffixes[1] = "KB"

@@ -9,7 +9,6 @@ import (
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utstring"
 	"project-skbackend/packages/utils/uttoken"
 	"strings"
@@ -59,19 +58,16 @@ func NewAuthService(
 func (s *AuthService) Login(req requests.Login, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
 	user, err := s.userrepo.FindByEmail(req.Email)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, nil, err
 	}
 
 	err = verifyPassword(*user, req.Password)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, nil, err
 	}
 
 	tokenHeader, err := s.generateAuthTokens(user, ctx)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, nil, err
 	}
 
@@ -113,7 +109,6 @@ func (s *AuthService) ForgotPassword(req requests.ForgotPassword) error {
 
 	token, err := utstring.GenerateRandomToken(s.verifyTokenLength)
 	if err != nil {
-		utlogger.LogError(err)
 		return err
 	}
 

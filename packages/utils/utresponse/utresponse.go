@@ -34,6 +34,42 @@ func SuccessResponse(ctx *gin.Context, code int, res SuccessRes) {
 	ctx.JSON(code, res)
 }
 
+func GeneralSuccessCreate(
+	entity string,
+	ctx *gin.Context,
+	data any,
+) {
+	SuccessResponse(ctx, http.StatusCreated, SuccessRes{
+		Status:  consttypes.RST_SUCCESS,
+		Message: fmt.Sprintf("Success creating a new %s", entity),
+		Data:    data,
+	})
+}
+
+func GeneralSuccessUpdated(
+	entity string,
+	ctx *gin.Context,
+	data any,
+) {
+	SuccessResponse(ctx, http.StatusOK, SuccessRes{
+		Status:  consttypes.RST_SUCCESS,
+		Message: fmt.Sprintf("Success updating %s", entity),
+		Data:    data,
+	})
+}
+
+func GeneralSuccessFetching(
+	entity string,
+	ctx *gin.Context,
+	data any,
+) {
+	SuccessResponse(ctx, http.StatusOK, SuccessRes{
+		Status:  consttypes.RST_SUCCESS,
+		Message: "success get members",
+		Data:    data,
+	})
+}
+
 /* -------------------------------------------------------------------------- */
 /*                               error responses                              */
 /* -------------------------------------------------------------------------- */
@@ -122,32 +158,45 @@ func ValidationResponse(err error) []ValidationErrorMessage {
 	return nil
 }
 
-func GeneralInputRequiredError(message string, ctx *gin.Context, err error) {
+func GeneralInputRequiredError(
+	function string,
+	ctx *gin.Context,
+	err error,
+) {
 	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
 		Status:  consttypes.RST_ERROR,
-		Message: message,
+		Message: fmt.Sprintf("Input required on %s", function),
 		Data: ErrorData{
-			Debug:  nil,
+			Debug:  err,
 			Errors: err.Error(),
 		},
 	})
 }
 
-func GeneralInternalServerError(message string, ctx *gin.Context, err error) {
+func GeneralInternalServerError(
+	function string,
+	ctx *gin.Context,
+	err error,
+) {
 	ErrorResponse(ctx, http.StatusInternalServerError, ErrorRes{
 		Status:  consttypes.RST_ERROR,
-		Message: message,
+		Message: fmt.Sprintf("Something went wrong on %s", function),
 		Data: ErrorData{
-			Debug:  nil,
+			Debug:  err,
 			Errors: err.Error(),
 		},
 	})
 }
 
-func GeneralInvalidRequest(message string, ctx *gin.Context, ve []ValidationErrorMessage, err error) {
+func GeneralInvalidRequest(
+	function string,
+	ctx *gin.Context,
+	ve []ValidationErrorMessage,
+	err error,
+) {
 	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
 		Status:  consttypes.RST_FAIL,
-		Message: message,
+		Message: fmt.Sprintf("Invalid request on %s", function),
 		Data: ErrorData{
 			Debug:  err,
 			Errors: ve,
@@ -155,34 +204,75 @@ func GeneralInvalidRequest(message string, ctx *gin.Context, ve []ValidationErro
 	})
 }
 
-func GeneralNotFound(entity string, ctx *gin.Context, err error) {
+func GeneralNotFound(
+	entity string,
+	ctx *gin.Context,
+	err error,
+) {
 	ErrorResponse(ctx, http.StatusNotFound, ErrorRes{
 		Status:  consttypes.RST_FAIL,
-		Message: fmt.Sprintf("%s not found", entity),
+		Message: fmt.Sprintf("Entity %s is not found", entity),
 		Data: ErrorData{
-			Debug:  nil,
+			Debug:  err,
 			Errors: err.Error(),
 		},
 	})
 }
 
-func GeneralFailedCreate(entity string, ctx *gin.Context, err error) {
-	ErrorResponse(ctx, http.StatusUnprocessableEntity, ErrorRes{
+func GeneralUnauthorized(
+	ctx *gin.Context,
+	err error,
+) {
+	ErrorResponse(ctx, http.StatusUnauthorized, ErrorRes{
 		Status:  consttypes.RST_FAIL,
-		Message: fmt.Sprintf("failed to create %s", entity),
+		Message: "You are unauthorized to perform this action",
 		Data: ErrorData{
-			Debug:  nil,
+			Debug:  err,
 			Errors: err.Error(),
 		},
 	})
 }
 
-func GeneralFailedUpdate(entity string, ctx *gin.Context, err error) {
+func GeneralFailedCreate(
+	entity string,
+	ctx *gin.Context,
+	err error,
+) {
 	ErrorResponse(ctx, http.StatusUnprocessableEntity, ErrorRes{
 		Status:  consttypes.RST_FAIL,
-		Message: fmt.Sprintf("failed to update %s", entity),
+		Message: fmt.Sprintf("Failed to create %s", entity),
 		Data: ErrorData{
-			Debug:  nil,
+			Debug:  err,
+			Errors: err.Error(),
+		},
+	})
+}
+
+func GeneralFailedUpdate(
+	entity string,
+	ctx *gin.Context,
+	err error,
+) {
+	ErrorResponse(ctx, http.StatusUnprocessableEntity, ErrorRes{
+		Status:  consttypes.RST_FAIL,
+		Message: fmt.Sprintf("Failed to update %s", entity),
+		Data: ErrorData{
+			Debug:  err,
+			Errors: err.Error(),
+		},
+	})
+}
+
+func GeneralDuplicate(
+	field string,
+	ctx *gin.Context,
+	err error,
+) {
+	ErrorResponse(ctx, http.StatusConflict, ErrorRes{
+		Status:  consttypes.RST_FAIL,
+		Message: fmt.Sprintf("Duplicate %s", field),
+		Data: ErrorData{
+			Debug:  err,
 			Errors: err.Error(),
 		},
 	})

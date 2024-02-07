@@ -1,10 +1,12 @@
 package models
 
 import (
+	"fmt"
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type (
@@ -16,3 +18,18 @@ type (
 		Name   string                      `json:"name" gorm:"not null" binding:"required" example:"Panti Jompo Syailendra"`
 	}
 )
+
+func (o *Organization) BeforeCreate(tx *gorm.DB) error {
+	var user *User
+
+	if err := tx.Where("email = ?", o.User.Email).First(&user).Error; err != nil {
+		return err
+	}
+
+	if user != nil {
+		var err = fmt.Errorf("user with email %s already exists", o.User.Email)
+		return err
+	}
+
+	return nil
+}

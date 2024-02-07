@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"project-skbackend/configs"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -49,7 +48,6 @@ func (s *ImageService) Upload(fileheader *multipart.FileHeader, imgtype consttyp
 
 	// * create directory if it does not exist
 	if err := os.MkdirAll(uppath, os.ModePerm); err != nil {
-		utlogger.LogError(err)
 		return err
 	}
 
@@ -57,7 +55,6 @@ func (s *ImageService) Upload(fileheader *multipart.FileHeader, imgtype consttyp
 	filename = fmt.Sprintf("%s_%s", imgtype, filename)
 	destination := filepath.Join(uppath, filename)
 	if err := ctx.SaveUploadedFile(fileheader, destination); err != nil {
-		utlogger.LogError(err)
 		return err
 	}
 

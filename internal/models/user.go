@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
@@ -46,7 +47,20 @@ func (u *User) hashPasswordIfNeeded() error {
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
-	return u.hashPasswordIfNeeded()
+	if err := tx.Where("email = ?", u.Email).First(&u).Error; err != nil {
+		return err
+	}
+
+	if u != nil {
+		var err = fmt.Errorf("user with email %s already exists", u.Email)
+		return err
+	}
+
+	if err := u.hashPasswordIfNeeded(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (u *User) BeforeUpdate(tx *gorm.DB) error {

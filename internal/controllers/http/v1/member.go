@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
@@ -42,13 +43,15 @@ func newMemberRoutes(
 }
 
 func (r *memberroutes) createMember(ctx *gin.Context) {
+	var function = "create member"
+	var entity = "member"
 	var req requests.CreateMember
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
-			"create member failed",
+			function,
 			ctx,
 			ve,
 			err,
@@ -62,10 +65,9 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 		// * check if the file is an image
 		err := file.IsImage()
 		if err != nil {
-			utresponse.GeneralInvalidRequest(
-				"file validation failed",
+			utresponse.GeneralInternalServerError(
+				function,
 				ctx,
-				nil,
 				err,
 			)
 			return
@@ -74,18 +76,17 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 
 	meres, err := r.smember.Create(req)
 	if err != nil {
+		fmt.Println(err, "create member")
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			utresponse.ErrorResponse(ctx, http.StatusConflict, utresponse.ErrorRes{
-				Status:  consttypes.RST_ERROR,
-				Message: "duplicate email",
-				Data: utresponse.ErrorData{
-					Debug:  err,
-					Errors: err.Error(),
-				},
-			})
+			fmt.Println(err)
+			utresponse.GeneralDuplicate(
+				"email",
+				ctx,
+				err,
+			)
 		} else {
 			utresponse.GeneralInternalServerError(
-				"something went wrong",
+				function,
 				ctx,
 				err,
 			)
@@ -93,31 +94,32 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 		return
 	}
 
-	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
-		Status:  consttypes.RST_SUCCESS,
-		Message: "success creating a new member",
-		Data:    meres,
-	})
+	utresponse.GeneralSuccessCreate(
+		entity,
+		ctx,
+		meres,
+	)
 }
 
 func (r *memberroutes) getMembers(ctx *gin.Context) {
+	var entity = "members"
 	paginationReq := utrequest.GeneratePaginationFromRequest(ctx)
 
 	members, err := r.smember.FindAll(paginationReq)
 	if err != nil {
 		utresponse.GeneralNotFound(
-			"members",
+			entity,
 			ctx,
 			err,
 		)
 		return
 	}
 
-	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
-		Status:  consttypes.RST_SUCCESS,
-		Message: "success get members",
-		Data:    members,
-	})
+	utresponse.GeneralSuccessFetching(
+		entity,
+		ctx,
+		members,
+	)
 }
 
 func (r *memberroutes) updateMember(ctx *gin.Context) {

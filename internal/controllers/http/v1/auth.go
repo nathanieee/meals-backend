@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
@@ -123,27 +124,24 @@ func (r *authroutes) forgotPassword(
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		utresponse.ErrorResponse(ctx, http.StatusBadRequest, utresponse.ErrorRes{
-			Status:  consttypes.RST_FAIL,
-			Message: "Invalid request",
-			Data: utresponse.ErrorData{
-				Debug:  err,
-				Errors: err.Error(),
-			},
-		})
+		ve := utresponse.ValidationResponse(err)
+
+		utresponse.GeneralInvalidRequest(
+			"forgot password",
+			ctx,
+			ve,
+			err,
+		)
 		return
 	}
 
 	err = r.sauth.ForgotPassword(req)
 	if err != nil {
-		utresponse.ErrorResponse(ctx, http.StatusBadRequest, utresponse.ErrorRes{
-			Status:  consttypes.RST_ERROR,
-			Message: "Something went wrong",
-			Data: utresponse.ErrorData{
-				Debug:  err,
-				Errors: err.Error(),
-			},
-		})
+		utresponse.GeneralInternalServerError(
+			"forgot password",
+			ctx,
+			err,
+		)
 		return
 	}
 
@@ -174,14 +172,11 @@ func (r *authroutes) resetPassword(
 
 	err = r.sauth.ResetPassword(req)
 	if err != nil {
-		utresponse.ErrorResponse(ctx, http.StatusBadRequest, utresponse.ErrorRes{
-			Status:  consttypes.RST_ERROR,
-			Message: "Something went wrong",
-			Data: utresponse.ErrorData{
-				Debug:  err,
-				Errors: err.Error(),
-			},
-		})
+		utresponse.GeneralInternalServerError(
+			"reset password",
+			ctx,
+			err,
+		)
 		return
 	}
 
@@ -196,16 +191,11 @@ func (r *authroutes) refreshAuthToken(
 	ctx *gin.Context,
 ) {
 	refreshToken, err := ctx.Cookie("refresh_token")
-
 	if refreshToken == "" || err != nil {
-		utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
-			Status:  consttypes.RST_ERROR,
-			Message: "Something went wrong",
-			Data: utresponse.ErrorData{
-				Debug:  nil,
-				Errors: "No Refresh token detected",
-			},
-		})
+		utresponse.GeneralUnauthorized(
+			ctx,
+			fmt.Errorf("refresh token not found"),
+		)
 		return
 	}
 

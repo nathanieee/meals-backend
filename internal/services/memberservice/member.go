@@ -13,7 +13,6 @@ import (
 	"project-skbackend/internal/repositories/userrepo"
 
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
@@ -75,7 +74,6 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 	if req.OrganizationID != nil {
 		organization, err = s.orgrepo.FindByID(*req.OrganizationID)
 		if err != nil {
-			utlogger.LogError(err)
 			return nil, err
 		}
 	}
@@ -84,7 +82,6 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 	for _, ill := range req.IllnessID {
 		illness, err := s.illrepo.FindByID(ill)
 		if err != nil {
-			utlogger.LogError(err)
 			return nil, err
 		}
 
@@ -97,7 +94,6 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 	for _, all := range req.AllergyID {
 		allergy, err := s.allgrepo.FindByID(all)
 		if err != nil {
-			utlogger.LogError(err)
 			return nil, err
 		}
 
@@ -109,7 +105,6 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 	member := req.ToModel(*user, caregiver, allergies, illnesses, organization)
 	member, err = s.membrepo.Create(*member)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -121,7 +116,6 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 func (s *MemberService) Read() ([]*models.Member, error) {
 	members, err := s.membrepo.Read()
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -137,7 +131,6 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 
 	member, err := s.membrepo.FindByID(id)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -149,7 +142,6 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		if member.Caregiver != nil {
 			caregiver, err = s.crgvrrepo.FindByID(*member.CaregiverID)
 			if err != nil {
-				utlogger.LogError(err)
 				return nil, err
 			}
 		}
@@ -161,7 +153,6 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 	if req.OrganizationID != nil {
 		organization, err = s.orgrepo.FindByID(*req.OrganizationID)
 		if err != nil {
-			utlogger.LogError(err)
 			return nil, err
 		}
 	}
@@ -170,7 +161,6 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 	for _, ill := range req.IllnessID {
 		illness, err := s.illrepo.FindByID(ill)
 		if err != nil {
-			utlogger.LogError(err)
 			return nil, err
 		}
 
@@ -183,7 +173,6 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 	for _, all := range req.AllergyID {
 		allergy, err := s.allgrepo.FindByID(all)
 		if err != nil {
-			utlogger.LogError(err)
 			return nil, err
 		}
 
@@ -196,7 +185,6 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 	member = req.ToModel(*member, *user, caregiver, allergies, illnesses, organization)
 	member, err = s.membrepo.Update(*member)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -210,7 +198,6 @@ func (s *MemberService) Delete(id uuid.UUID) error {
 
 	err := s.membrepo.Delete(member)
 	if err != nil {
-		utlogger.LogError(err)
 		return err
 	}
 
@@ -220,7 +207,6 @@ func (s *MemberService) Delete(id uuid.UUID) error {
 func (s *MemberService) FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error) {
 	members, err := s.membrepo.FindAll(preq)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -230,7 +216,6 @@ func (s *MemberService) FindAll(preq utpagination.Pagination) (*utpagination.Pag
 func (s *MemberService) FindByID(id uuid.UUID) (*responses.Member, error) {
 	member, err := s.membrepo.FindByID(id)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, err
 	}
 

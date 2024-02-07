@@ -8,7 +8,6 @@ import (
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
@@ -46,14 +45,12 @@ func (s *UserService) Create(req requests.CreateUser) (*responses.User, error) {
 
 	u, err := s.userrepo.Create(*u)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, err
 	}
 
 	umar, _ := json.Marshal(u)
 	err = json.Unmarshal(umar, &ures)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -63,7 +60,6 @@ func (s *UserService) Create(req requests.CreateUser) (*responses.User, error) {
 func (s *UserService) FindByID(uid uuid.UUID) (*responses.User, error) {
 	u, err := s.userrepo.FindByID(uid)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -73,7 +69,6 @@ func (s *UserService) FindByID(uid uuid.UUID) (*responses.User, error) {
 func (s *UserService) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	users, err := s.userrepo.FindAll(p)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, err
 	}
 
@@ -87,19 +82,20 @@ func (s *UserService) Delete(uid uuid.UUID) error {
 
 	err := s.userrepo.Delete(u)
 	if err != nil {
-		utlogger.LogError(err)
 		return err
 	}
 
 	return nil
 }
 
-func (s *UserService) Update(req requests.UpdateUser, uid uuid.UUID) (*responses.User, error) {
+func (s *UserService) Update(
+	req requests.UpdateUser,
+	uid uuid.UUID,
+) (*responses.User, error) {
 	u := req.ToModel(consttypes.UR_USER, uid)
 
 	u, err := s.userrepo.Update(*u)
 	if err != nil {
-		utlogger.LogError(err)
 		return nil, err
 	}
 
