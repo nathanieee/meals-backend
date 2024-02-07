@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
-	"gorm.io/gorm"
 )
 
 type (
@@ -47,21 +45,6 @@ type (
 		Allergy   Allergy   `json:"allergy"`
 	}
 )
-
-func (m *Member) BeforeCreate(tx *gorm.DB) error {
-	var user *User
-
-	if err := tx.Where("email = ?", m.User.Email).First(&user).Error; err != nil {
-		return err
-	}
-
-	if user != nil {
-		var err = fmt.Errorf("user with email %s already exists", m.User.Email)
-		return err
-	}
-
-	return nil
-}
 
 func (m *Member) ToResponse() *responses.Member {
 	mres := responses.Member{}
