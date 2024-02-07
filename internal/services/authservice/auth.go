@@ -299,7 +299,7 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 
 	// * setting the cookie for refresh token
 	ctx.SetCookie(
-		"refresh_token",
+		"refresh-token",
 		*refreshToken.Token,
 		int(refreshToken.Expires.Unix()),
 		"/",

@@ -34,6 +34,18 @@ func SuccessResponse(ctx *gin.Context, code int, res SuccessRes) {
 	ctx.JSON(code, res)
 }
 
+func GeneralSuccess(
+	function string,
+	ctx *gin.Context,
+	data any,
+) {
+	SuccessResponse(ctx, http.StatusOK, SuccessRes{
+		Status:  consttypes.RST_SUCCESS,
+		Message: fmt.Sprintf("Success %s", function),
+		Data:    data,
+	})
+}
+
 func GeneralSuccessCreate(
 	entity string,
 	ctx *gin.Context,
@@ -65,8 +77,22 @@ func GeneralSuccessFetching(
 ) {
 	SuccessResponse(ctx, http.StatusOK, SuccessRes{
 		Status:  consttypes.RST_SUCCESS,
-		Message: "success get members",
+		Message: fmt.Sprintf("Success fetching %s", entity),
 		Data:    data,
+	})
+}
+
+func GeneralSuccessAuth(
+	function string,
+	ctx *gin.Context,
+	data any,
+	header *uttoken.TokenHeader,
+) {
+	SuccessResponse(ctx, http.StatusOK, SuccessRes{
+		Status:  consttypes.RST_SUCCESS,
+		Message: fmt.Sprintf("Success on %s", function),
+		Data:    data,
+		Header:  *header,
 	})
 }
 
