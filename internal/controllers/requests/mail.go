@@ -6,16 +6,18 @@ import (
 )
 
 type (
-	SendEmail struct {
-		Template string `binding:"required,oneof=email_veification.html"`
-		Subject  string `binding:"required"`
-		Name     string
-		Email    string `binding:"required,email"`
-		Token    string
+	SendMail struct {
+		Template string   `binding:"required"`
+		To       []string `binding:"required"`
+		Subject  string   `binding:"required"`
+	}
+
+	ResetPasswordEmail struct {
+		Token string
 	}
 )
 
-func (s SendEmail) ToString() string {
+func (s ResetPasswordEmail) ToString() string {
 	json, err := json.Marshal(s)
 	if err != nil {
 		utlogger.LogError(err)

@@ -9,6 +9,7 @@ import (
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/utstring"
 	"project-skbackend/packages/utils/uttoken"
 	"strings"
@@ -35,7 +36,7 @@ type (
 		Register(req requests.Register, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
 		ForgotPassword(req requests.ForgotPassword) error
 		ResetPassword(req requests.ResetPassword) error
-		SendResetPasswordEmail(id uuid.UUID, token string) error
+		ResetPasswordEmail(id uuid.UUID, token string) error
 		RefreshAuthToken(token string, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
 	}
 )
@@ -112,7 +113,7 @@ func (s *AuthService) ForgotPassword(req requests.ForgotPassword) error {
 		return err
 	}
 
-	err = s.SendResetPasswordEmail(user.ID, token)
+	err = s.ResetPasswordEmail(user.ID, token)
 	if err != nil {
 		return err
 	}
@@ -127,11 +128,11 @@ func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
 	}
 
 	if req.Token != user.ResetPasswordToken {
-		return err
+		return utresponse.ErrTokenMismatch
 	}
 
-	if !consttypes.DateNow.Before(user.ResetPasswordSentAt.Add(time.Minute * 5)) {
-		return err
+	if !consttypes.DateNow.Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.ResetPassword.Cooldown))) {
+		return utresponse.ErrSendEmailResetRequest
 	}
 
 	user.Password = req.Password
@@ -145,14 +146,14 @@ func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
 	return nil
 }
 
-func (s *AuthService) SendResetPasswordEmail(id uuid.UUID, token string) error {
+func (s *AuthService) ResetPasswordEmail(id uuid.UUID, token string) error {
 	user, err := s.userrepo.FindByID(id)
 	if err != nil {
 		return err
 	}
 
-	if consttypes.DateNow.Before(user.ResetPasswordSentAt.Add(time.Minute * 5)) {
-		return err
+	if consttypes.DateNow.Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.ResetPassword.Cooldown))) {
+		return utresponse.ErrSendEmailResetRequest
 	}
 
 	user.ResetPasswordToken = token
@@ -163,15 +164,18 @@ func (s *AuthService) SendResetPasswordEmail(id uuid.UUID, token string) error {
 		return err
 	}
 
-	// TODO - change this request to reset password and sent correct data.
-	emreq := requests.SendEmail{
-		Template: "email_verification.html",
+	emreq := requests.SendMail{
+		To:       []string{user.Email},
 		Subject:  "Reset Password",
-		Email:    user.Email,
-		Token:    token,
+		Template: "reset-password.html",
 	}
 
-	err = s.mailsvc.SendVerificationEmail(emreq)
+	// TODO - change this request to reset password and sent correct data.
+	emreqdata := requests.ResetPasswordEmail{
+		Token: token,
+	}
+
+	err = s.mailsvc.SendResetPassword(emreq, emreqdata)
 	if err != nil {
 		return err
 	}

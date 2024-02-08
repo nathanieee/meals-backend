@@ -47,11 +47,14 @@ func (u *User) hashPasswordIfNeeded() error {
 }
 
 func (u *User) checkDuplicateEmail(tx *gorm.DB) error {
-	if err := tx.Where("email = ?", u.Email).First(&u).Error; err != nil {
+	var user *User
+
+	result := tx.Where("email = ?", u.Email).First(&user)
+	if err := result.Error; err != nil && err != gorm.ErrRecordNotFound {
 		return err
 	}
 
-	if u != nil {
+	if result.RowsAffected != 0 {
 		var err = fmt.Errorf("user with email %s already exists", u.Email)
 		return err
 	}

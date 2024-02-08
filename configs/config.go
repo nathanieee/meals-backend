@@ -30,6 +30,9 @@ type (
 	API struct {
 		VerifyTokenLength int    `env:"API_VERIFY_TOKEN_LENGTH" env-default:"8"`
 		Domain            string `env:"API_DOMAIN" env-default:"localhost"`
+		ResetPassword     struct {
+			Cooldown int `env:"API_RESET_PASSWORD_COOLDOWN" env-default:"5"`
+		}
 	}
 
 	App struct {
@@ -65,11 +68,12 @@ type (
 	}
 
 	Mail struct {
+		Name        string `env:"MAIL_NAME"`
 		From        string `env:"MAIL_FROM"`
 		Password    string `env:"MAIL_PASSWORD"`
 		TemplateDir string `env:"MAIL_TEMPLATE_DIR" env-default:"../web/templates"`
 		SMTPHost    string `env:"SMTP_HOST" env-default:"smtp.gmail.com"`
-		SMTPPort    string `env:"SMTP_PORT" env-default:"587"`
+		SMTPPort    int    `env:"SMTP_PORT" env-default:"587"`
 	}
 
 	JWT struct {

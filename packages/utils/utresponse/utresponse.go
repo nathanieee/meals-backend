@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"project-skbackend/configs"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/uttoken"
 
@@ -17,7 +18,7 @@ import (
 
 type (
 	SuccessRes struct {
-		Status  consttypes.ResponseStatusType `json:"status" default:""`
+		Status  consttypes.ResponseStatusType `json:"status"`
 		Message string                        `json:"message"`
 		Data    any                           `json:"data,omitempty"`
 		Header  uttoken.TokenHeader           `json:"-"`
@@ -120,29 +121,31 @@ type (
 )
 
 var (
+	cfg                   = configs.GetInstance()
+	resetPasswordCooldown = cfg.ResetPassword.Cooldown
+
 	// General
-	ErrConvertFailed = errors.New("data type conversion failed")
+	ErrConvertFailed = fmt.Errorf("data type conversion failed")
 
 	// Error Field
-	ErrFieldIsEmpty             = errors.New("field should not be empty")
-	ErrFieldInvalidFormat       = errors.New("field format is invalid")
-	ErrFieldInvalidEmailAddress = errors.New("invalid email address format")
+	ErrFieldIsEmpty             = fmt.Errorf("field should not be empty")
+	ErrFieldInvalidFormat       = fmt.Errorf("field format is invalid")
+	ErrFieldInvalidEmailAddress = fmt.Errorf("invalid email address format")
 
 	// Token
-	ErrTokenExpired      = errors.New("token is expired")
-	ErrTokenUnverifiable = errors.New("token is unverifiable")
-	ErrTokenMismatch     = errors.New("token is mismatch")
+	ErrTokenExpired      = fmt.Errorf("token is expired")
+	ErrTokenUnverifiable = fmt.Errorf("token is unverifiable")
+	ErrTokenMismatch     = fmt.Errorf("token is mismatch")
 
 	// User
-	ErrUserNotFound         = errors.New("user not found")
-	ErrIncorrectPassword    = errors.New("incorrect password")
-	ErrUserIDNotFound       = errors.New("user ID is not found")
-	ErrUserAlreadyExist     = errors.New("user already exists")
-	ErrUserAlreadyConfirmed = errors.New("this user is already confirmed")
+	ErrUserNotFound         = fmt.Errorf("user not found")
+	ErrIncorrectPassword    = fmt.Errorf("incorrect password")
+	ErrUserIDNotFound       = fmt.Errorf("user ID is not found")
+	ErrUserAlreadyExist     = fmt.Errorf("user already exists")
+	ErrUserAlreadyConfirmed = fmt.Errorf("this user is already confirmed")
 
 	// Email
-	ErrSendEmailResetRequest        = errors.New("a request for a password reset email was generated just under 5 minutes ago")
-	ErrSendEmailVerificationRequest = errors.New("a request for a verification email was generated just under 5 minutes ago")
+	ErrSendEmailResetRequest = fmt.Errorf("a request for a password reset email was generated just under %v minutes ago", resetPasswordCooldown)
 )
 
 func ErrorResponse(ctx *gin.Context, code int, res ErrorRes) {

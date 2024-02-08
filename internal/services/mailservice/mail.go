@@ -4,82 +4,91 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"net/smtp"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"text/template"
+
+	"gopkg.in/gomail.v2"
+)
+
+var (
+	cfg = configs.GetInstance()
+
+	MAIL_NAME   = cfg.Mail.Name
+	MAIL_FROM   = cfg.Mail.From
+	MAIL_PASS   = cfg.Mail.Password
+	MAIL_HOST   = cfg.Mail.SMTPHost
+	MAIL_PORT   = cfg.Mail.SMTPPort
+	MAIL_TEMDIR = cfg.Mail.TemplateDir
 )
 
 type (
 	MailService struct {
-		cfg     *configs.Config
-		mailset *MailSetup
-	}
-
-	MailSetup struct {
-		from    string
-		pass    string
-		host    string
-		port    string
-		address string
-		temdir  string
+		cfg *configs.Config
 	}
 
 	IMailService interface {
-		SendVerificationEmail(req requests.SendEmail) error
+		SendMail(req requests.SendMail, data any) error
+		SendResetPassword(reqdef requests.SendMail, reqdata requests.ResetPasswordEmail) error
 	}
 )
 
 func NewMailService(
 	cfg *configs.Config,
 ) *MailService {
-	mailset := MailSetup{
-		from:    cfg.Mail.From,
-		pass:    cfg.Mail.Password,
-		host:    cfg.Mail.SMTPHost,
-		port:    cfg.Mail.SMTPPort,
-		address: cfg.Mail.SMTPHost + ":" + cfg.Mail.SMTPPort,
-		temdir:  cfg.Mail.TemplateDir,
-	}
-
 	return &MailService{
-		cfg:     cfg,
-		mailset: &mailset,
+		cfg: cfg,
 	}
 }
 
-func (s *MailService) SendVerificationEmail(req requests.SendEmail) error {
-	to := []string{req.Email}
-	temfile := req.Template
+func parseTemplate(templateFileName string, data any) (string, error) {
+	t, err := template.ParseFiles(templateFileName)
+	if err != nil {
+		return "", err
+	}
 
-	/* ------------------------ setup plain auth setting ------------------------ */
-	auth := smtp.PlainAuth("", s.mailset.from, s.mailset.pass, s.mailset.host)
+	buf := new(bytes.Buffer)
+	if err = t.Execute(buf, data); err != nil {
+		fmt.Println(err)
+		return "", err
+	}
 
-	/* -------------------------- setup parse template -------------------------- */
-	t, err := template.ParseFiles(s.mailset.temdir + temfile)
+	return buf.String(), nil
+}
+
+func (s *MailService) SendMail(req requests.SendMail, data any) error {
+	// * parsing the template from template dir and its data
+	result, err := parseTemplate(MAIL_TEMDIR+req.Template, data)
 	if err != nil {
 		return err
 	}
 
-	var body bytes.Buffer
+	// * create a new mailer config with existing parameter
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", MAIL_NAME)
+	mailer.SetHeader("To", req.To...)
+	mailer.SetHeader("Subject", req.Subject)
+	mailer.SetBody("text/html", result)
 
-	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-	body.Write([]byte(fmt.Sprintf("Subject: This is a test subject \n%s\n\n", mimeHeaders)))
+	// * create new dialer from existing config
+	dialer := gomail.NewDialer(
+		MAIL_HOST,
+		MAIL_PORT,
+		MAIL_FROM,
+		MAIL_PASS,
+	)
 
-	/* -------------------- setup the content of the template ------------------- */
-	// TODO CHANGE THE CONTENT ACCORDINGLY
-	t.Execute(&body, struct {
-		Name    string
-		Message string
-		Token   string
-	}{
-		Name:    req.Name,
-		Message: "This is a message",
-		Token:   req.Token,
-	})
+	// * send the mail using the new dialer
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		return err
+	}
 
-	/* ------------------------------- send email ------------------------------- */
-	err = smtp.SendMail(s.mailset.address, auth, s.mailset.from, to, body.Bytes())
+	return nil
+}
+
+func (s *MailService) SendResetPassword(reqdef requests.SendMail, reqdata requests.ResetPasswordEmail) error {
+	err := s.SendMail(reqdef, reqdata)
 	if err != nil {
 		return err
 	}
