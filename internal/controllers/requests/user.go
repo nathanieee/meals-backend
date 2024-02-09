@@ -12,17 +12,17 @@ import (
 
 type (
 	CreateUser struct {
-		UserImage *CreateImage     `json:"user_image" form:"user_image" binding:"-"`
-		Email     string           `json:"email" form:"email" binding:"required,email"`
-		Password  string           `json:"password" form:"password" binding:"required"`
-		Address   *[]CreateAddress `json:"address" form:"address" binding:"-"`
+		*CreateImage
+		Email    string           `json:"email" form:"email" binding:"required,email"`
+		Password string           `json:"password" form:"password" binding:"required"`
+		Address  *[]CreateAddress `json:"address" form:"address" binding:"-"`
 	}
 
 	UpdateUser struct {
-		UserImage *CreateImage     `json:"user_image" form:"user_image" binding:"-"`
-		Email     string           `json:"email" form:"email" binding:"required,email"`
-		Password  string           `json:"password" form:"password" binding:"required"`
-		Address   *[]UpdateAddress `json:"address" form:"address" binding:"-"`
+		*UpdateImage
+		Email    string           `json:"email" form:"email" binding:"required,email"`
+		Password string           `json:"password" form:"password" binding:"required"`
+		Address  *[]UpdateAddress `json:"address" form:"address" binding:"-"`
 	}
 )
 

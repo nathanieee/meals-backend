@@ -11,7 +11,7 @@ import (
 
 type (
 	CreateMeal struct {
-		MealImage   *CreateImage          `json:"meal_image" form:"meal_image" binding:"-"`
+		*CreateImage
 		IllnessID   []*uuid.UUID          `json:"illness_id" form:"illness_id" binding:"-"`
 		AllergyID   []*uuid.UUID          `json:"allergy_id" form:"allergy_id" binding:"-"`
 		PartnerID   uuid.UUID             `json:"partner_id" form:"partner_id" binding:"required"`
@@ -21,7 +21,7 @@ type (
 	}
 
 	UpdateMeal struct {
-		MealImage   *UpdateImage          `json:"meal_image" form:"meal_image" binding:"-"`
+		Image       *UpdateImage          `json:"image" form:"image" binding:"-"`
 		IllnessID   []*uuid.UUID          `json:"illness_id" form:"illness_id" binding:"-"`
 		AllergyID   []*uuid.UUID          `json:"allergy_id" form:"allergy_id" binding:"-"`
 		PartnerID   uuid.UUID             `json:"partner_id" form:"partner_id" binding:"required"`

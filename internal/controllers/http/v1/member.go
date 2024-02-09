@@ -60,7 +60,7 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 	}
 
 	// * get the user image
-	file := req.User.UserImage
+	file := req.User.CreateImage
 	if file != nil {
 		// * check if the file is an image
 		err := file.IsImage()
