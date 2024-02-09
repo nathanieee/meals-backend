@@ -10,14 +10,13 @@ import (
 type (
 	Meal struct {
 		helper.Model
-		MealImage     *MealImage            `json:"meal_image,omitempty"`
-		MealIllnesses *[]MealIllness        `json:"meal_illness,omitempty"`
-		MealAllergies *[]MealAdmin          `json:"meal_allergy,omitempty"`
-		PartnerID     uuid.UUID             `json:"partner_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		Partner       Partner               `json:"partner"`
-		Name          string                `json:"name" gorm:"not null" binding:"required" example:"Nasi Goyeng"`
-		Status        consttypes.MealStatus `json:"status" gorm:"not null; type:meal_status_enum" binding:"required" example:"Active"`
-		Description   string                `json:"description" gorm:"size:255" example:"This meal is made using chicken and egg."`
+		Images      []*MealImage          `json:"images,omitempty"`
+		Illnesses   []*MealIllness        `json:"illnesses,omitempty"`
+		Allergies   []*MealAllergy        `json:"allergies,omitempty"`
+		Partner     Partner               `json:"partner"`
+		Name        string                `json:"name" gorm:"not null" binding:"required" example:"Nasi Goyeng"`
+		Status      consttypes.MealStatus `json:"status" gorm:"not null; type:meal_status_enum" binding:"required" example:"Active"`
+		Description string                `json:"description" gorm:"size:255" example:"This meal is made using chicken and egg."`
 	}
 
 	MealImage struct {
@@ -34,10 +33,10 @@ type (
 		Illness   Illness   `json:"illness"`
 	}
 
-	MealAdmin struct {
+	MealAllergy struct {
 		helper.Model
 		MealID    uuid.UUID `json:"meal_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
 		AllergyID uuid.UUID `json:"allergy_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		Allergy   Admin     `json:"allergy"`
+		Allergy   Allergy   `json:"allergy"`
 	}
 )

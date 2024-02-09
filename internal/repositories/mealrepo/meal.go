@@ -55,7 +55,7 @@ func (r *MealRepository) preload() *gorm.DB {
 		Preload("MealIllnesses.Illness").
 		Preload("MealAllergies.Allergy").
 		Preload("Partner.User.Address").
-		Preload("Partner.User.UserImage.Image")
+		Preload("Partner.User.Image.Image")
 }
 
 func (r *MealRepository) Create(ml models.Meal) (*models.Meal, error) {

@@ -171,6 +171,88 @@ func SeedOrganizationCredential(db *gorm.DB) error {
 	return nil
 }
 
+func SeedPartnerCredential(db *gorm.DB) error {
+	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Partner{}) {
+		if err := db.First(&models.Partner{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			uuidstr := "123e4567-e89b-12d3-a456-426614174000"
+			uuid, err := uuid.Parse(uuidstr)
+			if err != nil {
+				utlogger.LogError(err)
+				return err
+			}
+
+			partners := []*models.Partner{
+				{
+					Model: helper.Model{
+						ID: uuid,
+					},
+					User: models.User{
+						Email:    "partner@test.com",
+						Password: "password",
+						Role:     consttypes.UR_PARTNER,
+					},
+					Name: "Partner",
+				},
+			}
+
+			err = db.Create(partners).Error
+			if err != nil {
+				utlogger.LogError(err)
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func SeedMealData(db *gorm.DB) error {
+	if db.Migrator().HasTable(&models.Meal{}) && db.Migrator().HasTable(&models.Partner{}) {
+		if err := db.First(&models.Meal{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			uuidstr := "123e4567-e89b-12d3-a456-426614174000"
+			uuid, err := uuid.Parse(uuidstr)
+			if err != nil {
+				utlogger.LogError(err)
+				return err
+			}
+
+			var illness models.Illness
+			db.First(&illness, uuid)
+
+			var allergy models.Allergy
+			db.First(&allergy, uuid)
+
+			var partner models.Partner
+			db.First(&partner, uuid)
+
+			meals := []*models.Meal{
+				{
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+			}
+
+			err = db.Create(meals).Error
+			utlogger.LogError(err)
+
+		}
+	}
+
+	return nil
+}
+
 func SeedAllergyData(db *gorm.DB) error {
 	// * source: https://en.wikipedia.org/wiki/List_of_allergens
 	if db.Migrator().HasTable(&models.Allergy{}) {

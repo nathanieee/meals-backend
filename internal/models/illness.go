@@ -18,3 +18,10 @@ func (ill *Illness) ToMemberIllness() *MemberIllness {
 		Illness:   *ill,
 	}
 }
+
+func (ill *Illness) ToMealIllness() *MealIllness {
+	return &MealIllness{
+		IllnessID: ill.ID,
+		Illness:   *ill,
+	}
+}

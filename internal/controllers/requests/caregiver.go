@@ -11,19 +11,19 @@ import (
 
 type (
 	CreateCaregiver struct {
-		User        CreateUser        `json:"user"`
-		Gender      consttypes.Gender `json:"gender" gorm:"not null" binding:"required" example:"Male"`
-		FirstName   string            `json:"first_name" gorm:"not null" binding:"required" example:"Jonathan"`
-		LastName    string            `json:"last_name" gorm:"not null" binding:"required" example:"Vince"`
-		DateOfBirth customs.CDT_DATE  `json:"date_of_birth" gorm:"not null" binding:"required" example:"2000-10-20" time_format:"2006-01-02"`
+		User        CreateUser        `json:"user" form:"user" binding:"required"`
+		Gender      consttypes.Gender `json:"gender" form:"gender" binding:"required"`
+		FirstName   string            `json:"first_name" form:"first_name" binding:"required"`
+		LastName    string            `json:"last_name" form:"last_name" binding:"required"`
+		DateOfBirth customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"required"`
 	}
 
 	UpdateCaregiver struct {
-		User        UpdateUser        `json:"user"`
-		Gender      consttypes.Gender `json:"gender" gorm:"not null" binding:"required" example:"Male"`
-		FirstName   string            `json:"first_name" gorm:"not null" binding:"required" example:"Jonathan"`
-		LastName    string            `json:"last_name" gorm:"not null" binding:"required" example:"Vince"`
-		DateOfBirth customs.CDT_DATE  `json:"date_of_birth" gorm:"not null" binding:"required" example:"2000-10-20" time_format:"2006-01-02"`
+		User        UpdateUser        `json:"user" form:"user" binding:"required"`
+		Gender      consttypes.Gender `json:"gender" form:"gender" binding:"required"`
+		FirstName   string            `json:"first_name" form:"first_name" binding:"required"`
+		LastName    string            `json:"last_name" form:"last_name" binding:"required"`
+		DateOfBirth customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"required"`
 	}
 )
 

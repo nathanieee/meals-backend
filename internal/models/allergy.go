@@ -20,3 +20,10 @@ func (ally *Allergy) ToMemberAllergy() *MemberAllergy {
 		Allergy:   *ally,
 	}
 }
+
+func (ally *Allergy) ToMealAllergy() *MealAllergy {
+	return &MealAllergy{
+		AllergyID: ally.ID,
+		Allergy:   *ally,
+	}
+}

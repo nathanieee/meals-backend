@@ -13,31 +13,31 @@ import (
 
 type (
 	CreateMember struct {
-		User           CreateUser        `json:"user"`
-		Caregiver      *CreateCaregiver  `json:"caregiver"`
-		Height         float64           `json:"height" gorm:"not null" binding:"required" example:"100"`
-		Weight         float64           `json:"weight" gorm:"not null" binding:"required" example:"150"`
-		FirstName      string            `json:"first_name" gorm:"not null" binding:"required" example:"Jonathan"`
-		LastName       string            `json:"last_name" gorm:"not null" binding:"required" example:"Vince"`
-		Gender         consttypes.Gender `json:"gender" gorm:"not null" binding:"required" example:"Male"`
-		DateOfBirth    customs.CDT_DATE  `json:"date_of_birth" gorm:"not null" binding:"required" example:"2000-10-20"`
-		OrganizationID *uuid.UUID        `json:"organization_id,omitempty" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4" default:"null"`
-		IllnessID      []uuid.UUID       `json:"illness_id" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		AllergyID      []uuid.UUID       `json:"allergy_id" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		User           CreateUser        `json:"user" form:"user" binding:"required"`
+		Caregiver      *CreateCaregiver  `json:"caregiver" form:"caregiver" binding:"-"`
+		Height         float64           `json:"height" form:"height" binding:"required"`
+		Weight         float64           `json:"weight" form:"weight" binding:"required"`
+		FirstName      string            `json:"first_name" form:"first_name" binding:"required"`
+		LastName       string            `json:"last_name" form:"last_name" binding:"required"`
+		Gender         consttypes.Gender `json:"gender" form:"gender" binding:"required"`
+		DateOfBirth    customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"required"`
+		OrganizationID *uuid.UUID        `json:"organization_id,omitempty" form:"organization_id" binding:"-"`
+		IllnessID      []*uuid.UUID      `json:"illness_id" form:"illness_id" binding:"-"`
+		AllergyID      []*uuid.UUID      `json:"allergy_id" form:"allergy_id" binding:"-"`
 	}
 
 	UpdateMember struct {
-		User           UpdateUser        `json:"user"`
-		Caregiver      *UpdateCaregiver  `json:"caregiver"`
-		Height         float64           `json:"height" gorm:"not null" binding:"required" example:"100"`
-		Weight         float64           `json:"weight" gorm:"not null" binding:"required" example:"150"`
-		FirstName      string            `json:"first_name" gorm:"not null" binding:"required" example:"Jonathan"`
-		LastName       string            `json:"last_name" gorm:"not null" binding:"required" example:"Vince"`
-		Gender         consttypes.Gender `json:"gender" gorm:"not null" binding:"required" example:"Male"`
-		DateOfBirth    customs.CDT_DATE  `json:"date_of_birth" gorm:"not null" binding:"required" example:"2000-10-20"`
-		OrganizationID *uuid.UUID        `json:"organization_id,omitempty" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4" default:"null"`
-		IllnessID      []uuid.UUID       `json:"illness_id" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		AllergyID      []uuid.UUID       `json:"allergy_id" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		User           UpdateUser        `json:"user" form:"user" binding:"required"`
+		Caregiver      *UpdateCaregiver  `json:"caregiver" form:"caregiver" binding:"-"`
+		Height         float64           `json:"height" form:"height" binding:"required"`
+		Weight         float64           `json:"weight" form:"weight" binding:"required"`
+		FirstName      string            `json:"first_name" form:"first_name" binding:"required"`
+		LastName       string            `json:"last_name" form:"last_name" binding:"required"`
+		Gender         consttypes.Gender `json:"gender" form:"gender" binding:"required"`
+		DateOfBirth    customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"required"`
+		OrganizationID *uuid.UUID        `json:"organization_id,omitempty" form:"organization_id" binding:"-"`
+		IllnessID      []*uuid.UUID      `json:"illness_id" form:"illness_id" binding:"-"`
+		AllergyID      []*uuid.UUID      `json:"allergy_id" form:"allergy_id" binding:"-"`
 	}
 )
 
@@ -51,8 +51,8 @@ func (req *CreateMember) ToModel(
 	member := models.Member{
 		User:         user,
 		Caregiver:    caregiver,
-		Allergy:      allergies,
-		Illness:      illnesses,
+		Allergies:    allergies,
+		Illnesses:    illnesses,
 		Organization: organization,
 		BMI:          utmath.BMICalculation(req.Weight, req.Height),
 	}
@@ -80,8 +80,8 @@ func (req *UpdateMember) ToModel(
 
 	member.User = user
 	member.Caregiver = caregiver
-	member.Allergy = allergies
-	member.Illness = illnesses
+	member.Allergies = allergies
+	member.Illnesses = illnesses
 	member.Organization = organization
 	member.BMI = utmath.BMICalculation(req.Weight, req.Height)
 

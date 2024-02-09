@@ -108,6 +108,8 @@ func (db DB) AutoSeedTable(gdb *gorm.DB) error {
 		SeedAllergyData,
 		SeedIllnessData,
 		SeedOrganizationCredential,
+		SeedPartnerCredential,
+		SeedMealData,
 	}
 
 	var errs []error

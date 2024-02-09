@@ -49,7 +49,7 @@ func (r *OrganizationRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
 		Preload("User.Address").
-		Preload("User.UserImage.Image")
+		Preload("User.Image.Image")
 }
 
 func (r *OrganizationRepository) Create(o models.Organization) (*models.Organization, error) {

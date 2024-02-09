@@ -20,8 +20,8 @@ type (
 		Caregiver      *Caregiver        `json:"caregiver,omitempty"`
 		OrganizationID *uuid.UUID        `json:"organization_id,omitempty" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4" default:"null"`
 		Organization   *Organization     `json:"organization,omitempty"`
-		Illness        []*MemberIllness  `json:"illness,omitempty"`
-		Allergy        []*MemberAllergy  `json:"allergy,omitempty"`
+		Illnesses      []*MemberIllness  `json:"illness,omitempty"`
+		Allergies      []*MemberAllergy  `json:"allergy,omitempty"`
 		Height         float64           `json:"height" gorm:"not null" binding:"required" example:"100"`
 		Weight         float64           `json:"weight" gorm:"not null" binding:"required" example:"150"`
 		BMI            float64           `json:"bmi" gorm:"not null;type:decimal(10,2)" binding:"required" example:"19"`

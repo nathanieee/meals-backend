@@ -80,7 +80,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
-		illness, err := s.illrepo.FindByID(ill)
+		illness, err := s.illrepo.FindByID(*ill)
 		if err != nil {
 			return nil, err
 		}
@@ -92,7 +92,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 
 	// * find allergy object and append to the array.
 	for _, all := range req.AllergyID {
-		allergy, err := s.allgrepo.FindByID(all)
+		allergy, err := s.allgrepo.FindByID(*all)
 		if err != nil {
 			return nil, err
 		}
@@ -159,7 +159,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
-		illness, err := s.illrepo.FindByID(ill)
+		illness, err := s.illrepo.FindByID(*ill)
 		if err != nil {
 			return nil, err
 		}
@@ -171,7 +171,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 
 	// * find allergy object and append to the array.
 	for _, all := range req.AllergyID {
-		allergy, err := s.allgrepo.FindByID(all)
+		allergy, err := s.allgrepo.FindByID(*all)
 		if err != nil {
 			return nil, err
 		}

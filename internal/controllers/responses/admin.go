@@ -4,14 +4,11 @@ import (
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/customs"
-
-	"github.com/google/uuid"
 )
 
 type (
 	Admin struct {
 		helper.Model
-		UserID      uuid.UUID         `json:"-"`
 		User        User              `json:"user"`
 		FirstName   string            `json:"first_name"`
 		LastName    string            `json:"last_name"`
