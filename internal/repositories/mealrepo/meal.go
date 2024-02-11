@@ -34,13 +34,12 @@ type (
 	}
 
 	IMealRepository interface {
-		Create(ml models.Meal) (*models.Meal, error)
+		Create(m models.Meal) (*models.Meal, error)
 		Read() ([]*models.Meal, error)
-		Update(ml models.Meal) (*models.Meal, error)
-		Delete(ml models.Meal) error
+		Update(m models.Meal) (*models.Meal, error)
+		Delete(m models.Meal) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(mlid uuid.UUID) (*models.Meal, error)
-		FindByPartnerID(prtid uuid.UUID) ([]*models.Meal, error)
+		FindByID(id uuid.UUID) (*models.Meal, error)
 	}
 )
 
@@ -58,49 +57,49 @@ func (r *MealRepository) preload() *gorm.DB {
 		Preload("Partner.User.Image.Image")
 }
 
-func (r *MealRepository) Create(ml models.Meal) (*models.Meal, error) {
+func (r *MealRepository) Create(m models.Meal) (*models.Meal, error) {
 	err := r.db.
-		Create(ml).Error
+		Create(m).Error
 
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
 	}
 
-	return &ml, err
+	return &m, err
 }
 
 func (r *MealRepository) Read() ([]*models.Meal, error) {
-	var ml []*models.Meal
+	var m []*models.Meal
 
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Find(&ml).Error
+		Find(&m).Error
 
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
 	}
 
-	return ml, nil
+	return m, nil
 }
 
-func (r *MealRepository) Update(ml models.Meal) (*models.Meal, error) {
+func (r *MealRepository) Update(m models.Meal) (*models.Meal, error) {
 	err := r.db.
-		Save(&ml).Error
+		Save(&m).Error
 
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
 	}
 
-	return &ml, nil
+	return &m, nil
 }
 
-func (r *MealRepository) Delete(ml models.Meal) error {
+func (r *MealRepository) Delete(m models.Meal) error {
 	err := r.db.
-		Delete(&ml).Error
+		Delete(&m).Error
 
 	if err != nil {
 		utlogger.LogError(err)
@@ -111,12 +110,12 @@ func (r *MealRepository) Delete(ml models.Meal) error {
 }
 
 func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
-	var ml []models.Meal
+	var m []models.Meal
 	var mlres []responses.Meal
 
 	result := r.
 		preload().
-		Model(&ml).
+		Model(&m).
 		Select(SELECTED_FIELDS)
 
 	p.Search = fmt.Sprintf("%%%s%%", p.Search)
@@ -143,8 +142,8 @@ func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 
 	result = result.
 		Group("id").
-		Scopes(paginationrepo.Paginate(&ml, &p, result)).
-		Find(&ml)
+		Scopes(paginationrepo.Paginate(&m, &p, result)).
+		Find(&m)
 
 	if err := result.Error; err != nil {
 		utlogger.LogError(err)
@@ -152,25 +151,25 @@ func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 	}
 
 	// * copy the data from model to response
-	copier.Copy(&mlres, &ml)
+	copier.Copy(&mlres, &m)
 
 	p.Data = mlres
 	return &p, result.Error
 }
 
-func (r *MealRepository) FindByID(mlid uuid.UUID) (*models.Meal, error) {
-	var ml *models.Meal
+func (r *MealRepository) FindByID(id uuid.UUID) (*models.Meal, error) {
+	var m *models.Meal
 
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Meal{Model: helper.Model{ID: mlid}}).
-		First(&ml).Error
+		Where(&models.Meal{Model: helper.Model{ID: id}}).
+		First(&m).Error
 
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
 	}
 
-	return ml, nil
+	return m, nil
 }

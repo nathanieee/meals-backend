@@ -44,7 +44,7 @@ type (
 		Update(m models.Member) (*models.Member, error)
 		Delete(m models.Member) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(mid uuid.UUID) (*models.Member, error)
+		FindByID(id uuid.UUID) (*models.Member, error)
 		FindByEmail(email string) (*models.Member, error)
 	}
 )
@@ -158,13 +158,13 @@ func (r *MemberRepository) FindAll(p utpagination.Pagination) (*utpagination.Pag
 	return &p, nil
 }
 
-func (r *MemberRepository) FindByID(mid uuid.UUID) (*models.Member, error) {
+func (r *MemberRepository) FindByID(id uuid.UUID) (*models.Member, error) {
 	var m *models.Member
 
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Member{Model: helper.Model{ID: mid}}).
+		Where(&models.Member{Model: helper.Model{ID: id}}).
 		First(&m).Error
 
 	if err != nil {

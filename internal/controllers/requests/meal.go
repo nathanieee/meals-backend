@@ -51,3 +51,23 @@ func (req *CreateMeal) ToModel(
 
 	return &meal
 }
+
+func (req *UpdateMeal) ToModel(
+	meal models.Meal,
+	images []*models.MealImage,
+	illnesses []*models.MealIllness,
+	allergies []*models.MealAllergy,
+	partner models.Partner,
+) *models.Meal {
+	if err := copier.Copy(&meal, &req); err != nil {
+		utlogger.LogError(err)
+		return nil
+	}
+
+	meal.Images = images
+	meal.Illnesses = illnesses
+	meal.Allergies = allergies
+	meal.Partner = partner
+
+	return &meal
+}

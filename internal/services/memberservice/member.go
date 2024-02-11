@@ -134,7 +134,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		return nil, err
 	}
 
-	user := req.User.ToModel(consttypes.UR_MEMBER, member.UserID)
+	user := req.User.ToModel(consttypes.UR_MEMBER, member.User.ID)
 
 	// * if caregiver request is not empty, check whether the member already has one.
 	// * if not, then convert it to model.
@@ -188,7 +188,9 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		return nil, err
 	}
 
-	return member.ToResponse(), nil
+	mres := member.ToResponse()
+
+	return mres, nil
 }
 
 func (s *MemberService) Delete(id uuid.UUID) error {
@@ -219,5 +221,7 @@ func (s *MemberService) FindByID(id uuid.UUID) (*responses.Member, error) {
 		return nil, err
 	}
 
-	return member.ToResponse(), nil
+	mres := member.ToResponse()
+
+	return mres, nil
 }

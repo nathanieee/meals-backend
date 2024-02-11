@@ -1,9 +1,12 @@
 package models
 
 import (
+	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models/helper"
+	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 )
 
 type (
@@ -14,3 +17,14 @@ type (
 		Name   string    `json:"name" gorm:"not null" binding:"required" example:"McDonald's"`
 	}
 )
+
+func (p *Partner) ToResponse() *responses.Partner {
+	pres := responses.Partner{}
+
+	if err := copier.Copy(&pres, &p); err != nil {
+		utlogger.LogError(err)
+		return nil
+	}
+
+	return &pres
+}

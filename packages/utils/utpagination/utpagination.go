@@ -22,7 +22,12 @@ type (
 	Filter struct {
 		CreatedFrom time.Time
 		CreatedTo   time.Time
+		Meal        Meal
 		Partner     Partner
+	}
+
+	Meal struct {
+		Partner Partner
 	}
 
 	Partner struct {
