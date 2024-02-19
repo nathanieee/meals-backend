@@ -122,8 +122,8 @@ func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 		Model(&u).
 		Select(SELECTED_FIELDS)
 
-	p.Search = fmt.Sprintf("%%%s%%", p.Search)
 	if p.Search != "" {
+		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
 				Where(&models.User{Email: p.Search}),

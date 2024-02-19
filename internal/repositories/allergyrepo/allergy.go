@@ -112,8 +112,8 @@ func (r *AllergyRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 		Model(&al).
 		Select(SELECTED_FIELDS)
 
-	p.Search = fmt.Sprintf("%%%s%%", p.Search)
 	if p.Search != "" {
+		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
 				Where(&models.Allergy{Name: p.Search}).

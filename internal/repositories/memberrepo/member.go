@@ -1,6 +1,7 @@
 package memberrepo
 
 import (
+	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/models/helper"
@@ -138,6 +139,7 @@ func (r *MemberRepository) FindAll(p utpagination.Pagination) (*utpagination.Pag
 		Select(SELECTED_FIELDS)
 
 	if p.Search != "" {
+		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
 				Where(&models.Member{FirstName: p.Search}).

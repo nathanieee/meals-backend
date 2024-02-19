@@ -110,8 +110,8 @@ func (r *IllnessRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 		Model(&ill).
 		Select(SELECTED_FIELDS)
 
-	p.Search = fmt.Sprintf("%%%s%%", p.Search)
 	if p.Search != "" {
+		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
 				Where(&models.Illness{Name: p.Search}).

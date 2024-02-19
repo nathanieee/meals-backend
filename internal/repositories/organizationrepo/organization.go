@@ -113,8 +113,8 @@ func (r *OrganizationRepository) FindAll(p utpagination.Pagination) (*utpaginati
 		Model(&o).
 		Select(SELECTED_FIELDS)
 
-	p.Search = fmt.Sprintf("%%%s%%", p.Search)
 	if p.Search != "" {
+		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
 				Where(&models.Organization{Name: p.Search}),

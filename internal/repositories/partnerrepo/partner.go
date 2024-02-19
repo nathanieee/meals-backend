@@ -1,6 +1,7 @@
 package partnerrepo
 
 import (
+	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/models/helper"
@@ -113,6 +114,7 @@ func (r *PartnerRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 		Select(SELECTED_FIELDS)
 
 	if p.Search != "" {
+		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
 				Where(&models.Partner{Name: p.Search}),

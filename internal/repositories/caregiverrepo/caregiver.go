@@ -118,8 +118,8 @@ func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.
 		Model(&cg).
 		Select(SELECTED_FIELDS)
 
-	p.Search = fmt.Sprintf("%%%s%%", p.Search)
 	if p.Search != "" {
+		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
 				Where(&models.Caregiver{FirstName: p.Search}).
