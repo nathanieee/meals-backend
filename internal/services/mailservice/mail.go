@@ -2,10 +2,10 @@ package mailservice
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
+	"project-skbackend/packages/utils/utlogger"
 	"text/template"
 
 	"gopkg.in/gomail.v2"
@@ -49,7 +49,7 @@ func parseTemplate(templateFileName string, data any) (string, error) {
 
 	buf := new(bytes.Buffer)
 	if err = t.Execute(buf, data); err != nil {
-		fmt.Println(err)
+		utlogger.LogError(err)
 		return "", err
 	}
 

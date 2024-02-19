@@ -17,3 +17,12 @@ func LogError(errs ...error) {
 		}
 	}
 }
+
+func LogInfo(data interface{}) {
+	pc := make([]uintptr, 15)
+	n := runtime.Callers(2, pc)
+	frames := runtime.CallersFrames(pc[:n])
+	frame, _ := frames.Next()
+
+	fmt.Printf("\nInfo occurred at: %s:%d\nInfo: %s\n\n", frame.File, frame.Line, data)
+}

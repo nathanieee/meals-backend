@@ -3,7 +3,6 @@ package utstring
 import (
 	"crypto/rand"
 	"encoding/json"
-	"fmt"
 	"math/big"
 	"project-skbackend/packages/utils/utlogger"
 )
@@ -32,7 +31,7 @@ func GenerateRandomToken(length int) (string, error) {
 
 func PrintJSON(data interface{}) string {
 	json, _ := json.Marshal(data)
-	fmt.Println(string(json))
+	utlogger.LogInfo(json)
 
 	return string(json)
 }

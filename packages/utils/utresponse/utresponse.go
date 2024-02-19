@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/uttoken"
 
 	"github.com/gin-gonic/gin"
@@ -196,7 +197,7 @@ func ValidationResponse(err error) []ValidationErrorMessage {
 		out := make([]ValidationErrorMessage, len(ve))
 		for i, fe := range ve {
 			out[i] = ValidationErrorMessage{fe.Namespace(), fmt.Sprintf("%s", fe.Field()), getErrorMsg(fe)}
-			fmt.Println(err)
+			utlogger.LogError(err)
 		}
 		return out
 	}
