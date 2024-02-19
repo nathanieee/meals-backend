@@ -5,6 +5,7 @@ import (
 	"project-skbackend/internal/models/helper"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
+	"project-skbackend/packages/utils/utresponse"
 
 	"github.com/jinzhu/copier"
 )
@@ -54,6 +55,13 @@ func (req *UpdateUser) ToModel(
 ) (*models.User, error) {
 	hash, err := helper.HashPassword(req.Password)
 	if err != nil {
+		return nil, err
+	}
+
+	if req.Email != user.Email {
+		err := utresponse.ErrCannotChangeEmail
+
+		utlogger.LogError(err)
 		return nil, err
 	}
 
