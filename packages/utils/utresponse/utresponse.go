@@ -72,7 +72,7 @@ func GeneralSuccessUpdate(
 	})
 }
 
-func GeneralSuccessFetching(
+func GeneralSuccessFetch(
 	entity string,
 	ctx *gin.Context,
 	data any,

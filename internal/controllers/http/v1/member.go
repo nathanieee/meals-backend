@@ -33,16 +33,17 @@ func newMemberRoutes(
 		smember: smember,
 	}
 
-	admgrp := rg.Group("members")
-	admgrp.Use(middlewares.JWTAuthMiddleware(
+	proute := rg.Group("members")
+	proute.Use(middlewares.JWTAuthMiddleware(
 		cfg,
 		uint(consttypes.UR_ADMIN),
 	))
 	{
-		admgrp.POST("", r.createMember)
-		admgrp.GET("", r.getMembers)
-		admgrp.PUT("/:uuid", r.updateMember)
-		admgrp.DELETE("/:uuid", r.deleteMember)
+		proute.POST("", r.createMember)
+		proute.GET("", r.getMembers)
+		proute.GET("raw", r.getMembersRaw)
+		proute.PUT("/:uuid", r.updateMember)
+		proute.DELETE("/:uuid", r.deleteMember)
 	}
 }
 
@@ -105,7 +106,7 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 
 func (r *memberroutes) getMembers(ctx *gin.Context) {
 	var entity = "members"
-	paginationReq := utrequest.GeneratePaginationFromRequest(ctx)
+	var paginationReq = utrequest.GeneratePaginationFromRequest(ctx)
 
 	members, err := r.smember.FindAll(paginationReq)
 	if err != nil {
@@ -117,7 +118,27 @@ func (r *memberroutes) getMembers(ctx *gin.Context) {
 		return
 	}
 
-	utresponse.GeneralSuccessFetching(
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		members,
+	)
+}
+
+func (r *memberroutes) getMembersRaw(ctx *gin.Context) {
+	var entity = "members"
+
+	members, err := r.smember.Read()
+	if err != nil {
+		utresponse.GeneralNotFound(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
 		entity,
 		ctx,
 		members,

@@ -50,9 +50,9 @@ func NewMealRepository(db *gorm.DB) *MealRepository {
 func (r *MealRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
-		Preload("MealImage.Image").
-		Preload("MealIllnesses.Illness").
-		Preload("MealAllergies.Allergy").
+		Preload("Images.Image").
+		Preload("Illnesses.Illness").
+		Preload("Allergies.Allergy").
 		Preload("Partner.User.Address").
 		Preload("Partner.User.Image.Image")
 }

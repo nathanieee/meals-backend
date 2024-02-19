@@ -20,23 +20,23 @@ type (
 	}
 
 	MealImage struct {
-		helper.Model
-		MealID  uuid.UUID `json:"meal_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		ImageID uuid.UUID `json:"image_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		Image   Image     `json:"image"`
+		helper.Model `json:"-"`
+		MealID       uuid.UUID `json:"-" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		ImageID      uuid.UUID `json:"-" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		Image        Image     `json:"image"`
 	}
 
 	MealIllness struct {
-		helper.Model
-		MealID    uuid.UUID `json:"meal_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		IllnessID uuid.UUID `json:"illness_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		Illness   Illness   `json:"illness"`
+		helper.Model `json:"-"`
+		MealID       uuid.UUID `json:"-" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		IllnessID    uuid.UUID `json:"-" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		Illness      Illness   `json:"illness"`
 	}
 
 	MealAllergy struct {
-		helper.Model
-		MealID    uuid.UUID `json:"meal_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		AllergyID uuid.UUID `json:"allergy_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		Allergy   Allergy   `json:"allergy"`
+		helper.Model `json:"-"`
+		MealID       uuid.UUID `json:"-" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		AllergyID    uuid.UUID `json:"-" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		Allergy      Allergy   `json:"allergy"`
 	}
 )

@@ -32,7 +32,7 @@ type (
 
 	IMemberService interface {
 		Create(req requests.CreateMember) (*responses.Member, error)
-		Read() ([]*models.Member, error)
+		Read() ([]*responses.Member, error)
 		Update(id uuid.UUID, req requests.UpdateMember) (*responses.Member, error)
 		Delete(id uuid.UUID) error
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
@@ -125,13 +125,19 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 	return mres, nil
 }
 
-func (s *MemberService) Read() ([]*models.Member, error) {
+func (s *MemberService) Read() ([]*responses.Member, error) {
 	members, err := s.membrepo.Read()
 	if err != nil {
 		return nil, err
 	}
 
-	return members, nil
+	mereses := make([]*responses.Member, 0, len(members))
+	for _, member := range members {
+		meres := member.ToResponse()
+		mereses = append(mereses, meres)
+	}
+
+	return mereses, nil
 }
 
 func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*responses.Member, error) {
