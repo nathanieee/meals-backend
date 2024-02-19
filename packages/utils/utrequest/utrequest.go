@@ -43,26 +43,21 @@ func GeneratePaginationFromRequest(ctx *gin.Context) utpagination.Pagination {
 		switch key {
 		case "limit":
 			limit, _ = strconv.Atoi(queryValue)
-			break
 		case "page":
 			page, _ = strconv.Atoi(queryValue)
-			break
-		case "q":
+		case "search":
 			search = queryValue
-			break
 		case "sort":
 			if queryValue != "" {
 				str := stringy.New(queryValue)
 				snakeStr := str.SnakeCase("?", "")
 				sort = snakeStr.ToLower()
 			}
-			break
 		case "direction":
 			queryValue = strings.ToLower(queryValue)
 			if queryValue == "asc" || queryValue == "desc" {
 				direction = queryValue
 			}
-			break
 		case "created-from":
 			queryValue = strings.ToLower(queryValue)
 			if queryValue != "" {
@@ -71,7 +66,6 @@ func GeneratePaginationFromRequest(ctx *gin.Context) utpagination.Pagination {
 					createdFrom = date
 				}
 			}
-			break
 		case "created-to":
 			queryValue = strings.ToLower(queryValue)
 			if queryValue != "" {
@@ -80,7 +74,6 @@ func GeneratePaginationFromRequest(ctx *gin.Context) utpagination.Pagination {
 					createdTo = date
 				}
 			}
-			break
 		}
 	}
 
