@@ -53,6 +53,10 @@ func (req *UpdateUser) ToModel(
 	user models.User,
 	role consttypes.UserRole,
 ) (*models.User, error) {
+	if req == nil {
+		return &user, nil
+	}
+
 	hash, err := helper.HashPassword(req.Password)
 	if err != nil {
 		return nil, err

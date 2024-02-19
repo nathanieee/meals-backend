@@ -146,14 +146,6 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		return nil, err
 	}
 
-	// * handle email change, so user would not be able to change their email.
-	if member.User.Email != req.User.Email {
-		err := utresponse.ErrCannotChangeEmail
-
-		utlogger.LogError(err)
-		return nil, err
-	}
-
 	user, err := req.User.ToModel(member.User, consttypes.UR_MEMBER)
 	if err != nil {
 		return nil, err
