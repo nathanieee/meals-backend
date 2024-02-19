@@ -1,10 +1,9 @@
 package controllers
 
 import (
-	"fmt"
-	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
+	"project-skbackend/internal/middlewares"
 	"project-skbackend/internal/services/memberservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utrequest"
@@ -35,10 +34,15 @@ func newMemberRoutes(
 	}
 
 	admgrp := rg.Group("members")
+	admgrp.Use(middlewares.JWTAuthMiddleware(
+		cfg,
+		uint(consttypes.UR_ADMIN),
+	))
 	{
 		admgrp.POST("", r.createMember)
 		admgrp.GET("", r.getMembers)
 		admgrp.PUT("/:uuid", r.updateMember)
+		admgrp.DELETE("/:uuid", r.deleteMember)
 	}
 }
 
@@ -76,9 +80,7 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 
 	meres, err := r.smember.Create(req)
 	if err != nil {
-		fmt.Println(err, "create member")
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			fmt.Println(err)
 			utresponse.GeneralDuplicate(
 				"email",
 				ctx,
@@ -123,13 +125,15 @@ func (r *memberroutes) getMembers(ctx *gin.Context) {
 }
 
 func (r *memberroutes) updateMember(ctx *gin.Context) {
+	var function = "update member"
+	var entity = "member"
 	var req requests.UpdateMember
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
-			"member",
+			function,
 			ctx,
 			ve,
 			err,
@@ -140,7 +144,7 @@ func (r *memberroutes) updateMember(ctx *gin.Context) {
 	uuid, err := uuid.Parse(ctx.Param("uuid"))
 	if err != nil {
 		utresponse.GeneralInputRequiredError(
-			utresponse.ErrConvertFailed.Error(),
+			function,
 			ctx,
 			err,
 		)
@@ -150,7 +154,7 @@ func (r *memberroutes) updateMember(ctx *gin.Context) {
 	_, err = r.smember.FindByID(uuid)
 	if err != nil {
 		utresponse.GeneralNotFound(
-			"member",
+			entity,
 			ctx,
 			err,
 		)
@@ -160,16 +164,56 @@ func (r *memberroutes) updateMember(ctx *gin.Context) {
 	mres, err := r.smember.Update(uuid, req)
 	if err != nil {
 		utresponse.GeneralFailedUpdate(
-			"member",
+			entity,
 			ctx,
 			err,
 		)
 		return
 	}
 
-	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
-		Status:  consttypes.RST_SUCCESS,
-		Message: "success update member",
-		Data:    mres,
-	})
+	utresponse.GeneralSuccessUpdate(
+		entity,
+		ctx,
+		mres,
+	)
+}
+
+func (r *memberroutes) deleteMember(ctx *gin.Context) {
+	var function = "delete member"
+	var entity = "member"
+
+	uuid, err := uuid.Parse(ctx.Param("uuid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	_, err = r.smember.FindByID(uuid)
+	if err != nil {
+		utresponse.GeneralNotFound(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.smember.Delete(uuid)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+	}
+
+	utresponse.GeneralSuccessDelete(
+		entity,
+		ctx,
+		nil,
+	)
 }

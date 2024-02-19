@@ -32,6 +32,8 @@ type DependencyInjection struct {
 
 func NewDependencyInjection(db *gorm.DB, cfg *configs.Config, rdb *redis.Client) *DependencyInjection {
 	/* -------------------------------- database -------------------------------- */
+	db = db.Session(&gorm.Session{FullSaveAssociations: true})
+
 	if cfg.DB.LogMode {
 		db = db.Debug()
 	}

@@ -20,7 +20,7 @@ type (
 		Address                []*Address          `json:"address,omitempty"`
 		Image                  *UserImage          `json:"image,omitempty"`
 		Email                  string              `json:"email" gorm:"not null;unique" example:"email@email.com"`
-		Password               string              `json:"-" gorm:"size:255;not null;" binding:"required" example:"password"`
+		Password               string              `json:"password" gorm:"size:255;not null;" example:"password"`
 		Role                   consttypes.UserRole `json:"role" gorm:"not null" example:"0" default:"0"`
 		ResetPasswordToken     string              `json:"-"`
 		ResetPasswordSentAt    time.Time           `json:"-"`
@@ -35,16 +35,6 @@ type (
 		Image   Image     `json:"image"`
 	}
 )
-
-func (u *User) hashPasswordIfNeeded() error {
-	hash, err := helper.HashPassword(u.Password)
-	if err != nil {
-		return err
-	}
-
-	u.Password = hash
-	return nil
-}
 
 func (u *User) checkDuplicateEmail(tx *gorm.DB) error {
 	var user *User
@@ -62,25 +52,9 @@ func (u *User) checkDuplicateEmail(tx *gorm.DB) error {
 	return nil
 }
 
-func (u *User) BeforeCreate(tx *gorm.DB) error {
-	if err := u.checkDuplicateEmail(tx); err != nil {
-		return err
-	}
-
-	if err := u.hashPasswordIfNeeded(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (u *User) BeforeUpdate(tx *gorm.DB) error {
-	return u.hashPasswordIfNeeded()
-}
-
 func (u *User) ToResponse() *responses.User {
 	var ures responses.User
-	err := copier.Copy(&ures, &u)
+	err := copier.CopyWithOption(&ures, &u, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 	if err != nil {
 		utlogger.LogError(err)
 	}
@@ -94,7 +68,7 @@ func (u *User) ToAuth(token *uttoken.TokenHeader) *responses.Auth {
 		Expires: token.AccessTokenExpires,
 	}
 
-	err := copier.Copy(&aures, &u)
+	err := copier.CopyWithOption(&aures, &u, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 	if err != nil {
 		utlogger.LogError(err)
 	}

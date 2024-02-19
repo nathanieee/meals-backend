@@ -139,7 +139,7 @@ func (r *AllergyRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 		return nil, err
 	}
 
-	copier.Copy(&alres, &al)
+	copier.CopyWithOption(&alres, &al, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	p.Data = alres
 	return &p, nil

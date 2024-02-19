@@ -21,7 +21,7 @@ type (
 func (p *Partner) ToResponse() *responses.Partner {
 	pres := responses.Partner{}
 
-	if err := copier.Copy(&pres, &p); err != nil {
+	if err := copier.CopyWithOption(&pres, &p, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
 		return nil
 	}

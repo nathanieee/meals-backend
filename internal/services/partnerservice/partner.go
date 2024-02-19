@@ -64,7 +64,7 @@ func (s *PartnerService) Update(id uuid.UUID, req requests.UpdatePartner) (*resp
 		return nil, err
 	}
 
-	user := req.User.ToModel(consttypes.UR_PARTNER, partner.User.ID)
+	user := req.User.ToModel(partner.User, consttypes.UR_PARTNER)
 
 	partner = req.ToModel(*partner, *user)
 	partner, err = s.prtrrepo.Update(*partner)

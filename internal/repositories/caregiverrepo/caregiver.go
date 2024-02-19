@@ -146,7 +146,7 @@ func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.
 	}
 
 	// * copy the data from model to response
-	copier.Copy(&cgres, &cg)
+	copier.CopyWithOption(&cgres, &cg, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	p.Data = cgres
 	return &p, nil

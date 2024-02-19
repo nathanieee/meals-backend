@@ -59,7 +59,7 @@ func GeneralSuccessCreate(
 	})
 }
 
-func GeneralSuccessUpdated(
+func GeneralSuccessUpdate(
 	entity string,
 	ctx *gin.Context,
 	data any,
@@ -79,6 +79,18 @@ func GeneralSuccessFetching(
 	SuccessResponse(ctx, http.StatusOK, SuccessRes{
 		Status:  consttypes.RST_SUCCESS,
 		Message: fmt.Sprintf("Success fetching %s", entity),
+		Data:    data,
+	})
+}
+
+func GeneralSuccessDelete(
+	entity string,
+	ctx *gin.Context,
+	data any,
+) {
+	SuccessResponse(ctx, http.StatusOK, SuccessRes{
+		Status:  consttypes.RST_SUCCESS,
+		Message: fmt.Sprintf("Success deleting %s", entity),
 		Data:    data,
 	})
 }
@@ -136,6 +148,7 @@ var (
 	ErrTokenExpired      = fmt.Errorf("token is expired")
 	ErrTokenUnverifiable = fmt.Errorf("token is unverifiable")
 	ErrTokenMismatch     = fmt.Errorf("token is mismatch")
+	ErrTokenNotFound     = fmt.Errorf("token is not found")
 
 	// User
 	ErrUserNotFound         = fmt.Errorf("user not found")
@@ -144,7 +157,11 @@ var (
 	ErrUserAlreadyExist     = fmt.Errorf("user already exists")
 	ErrUserAlreadyConfirmed = fmt.Errorf("this user is already confirmed")
 
+	// File
+	ErrInvalidFileType = fmt.Errorf("invalid file type")
+
 	// Email
+	ErrCannotChangeEmail     = fmt.Errorf("cannot change existing email")
 	ErrSendEmailResetRequest = fmt.Errorf("a request for a password reset email was generated just under %v minutes ago", resetPasswordCooldown)
 )
 

@@ -49,15 +49,13 @@ func NewTokenHeader(access Token, refresh Token) *TokenHeader {
 
 func (token *TokenHeader) ToAuthResponse(user responses.User) *responses.Auth {
 	return &responses.Auth{
-		ID:                 user.ID,
-		Email:              user.Email,
-		Role:               user.Role,
-		ConfirmationSentAt: user.ConfirmationSentAt,
-		ConfirmedAt:        user.ConfirmedAt,
-		CreatedAt:          user.CreatedAt,
-		UpdatedAt:          user.UpdatedAt,
-		Token:              token.AccessToken,
-		Expires:            token.AccessTokenExpires,
+		ID:        user.ID,
+		Email:     user.Email,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+		Token:     token.AccessToken,
+		Expires:   token.AccessTokenExpires,
 	}
 }
 
@@ -150,8 +148,12 @@ func ParseToken(token string, publicKey string) (*Token, error) {
 		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 
+	expires := time.Unix(claims.Expire, 0)
+
 	return &Token{
+		Token:     &token,
 		TokenUUID: claims.TokenUUID,
+		Expires:   &expires,
 		User:      claims.User,
 	}, nil
 }

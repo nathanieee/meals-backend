@@ -6,6 +6,7 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
+	"project-skbackend/internal/models/helper"
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/packages/consttypes"
@@ -18,7 +19,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -241,10 +241,9 @@ func (s *AuthService) RefreshAuthToken(refreshToken string, ctx *gin.Context) (*
 }
 
 func verifyPassword(user models.User, password string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-
-	if err != nil {
-		return err
+	ok := helper.CheckPasswordHash(password, user.Password)
+	if !ok {
+		return fmt.Errorf("incorrect email or password")
 	}
 
 	return nil

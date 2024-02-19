@@ -18,9 +18,6 @@ type (
 		Role                   consttypes.UserRole `json:"role"`
 		ResetPasswordToken     int                 `json:"-"`
 		ResetPasswordSentAt    time.Time           `json:"-"`
-		ConfirmationToken      int                 `json:"-"`
-		ConfirmedAt            time.Time           `json:"confirmed_at,omitempty"`
-		ConfirmationSentAt     time.Time           `json:"-"`
 		RefreshToken           string              `json:"-"`
 		RefreshTokenExpiration string              `json:"-"`
 	}

@@ -138,7 +138,7 @@ func (r *IllnessRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 	}
 
 	// * copy the data from model to response
-	copier.Copy(&illres, &ill)
+	copier.CopyWithOption(&illres, &ill, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	p.Data = illres
 	return &p, nil

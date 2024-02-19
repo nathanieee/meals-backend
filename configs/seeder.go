@@ -16,6 +16,16 @@ import (
 	"gorm.io/gorm"
 )
 
+func getGlobalHashedPassword(password string) string {
+	hash, err := helper.HashPassword(password)
+	if err != nil {
+		utlogger.LogError(err)
+		return ""
+	}
+
+	return hash
+}
+
 func checkEnumIsExist(db *gorm.DB, key string) bool {
 	var count int64
 	if err := db.Table("pg_type").Where("typname = ?", key).Count(&count).Error; err != nil {
@@ -108,7 +118,7 @@ func SeedAdminCredentials(db *gorm.DB) error {
 				{
 					User: models.User{
 						Email:    os.Getenv("ADMIN_EMAIL"),
-						Password: os.Getenv("ADMIN_PASSWORD"),
+						Password: getGlobalHashedPassword(os.Getenv("ADMIN_PASSWORD")),
 						Role:     consttypes.UR_ADMIN,
 					},
 					FirstName:   os.Getenv("ADMIN_FIRSTNAME"),
@@ -132,7 +142,7 @@ func SeedCaregiverCredentials(db *gorm.DB) error {
 				{
 					User: models.User{
 						Email:    "caregiver@test.com",
-						Password: "password",
+						Password: getGlobalHashedPassword("password"),
 						Role:     consttypes.UR_CAREGIVER,
 					},
 					FirstName:   "Care",
@@ -156,7 +166,7 @@ func SeedOrganizationCredential(db *gorm.DB) error {
 				{
 					User: models.User{
 						Email:    "organization@test.com",
-						Password: "password",
+						Password: getGlobalHashedPassword("password"),
 						Role:     consttypes.UR_ORGANIZATION,
 					},
 					Type: consttypes.OT_NURSINGHOME,
@@ -188,7 +198,7 @@ func SeedPartnerCredential(db *gorm.DB) error {
 					},
 					User: models.User{
 						Email:    "partner@test.com",
-						Password: "password",
+						Password: getGlobalHashedPassword("password"),
 						Role:     consttypes.UR_PARTNER,
 					},
 					Name: "Partner",

@@ -48,7 +48,7 @@ type (
 func (m *Meal) ToResponse() *responses.Meal {
 	mres := responses.Meal{}
 
-	if err := copier.Copy(&mres, &m); err != nil {
+	if err := copier.CopyWithOption(&mres, &m, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
 		return nil
 	}

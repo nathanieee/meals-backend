@@ -41,7 +41,7 @@ type (
 
 func (r *Register) ToUserModel() *models.User {
 	var u models.User
-	err := copier.Copy(&u, &r)
+	err := copier.CopyWithOption(&u, &r, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 	if err != nil {
 		utlogger.LogError(err)
 	}

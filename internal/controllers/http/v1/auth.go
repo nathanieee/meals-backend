@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/services/authservice"
@@ -197,7 +196,7 @@ func (r *authroutes) refreshAuthToken(
 	if refreshToken == "" || err != nil {
 		utresponse.GeneralUnauthorized(
 			ctx,
-			fmt.Errorf("refresh token not found"),
+			utresponse.ErrTokenNotFound,
 		)
 		return
 	}

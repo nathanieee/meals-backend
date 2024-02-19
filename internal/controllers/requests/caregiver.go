@@ -19,11 +19,11 @@ type (
 	}
 
 	UpdateCaregiver struct {
-		User        UpdateUser        `json:"user" form:"user" binding:"required"`
-		Gender      consttypes.Gender `json:"gender" form:"gender" binding:"required"`
-		FirstName   string            `json:"first_name" form:"first_name" binding:"required"`
-		LastName    string            `json:"last_name" form:"last_name" binding:"required"`
-		DateOfBirth customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"required"`
+		User        UpdateUser        `json:"user" form:"user" binding:"dive"`
+		Gender      consttypes.Gender `json:"gender" form:"gender" binding:"-"`
+		FirstName   string            `json:"first_name" form:"first_name" binding:"-"`
+		LastName    string            `json:"last_name" form:"last_name" binding:"-"`
+		DateOfBirth customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"-"`
 	}
 )
 
@@ -33,7 +33,7 @@ func (req *CreateCaregiver) ToModel() *models.Caregiver {
 		User: *user,
 	}
 
-	if err := copier.Copy(&caregiver, &req); err != nil {
+	if err := copier.CopyWithOption(&caregiver, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
 		return nil
 	}
@@ -41,11 +41,26 @@ func (req *CreateCaregiver) ToModel() *models.Caregiver {
 	return &caregiver
 }
 
-func (req *UpdateCaregiver) ToModel(caregiver models.Caregiver) *models.Caregiver {
-	if err := copier.Copy(&caregiver, &req); err != nil {
+func (req *UpdateCaregiver) ToCreateCaregiver() *CreateCaregiver {
+	create := CreateCaregiver{}
+
+	if err := copier.CopyWithOption(&create, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
 		return nil
 	}
 
-	return &caregiver
+	return &create
+}
+
+func (req *UpdateCaregiver) ToModel(caregiver *models.Caregiver) *models.Caregiver {
+	if caregiver == nil {
+		return req.ToCreateCaregiver().ToModel()
+	}
+
+	if err := copier.CopyWithOption(&caregiver, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		utlogger.LogError(err)
+		return nil
+	}
+
+	return caregiver
 }

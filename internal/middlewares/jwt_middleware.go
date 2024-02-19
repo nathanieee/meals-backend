@@ -6,11 +6,9 @@ import (
 	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils/utrequest"
 	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/uttoken"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/exp/slices"
@@ -74,7 +72,7 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 			return
 		}
 
-		if !slices.Contains(allowedLevel, uint(consttypes.UR_USER)) {
+		if !slices.Contains(allowedLevel, uint(consttypes.UR_USER)) || !slices.Contains(allowedLevel, uint(consttypes.UR_ADMIN)) {
 			if !slices.Contains(allowedLevel, uint(parsedToken.User.Role)) || (consttypes.DateNow.Unix() >= parsedToken.Expires.Unix()) {
 				utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
 					Status:  consttypes.RST_ERROR,
@@ -82,21 +80,6 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFun
 					Data: utresponse.ErrorData{
 						Debug:  nil,
 						Errors: "You're not authorized to access this",
-					},
-				})
-				ctx.Abort()
-				return
-			}
-		}
-
-		if !utrequest.CheckWhitelistUrl(ctx.Request.URL.Path) {
-			if parsedToken.User.ConfirmedAt == (time.Time{}) && !strings.Contains(ctx.Request.URL.Path, "verify") {
-				utresponse.ErrorResponse(ctx, http.StatusUnauthorized, utresponse.ErrorRes{
-					Status:  consttypes.RST_ERROR,
-					Message: "Invalid token",
-					Data: utresponse.ErrorData{
-						Debug:  nil,
-						Errors: "This account is not verified",
 					},
 				})
 				ctx.Abort()

@@ -1,6 +1,7 @@
 package requests
 
 import (
+	"math"
 	"project-skbackend/internal/models"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/customs"
@@ -27,14 +28,14 @@ type (
 	}
 
 	UpdateMember struct {
-		User           UpdateUser        `json:"user" form:"user" binding:"required"`
-		Caregiver      *UpdateCaregiver  `json:"caregiver" form:"caregiver" binding:"-"`
-		Height         float64           `json:"height" form:"height" binding:"required"`
-		Weight         float64           `json:"weight" form:"weight" binding:"required"`
-		FirstName      string            `json:"first_name" form:"first_name" binding:"required"`
-		LastName       string            `json:"last_name" form:"last_name" binding:"required"`
-		Gender         consttypes.Gender `json:"gender" form:"gender" binding:"required"`
-		DateOfBirth    customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"required"`
+		User           UpdateUser        `json:"user" form:"user" binding:"omitempty"`
+		Caregiver      *UpdateCaregiver  `json:"caregiver" form:"caregiver" binding:"omitempty"`
+		Height         float64           `json:"height" form:"height" binding:"-"`
+		Weight         float64           `json:"weight" form:"weight" binding:"-"`
+		FirstName      string            `json:"first_name" form:"first_name" binding:"-"`
+		LastName       string            `json:"last_name" form:"last_name" binding:"-"`
+		Gender         consttypes.Gender `json:"gender" form:"gender" binding:"-"`
+		DateOfBirth    customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"-"`
 		OrganizationID *uuid.UUID        `json:"organization_id,omitempty" form:"organization_id" binding:"-"`
 		IllnessID      []*uuid.UUID      `json:"illness_id" form:"illness_id" binding:"-"`
 		AllergyID      []*uuid.UUID      `json:"allergy_id" form:"allergy_id" binding:"-"`
@@ -48,19 +49,19 @@ func (req *CreateMember) ToModel(
 	illnesses []*models.MemberIllness,
 	organization *models.Organization,
 ) *models.Member {
-	member := models.Member{
-		User:         user,
-		Caregiver:    caregiver,
-		Allergies:    allergies,
-		Illnesses:    illnesses,
-		Organization: organization,
-		BMI:          utmath.BMICalculation(req.Weight, req.Height),
-	}
+	var member models.Member
 
-	if err := copier.Copy(&member, &req); err != nil {
+	if err := copier.CopyWithOption(&member, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
 		return nil
 	}
+
+	member.User = user
+	member.Caregiver = caregiver
+	member.Allergies = allergies
+	member.Illnesses = illnesses
+	member.Organization = organization
+	member.BMI = utmath.BMICalculation(req.Weight, req.Height)
 
 	return &member
 }
@@ -73,7 +74,7 @@ func (req *UpdateMember) ToModel(
 	illnesses []*models.MemberIllness,
 	organization *models.Organization,
 ) *models.Member {
-	if err := copier.CopyWithOption(&member, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+	if err := copier.CopyWithOption(&member, &req, copier.Option{IgnoreEmpty: true}); err != nil {
 		utlogger.LogError(err)
 		return nil
 	}
@@ -83,7 +84,12 @@ func (req *UpdateMember) ToModel(
 	member.Allergies = allergies
 	member.Illnesses = illnesses
 	member.Organization = organization
-	member.BMI = utmath.BMICalculation(req.Weight, req.Height)
+
+	if req.Height != 0 && !math.IsNaN(req.Height) && req.Weight != 0 && math.IsNaN(req.Weight) {
+		member.BMI = utmath.BMICalculation(req.Weight, req.Height)
+	} else {
+		member.BMI = utmath.BMICalculation(member.Weight, member.Height)
+	}
 
 	return &member
 }

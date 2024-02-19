@@ -151,7 +151,7 @@ func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 	}
 
 	// * copy the data from model to response
-	copier.Copy(&mlres, &m)
+	copier.CopyWithOption(&mlres, &m, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	p.Data = mlres
 	return &p, result.Error

@@ -20,8 +20,8 @@ type (
 		Caregiver      *Caregiver        `json:"caregiver,omitempty"`
 		OrganizationID *uuid.UUID        `json:"organization_id,omitempty" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4" default:"null"`
 		Organization   *Organization     `json:"organization,omitempty"`
-		Illnesses      []*MemberIllness  `json:"illness,omitempty"`
-		Allergies      []*MemberAllergy  `json:"allergy,omitempty"`
+		Illnesses      []*MemberIllness  `json:"illnesses,omitempty"`
+		Allergies      []*MemberAllergy  `json:"allergies,omitempty"`
 		Height         float64           `json:"height" gorm:"not null" binding:"required" example:"100"`
 		Weight         float64           `json:"weight" gorm:"not null" binding:"required" example:"150"`
 		BMI            float64           `json:"bmi" gorm:"not null;type:decimal(10,2)" binding:"required" example:"19"`
@@ -49,7 +49,7 @@ type (
 func (m *Member) ToResponse() *responses.Member {
 	mres := responses.Member{}
 
-	if err := copier.Copy(&mres, &m); err != nil {
+	if err := copier.CopyWithOption(&mres, &m, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
 		return nil
 	}

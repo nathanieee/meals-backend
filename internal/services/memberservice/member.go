@@ -13,7 +13,9 @@ import (
 	"project-skbackend/internal/repositories/userrepo"
 
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
+	"project-skbackend/packages/utils/utresponse"
 
 	"github.com/google/uuid"
 )
@@ -134,7 +136,15 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		return nil, err
 	}
 
-	user := req.User.ToModel(consttypes.UR_MEMBER, member.User.ID)
+	// * handle email change, so user would not be able to change their email.
+	if member.User.Email != req.User.Email {
+		err := utresponse.ErrCannotChangeEmail
+
+		utlogger.LogError(err)
+		return nil, err
+	}
+
+	user := req.User.ToModel(member.User, consttypes.UR_MEMBER)
 
 	// * if caregiver request is not empty, check whether the member already has one.
 	// * if not, then convert it to model.
@@ -146,7 +156,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 			}
 		}
 
-		caregiver = req.Caregiver.ToModel(*caregiver)
+		caregiver = req.Caregiver.ToModel(caregiver)
 	}
 
 	// * check the organization id and assign it to the object.
@@ -159,31 +169,63 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
-		illness, err := s.illrepo.FindByID(*ill)
-		if err != nil {
-			return nil, err
+		var found = false
+
+		for _, mill := range member.Illnesses {
+			if *ill == mill.Illness.ID {
+				found = true
+				continue
+			}
 		}
 
-		millness := illness.ToMemberIllness()
+		if found {
+			continue
+		} else {
+			illness, err := s.illrepo.FindByID(*ill)
+			if err != nil {
+				return nil, err
+			}
 
-		illnesses = append(illnesses, millness)
+			millness := illness.ToMemberIllness()
+
+			illnesses = append(illnesses, millness)
+		}
 	}
 
 	// * find allergy object and append to the array.
 	for _, all := range req.AllergyID {
-		allergy, err := s.allgrepo.FindByID(*all)
-		if err != nil {
-			return nil, err
+		var found = false
+
+		for _, mall := range member.Allergies {
+			if *all == mall.Allergy.ID {
+				found = true
+				continue
+			}
 		}
 
-		mallergy := allergy.ToMemberAllergy()
+		if found {
+			continue
+		} else {
+			allergy, err := s.allgrepo.FindByID(*all)
+			if err != nil {
+				return nil, err
+			}
 
-		allergies = append(allergies, mallergy)
+			mallergy := allergy.ToMemberAllergy()
+
+			allergies = append(allergies, mallergy)
+		}
 	}
 
 	// * copy the request to the member model.
 	member = req.ToModel(*member, *user, caregiver, allergies, illnesses, organization)
-	member, err = s.membrepo.Update(*member)
+	_, err = s.membrepo.Update(*member)
+	if err != nil {
+		return nil, err
+	}
+
+	// * find the member with all of it data and return it.
+	member, err = s.membrepo.FindByID(member.ID)
 	if err != nil {
 		return nil, err
 	}

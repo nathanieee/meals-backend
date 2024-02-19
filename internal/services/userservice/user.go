@@ -92,9 +92,14 @@ func (s *UserService) Update(
 	req requests.UpdateUser,
 	uid uuid.UUID,
 ) (*responses.User, error) {
-	u := req.ToModel(consttypes.UR_USER, uid)
+	u, err := s.userrepo.FindByID(uid)
+	if err != nil {
+		return nil, err
+	}
 
-	u, err := s.userrepo.Update(*u)
+	u = req.ToModel(*u, consttypes.UR_USER)
+
+	u, err = s.userrepo.Update(*u)
 	if err != nil {
 		return nil, err
 	}

@@ -60,8 +60,8 @@ func (r *MemberRepository) preload() *gorm.DB {
 		Preload("User.Address").
 		Preload("Caregiver.User.Image.Image").
 		Preload("Organization").
-		Preload("Allergy.Allergy").
-		Preload("Illness.Illness")
+		Preload("Allergies.Allergy").
+		Preload("Illnesses.Illness")
 }
 
 func (r *MemberRepository) Create(m models.Member) (*models.Member, error) {
@@ -152,7 +152,7 @@ func (r *MemberRepository) FindAll(p utpagination.Pagination) (*utpagination.Pag
 	}
 
 	// * copy the data from model to response
-	copier.Copy(&mres, &m)
+	copier.CopyWithOption(&mres, &m, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	p.Data = mres
 	return &p, nil

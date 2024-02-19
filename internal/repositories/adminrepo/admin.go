@@ -145,7 +145,7 @@ func (r *AdminRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagi
 	}
 
 	// * copy the data from model to response
-	copier.Copy(&ares, &a)
+	copier.CopyWithOption(&ares, &a, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	p.Data = ares
 	return &p, nil

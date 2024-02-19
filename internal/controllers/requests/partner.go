@@ -14,8 +14,8 @@ type (
 	}
 
 	UpdatePartner struct {
-		User UpdateUser `json:"user" form:"user" binding:"required"`
-		Name string     `json:"name" form:"name" binding:"required"`
+		User UpdateUser `json:"user" form:"user" binding:"-"`
+		Name string     `json:"name" form:"name" binding:"-"`
 	}
 )
 
@@ -26,7 +26,7 @@ func (req *CreatePartner) ToModel(
 		User: user,
 	}
 
-	if err := copier.Copy(&partner, &req); err != nil {
+	if err := copier.CopyWithOption(&partner, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
 		return nil
 	}

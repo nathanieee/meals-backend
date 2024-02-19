@@ -137,7 +137,7 @@ func (r *PartnerRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 		return nil, result.Error
 	}
 
-	copier.Copy(&pares, &pa)
+	copier.CopyWithOption(&pares, &pa, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	p.Data = pares
 	return &p, nil

@@ -140,7 +140,7 @@ func (r *OrganizationRepository) FindAll(p utpagination.Pagination) (*utpaginati
 	}
 
 	// * copy the data from model to response
-	copier.Copy(&ores, &o)
+	copier.CopyWithOption(&ores, &o, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	p.Data = ores
 	return &p, result.Error

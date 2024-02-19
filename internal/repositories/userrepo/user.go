@@ -59,7 +59,7 @@ func (r *UserRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
 		Preload("Address").
-		Preload("UserImage.Image")
+		Preload("Image.Image")
 }
 
 func (r *UserRepository) Create(u models.User) (*models.User, error) {
@@ -90,7 +90,8 @@ func (r *UserRepository) Read() ([]*models.User, error) {
 
 func (r *UserRepository) Update(u models.User) (*models.User, error) {
 	err := r.db.
-		Save(&u).Error
+		Model(&u).
+		Updates(u).Error
 
 	if err != nil {
 		utlogger.LogError(err)
@@ -148,7 +149,7 @@ func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 	}
 
 	// * copy the data from model to response
-	copier.Copy(&ures, &u)
+	copier.CopyWithOption(&ures, &u, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	p.Data = ures
 	return &p, nil
