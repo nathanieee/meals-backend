@@ -97,7 +97,10 @@ func (s *UserService) Update(
 		return nil, err
 	}
 
-	u = req.ToModel(*u, consttypes.UR_USER)
+	u, err = req.ToModel(*u, consttypes.UR_USER)
+	if err != nil {
+		return nil, err
+	}
 
 	u, err = s.userrepo.Update(*u)
 	if err != nil {

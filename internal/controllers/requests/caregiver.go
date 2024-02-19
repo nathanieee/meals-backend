@@ -27,40 +27,60 @@ type (
 	}
 )
 
-func (req *CreateCaregiver) ToModel() *models.Caregiver {
-	user := req.User.ToModel(consttypes.UR_CAREGIVER)
+func (req *CreateCaregiver) ToModel() (*models.Caregiver, error) {
+	user, err := req.User.ToModel(consttypes.UR_CAREGIVER)
+	if err != nil {
+		utlogger.LogError(err)
+		return nil, err
+	}
+
 	caregiver := models.Caregiver{
 		User: *user,
 	}
 
 	if err := copier.CopyWithOption(&caregiver, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
-		return nil
+		return nil, err
 	}
 
-	return &caregiver
+	return &caregiver, nil
 }
 
-func (req *UpdateCaregiver) ToCreateCaregiver() *CreateCaregiver {
+func (req *UpdateCaregiver) ToCreateCaregiver() (*CreateCaregiver, error) {
 	create := CreateCaregiver{}
 
 	if err := copier.CopyWithOption(&create, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
-		return nil
+		return nil, err
 	}
 
-	return &create
+	return &create, nil
 }
 
-func (req *UpdateCaregiver) ToModel(caregiver *models.Caregiver) *models.Caregiver {
+func (req *UpdateCaregiver) ToModel(
+	caregiver *models.Caregiver,
+) (*models.Caregiver, error) {
 	if caregiver == nil {
-		return req.ToCreateCaregiver().ToModel()
+		ccg, err := req.ToCreateCaregiver()
+
+		if err != nil {
+			utlogger.LogError(err)
+			return nil, err
+		}
+
+		caregiver, err = ccg.ToModel()
+		if err != nil {
+			utlogger.LogError(err)
+			return nil, err
+		}
+
+		return caregiver, nil
 	}
 
 	if err := copier.CopyWithOption(&caregiver, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
-		return nil
+		return nil, err
 	}
 
-	return caregiver
+	return caregiver, nil
 }

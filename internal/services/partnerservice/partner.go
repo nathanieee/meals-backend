@@ -36,10 +36,21 @@ func NewPartnerService(
 }
 
 func (s *PartnerService) Create(req requests.CreatePartner) (*responses.Partner, error) {
-	user := req.User.ToModel(consttypes.UR_PARTNER)
+	user, err := req.User.ToModel(consttypes.UR_PARTNER)
+	if err != nil {
+		return nil, err
+	}
 
-	partner := req.ToModel(*user)
-	partner, err := s.prtrrepo.Create(*partner)
+	partner, err := req.ToModel(*user)
+	if err != nil {
+		return nil, err
+	}
+
+	partner, err = s.prtrrepo.Create(*partner)
+	if err != nil {
+		return nil, err
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -64,9 +75,16 @@ func (s *PartnerService) Update(id uuid.UUID, req requests.UpdatePartner) (*resp
 		return nil, err
 	}
 
-	user := req.User.ToModel(partner.User, consttypes.UR_PARTNER)
+	user, err := req.User.ToModel(partner.User, consttypes.UR_PARTNER)
+	if err != nil {
+		return nil, err
+	}
 
-	partner = req.ToModel(*partner, *user)
+	partner, err = req.ToModel(*partner, *user)
+	if err != nil {
+		return nil, err
+	}
+
 	partner, err = s.prtrrepo.Update(*partner)
 	if err != nil {
 		return nil, err

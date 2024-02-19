@@ -48,12 +48,12 @@ func (req *CreateMember) ToModel(
 	allergies []*models.MemberAllergy,
 	illnesses []*models.MemberIllness,
 	organization *models.Organization,
-) *models.Member {
+) (*models.Member, error) {
 	var member models.Member
 
 	if err := copier.CopyWithOption(&member, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
-		return nil
+		return nil, err
 	}
 
 	member.User = user
@@ -63,7 +63,7 @@ func (req *CreateMember) ToModel(
 	member.Organization = organization
 	member.BMI = utmath.BMICalculation(req.Weight, req.Height)
 
-	return &member
+	return &member, nil
 }
 
 func (req *UpdateMember) ToModel(
@@ -73,10 +73,10 @@ func (req *UpdateMember) ToModel(
 	allergies []*models.MemberAllergy,
 	illnesses []*models.MemberIllness,
 	organization *models.Organization,
-) *models.Member {
+) (*models.Member, error) {
 	if err := copier.CopyWithOption(&member, &req, copier.Option{IgnoreEmpty: true}); err != nil {
 		utlogger.LogError(err)
-		return nil
+		return nil, err
 	}
 
 	member.User = user
@@ -91,5 +91,5 @@ func (req *UpdateMember) ToModel(
 		member.BMI = utmath.BMICalculation(member.Weight, member.Height)
 	}
 
-	return &member
+	return &member, nil
 }

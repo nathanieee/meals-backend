@@ -65,11 +65,17 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 	var organization *models.Organization
 	var err error
 
-	user := req.User.ToModel(consttypes.UR_MEMBER)
+	user, err := req.User.ToModel(consttypes.UR_MEMBER)
+	if err != nil {
+		return nil, err
+	}
 
 	// * if caregiver request is not empty, then convert it to model.
 	if req.Caregiver != nil {
-		caregiver = req.Caregiver.ToModel()
+		caregiver, err = req.Caregiver.ToModel()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// * check the organization id and assign it to the object.
@@ -104,7 +110,11 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 		allergies = append(allergies, mallergy)
 	}
 
-	member := req.ToModel(*user, caregiver, allergies, illnesses, organization)
+	member, err := req.ToModel(*user, caregiver, allergies, illnesses, organization)
+	if err != nil {
+		return nil, err
+	}
+
 	member, err = s.membrepo.Create(*member)
 	if err != nil {
 		return nil, err
@@ -144,19 +154,32 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		return nil, err
 	}
 
-	user := req.User.ToModel(member.User, consttypes.UR_MEMBER)
+	user, err := req.User.ToModel(member.User, consttypes.UR_MEMBER)
+	if err != nil {
+		return nil, err
+	}
 
 	// * if caregiver request is not empty, check whether the member already has one.
 	// * if not, then convert it to model.
 	if req.Caregiver != nil {
 		if member.Caregiver != nil {
+			if member.Caregiver.User.Email != req.Caregiver.User.Email {
+				err := utresponse.ErrCannotChangeEmail
+
+				utlogger.LogError(err)
+				return nil, err
+			}
+
 			caregiver, err = s.crgvrrepo.FindByID(*member.CaregiverID)
 			if err != nil {
 				return nil, err
 			}
 		}
 
-		caregiver = req.Caregiver.ToModel(caregiver)
+		caregiver, err = req.Caregiver.ToModel(caregiver)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// * check the organization id and assign it to the object.
@@ -218,14 +241,12 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 	}
 
 	// * copy the request to the member model.
-	member = req.ToModel(*member, *user, caregiver, allergies, illnesses, organization)
-	_, err = s.membrepo.Update(*member)
+	member, err = req.ToModel(*member, *user, caregiver, allergies, illnesses, organization)
 	if err != nil {
 		return nil, err
 	}
 
-	// * find the member with all of it data and return it.
-	member, err = s.membrepo.FindByID(member.ID)
+	member, err = s.membrepo.Update(*member)
 	if err != nil {
 		return nil, err
 	}

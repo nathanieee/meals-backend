@@ -27,38 +27,43 @@ type (
 	}
 )
 
-func (req *CreateUser) ToModel(role consttypes.UserRole) *models.User {
+func (req *CreateUser) ToModel(
+	role consttypes.UserRole,
+) (*models.User, error) {
 	var user models.User
 
 	hash, err := helper.HashPassword(req.Password)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	if err := copier.CopyWithOption(&user, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
-		return nil
+		return nil, err
 	}
 
 	user.Role = role
 	user.Password = hash
 
-	return &user
+	return &user, nil
 }
 
-func (req *UpdateUser) ToModel(user models.User, role consttypes.UserRole) *models.User {
+func (req *UpdateUser) ToModel(
+	user models.User,
+	role consttypes.UserRole,
+) (*models.User, error) {
 	hash, err := helper.HashPassword(req.Password)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	if err := copier.CopyWithOption(&user, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
-		return nil
+		return nil, err
 	}
 
 	user.Role = role
 	user.Password = hash
 
-	return &user
+	return &user, nil
 }

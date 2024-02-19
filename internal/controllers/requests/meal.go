@@ -36,7 +36,7 @@ func (req *CreateMeal) ToModel(
 	illnesses []*models.MealIllness,
 	allergies []*models.MealAllergy,
 	partner models.Partner,
-) *models.Meal {
+) (*models.Meal, error) {
 	meal := models.Meal{
 		Images:    images,
 		Illnesses: illnesses,
@@ -46,10 +46,10 @@ func (req *CreateMeal) ToModel(
 
 	if err := copier.CopyWithOption(&meal, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
-		return nil
+		return nil, err
 	}
 
-	return &meal
+	return &meal, nil
 }
 
 func (req *UpdateMeal) ToModel(
@@ -58,10 +58,10 @@ func (req *UpdateMeal) ToModel(
 	illnesses []*models.MealIllness,
 	allergies []*models.MealAllergy,
 	partner models.Partner,
-) *models.Meal {
+) (*models.Meal, error) {
 	if err := copier.CopyWithOption(&meal, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
-		return nil
+		return nil, err
 	}
 
 	meal.Images = images
@@ -69,5 +69,5 @@ func (req *UpdateMeal) ToModel(
 	meal.Allergies = allergies
 	meal.Partner = partner
 
-	return &meal
+	return &meal, nil
 }

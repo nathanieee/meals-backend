@@ -82,7 +82,11 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 		return nil, err
 	}
 
-	meal := req.ToModel(images, illnesses, allergies, *partner)
+	meal, err := req.ToModel(images, illnesses, allergies, *partner)
+	if err != nil {
+		return nil, err
+	}
+
 	meal, err = s.mealrepo.Create(*meal)
 	if err != nil {
 		return nil, err
@@ -142,7 +146,11 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 		return nil, err
 	}
 
-	meal = req.ToModel(*meal, images, illnesses, allergies, *partner)
+	meal, err = req.ToModel(*meal, images, illnesses, allergies, *partner)
+	if err != nil {
+		return nil, err
+	}
+
 	meal, err = s.mealrepo.Update(*meal)
 	if err != nil {
 		return nil, err
