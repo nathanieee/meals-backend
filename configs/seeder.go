@@ -16,6 +16,10 @@ import (
 	"gorm.io/gorm"
 )
 
+var (
+	uuidval, _ = uuid.Parse("123e4567-e89b-12d3-a456-426614174000")
+)
+
 func getGlobalHashedPassword(password string) string {
 	hash, err := helper.HashPassword(password)
 	if err != nil {
@@ -113,7 +117,7 @@ func SeedOrganizationTypeEnum(db *gorm.DB) error {
 
 func SeedAdminCredentials(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Admin{}) {
-		if err := db.First(&models.User{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		if err := db.First(&models.Admin{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			admins := []*models.Admin{
 				{
 					User: models.User{
@@ -184,8 +188,7 @@ func SeedOrganizationCredential(db *gorm.DB) error {
 func SeedPartnerCredential(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Partner{}) {
 		if err := db.First(&models.Partner{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			uuidstr := "123e4567-e89b-12d3-a456-426614174000"
-			uuid, err := uuid.Parse(uuidstr)
+
 			if err != nil {
 				utlogger.LogError(err)
 				return err
@@ -194,7 +197,7 @@ func SeedPartnerCredential(db *gorm.DB) error {
 			partners := []*models.Partner{
 				{
 					Model: helper.Model{
-						ID: uuid,
+						ID: uuidval,
 					},
 					User: models.User{
 						Email:    "partner@test.com",
@@ -219,21 +222,14 @@ func SeedPartnerCredential(db *gorm.DB) error {
 func SeedMealData(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.Meal{}) && db.Migrator().HasTable(&models.Partner{}) {
 		if err := db.First(&models.Meal{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			uuidstr := "123e4567-e89b-12d3-a456-426614174000"
-			uuid, err := uuid.Parse(uuidstr)
-			if err != nil {
-				utlogger.LogError(err)
-				return err
-			}
-
 			var illness models.Illness
-			db.First(&illness, uuid)
+			db.First(&illness, uuidval)
 
 			var allergy models.Allergy
-			db.First(&allergy, uuid)
+			db.First(&allergy, uuidval)
 
 			var partner models.Partner
-			db.First(&partner, uuid)
+			db.First(&partner, uuidval)
 
 			meals := []*models.Meal{
 				{
@@ -266,19 +262,12 @@ func SeedMealData(db *gorm.DB) error {
 func SeedAllergyData(db *gorm.DB) error {
 	// * source: https://en.wikipedia.org/wiki/List_of_allergens
 	if db.Migrator().HasTable(&models.Allergy{}) {
-		uuidstr := "123e4567-e89b-12d3-a456-426614174000"
-		uuid, err := uuid.Parse(uuidstr)
-		if err != nil {
-			utlogger.LogError(err)
-			return err
-		}
-
 		if err := db.First(&models.Allergy{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			allergies := []*models.Allergy{
 				// ! start of food allergen
 				{
 					Model: helper.Model{
-						ID: uuid,
+						ID: uuidval,
 					},
 					Name:        "Milk",
 					Description: "A milk allergy, also known as a dairy allergy, is an adverse immune system response to one or more proteins found in cow's milk. It is different from lactose intolerance, which is a non-immune digestive disorder where the body has difficulty digesting lactose, a sugar found in milk. A milk allergy is an immune system disorder and can be more severe.",
@@ -514,18 +503,11 @@ func SeedAllergyData(db *gorm.DB) error {
 func SeedIllnessData(db *gorm.DB) error {
 	// * source: https://chat.openai.com
 	if db.Migrator().HasTable(&models.Illness{}) {
-		uuidstr := "123e4567-e89b-12d3-a456-426614174000"
-		uuid, err := uuid.Parse(uuidstr)
-		if err != nil {
-			utlogger.LogError(err)
-			return err
-		}
-
 		if err := db.First(&models.Illness{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			illnesses := []*models.Illness{
 				{
 					Model: helper.Model{
-						ID: uuid,
+						ID: uuidval,
 					},
 					Name:        "Covid",
 					Description: "Coronavirus disease (COVID-19) is an infectious disease caused by the SARS-CoV-2 virus.",
