@@ -6,6 +6,7 @@ import (
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utresponse"
+	"strings"
 
 	"github.com/jinzhu/copier"
 )
@@ -43,6 +44,7 @@ func (req *CreateUser) ToModel(
 		return nil, err
 	}
 
+	user.Email = strings.ToLower(req.Email)
 	user.Role = role
 	user.Password = hash
 

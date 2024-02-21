@@ -28,14 +28,12 @@ type (
 )
 
 func (req *CreateCaregiver) ToModel() (*models.Caregiver, error) {
+	var caregiver models.Caregiver
+
 	user, err := req.User.ToModel(consttypes.UR_CAREGIVER)
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
-	}
-
-	caregiver := models.Caregiver{
-		User: *user,
 	}
 
 	if err := copier.CopyWithOption(&caregiver, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
@@ -43,11 +41,13 @@ func (req *CreateCaregiver) ToModel() (*models.Caregiver, error) {
 		return nil, err
 	}
 
+	caregiver.User = *user
+
 	return &caregiver, nil
 }
 
 func (req *UpdateCaregiver) ToCreateCaregiver() (*CreateCaregiver, error) {
-	create := CreateCaregiver{}
+	var create CreateCaregiver
 
 	if err := copier.CopyWithOption(&create, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
@@ -61,14 +61,14 @@ func (req *UpdateCaregiver) ToModel(
 	caregiver *models.Caregiver,
 ) (*models.Caregiver, error) {
 	if caregiver == nil {
-		ccg, err := req.ToCreateCaregiver()
+		createcaregiver, err := req.ToCreateCaregiver()
 
 		if err != nil {
 			utlogger.LogError(err)
 			return nil, err
 		}
 
-		caregiver, err = ccg.ToModel()
+		caregiver, err = createcaregiver.ToModel()
 		if err != nil {
 			utlogger.LogError(err)
 			return nil, err

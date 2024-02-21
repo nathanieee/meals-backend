@@ -4,6 +4,7 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -37,17 +38,18 @@ func (req *CreateMeal) ToModel(
 	allergies []*models.MealAllergy,
 	partner models.Partner,
 ) (*models.Meal, error) {
-	meal := models.Meal{
-		Images:    images,
-		Illnesses: illnesses,
-		Allergies: allergies,
-		Partner:   partner,
-	}
+	var meal models.Meal
 
 	if err := copier.CopyWithOption(&meal, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.LogError(err)
 		return nil, err
 	}
+
+	meal.Name = strings.Title(req.Name)
+	meal.Images = images
+	meal.Illnesses = illnesses
+	meal.Allergies = allergies
+	meal.Partner = partner
 
 	return &meal, nil
 }
@@ -64,6 +66,7 @@ func (req *UpdateMeal) ToModel(
 		return nil, err
 	}
 
+	meal.Name = strings.Title(req.Name)
 	meal.Images = images
 	meal.Illnesses = illnesses
 	meal.Allergies = allergies
