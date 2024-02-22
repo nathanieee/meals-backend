@@ -8,8 +8,8 @@ import (
 type (
 	Image struct {
 		helper.Model
-		Name string               `json:"name" gorm:"not null" binding:"required" example:"image.jpg"`
-		Path string               `json:"path" gorm:"not null" binding:"required" example:"./files/images/profiles/image.jpg"`
-		Type consttypes.ImageType `json:"image_type" gorm:"not null; type:image_type_enum" binding:"required" example:"Profile"`
+		Name string               `json:"name" gorm:"required" example:"image.jpg"`
+		Path string               `json:"path" gorm:"required" example:"./files/images/profiles/image.jpg"`
+		Type consttypes.ImageType `json:"image_type" gorm:"required; type:image_type_enum" example:"Profile"`
 	}
 )

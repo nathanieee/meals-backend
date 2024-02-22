@@ -188,12 +188,6 @@ func SeedOrganizationCredential(db *gorm.DB) error {
 func SeedPartnerCredential(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Partner{}) {
 		if err := db.First(&models.Partner{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-
-			if err != nil {
-				utlogger.LogError(err)
-				return err
-			}
-
 			partners := []*models.Partner{
 				{
 					Model: helper.Model{

@@ -7,8 +7,8 @@ import (
 type (
 	Illness struct {
 		helper.Model
-		Name        string `json:"name" gorm:"not null" binding:"required" example:"Cold Sore"`
-		Description string `json:"description" gorm:"not null" binding:"required" example:"Infection with the herpes simplex virus around the border of the lips."`
+		Name        string `json:"name" gorm:"required" example:"Cold Sore"`
+		Description string `json:"description" gorm:"required" example:"Infection with the herpes simplex virus around the border of the lips."`
 	}
 )
 

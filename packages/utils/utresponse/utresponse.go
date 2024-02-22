@@ -178,6 +178,8 @@ func getErrorMsg(fe validator.FieldError) string {
 		return "should be a valid email address"
 	case "file":
 		return "should be a valid file"
+	case "uuid":
+		return "should be a valid UUID"
 	case "lte":
 		return "should be less than " + fe.Param()
 	case "gte":
@@ -241,12 +243,17 @@ func GeneralInvalidRequest(
 	ve []ValidationErrorMessage,
 	err error,
 ) {
+	var errors []any
+
+	errors = append(errors, ve)
+	errors = append(errors, err.Error())
+
 	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
 		Status:  consttypes.RST_FAIL,
 		Message: fmt.Sprintf("Invalid request on %s", function),
 		Data: ErrorData{
 			Debug:  err,
-			Errors: ve,
+			Errors: errors,
 		},
 	})
 }

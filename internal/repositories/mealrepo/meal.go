@@ -59,7 +59,7 @@ func (r *MealRepository) preload() *gorm.DB {
 
 func (r *MealRepository) Create(m models.Meal) (*models.Meal, error) {
 	err := r.db.
-		Create(m).Error
+		Create(&m).Error
 
 	if err != nil {
 		utlogger.LogError(err)

@@ -10,9 +10,9 @@ import (
 type (
 	Patron struct {
 		helper.Model
-		UserID uuid.UUID             `json:"user_id" gorm:"not null" binding:"required"`
+		UserID uuid.UUID             `json:"user_id" gorm:"required"`
 		User   User                  `json:"user"`
-		Type   consttypes.PatronType `json:"type" gorm:"not null; type:patron_type_enum" binding:"required"`
-		Name   string                `json:"name" gorm:"not null" binding:"required" example:"Anonymus"`
+		Type   consttypes.PatronType `json:"type" gorm:"required; type:patron_type_enum"`
+		Name   string                `json:"name" gorm:"required" example:"Anonymus"`
 	}
 )

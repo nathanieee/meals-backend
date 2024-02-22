@@ -85,7 +85,6 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 		&models.Allergy{},
 		&models.Caregiver{},
 		&models.Donation{},
-		&models.FoodCategory{},
 		&models.Illness{},
 		&models.Image{},
 		&models.Meal{},

@@ -19,9 +19,9 @@ type (
 		helper.Model
 		Address                []*Address          `json:"address,omitempty"`
 		Image                  *UserImage          `json:"image,omitempty"`
-		Email                  string              `json:"email" gorm:"not null;unique" example:"email@email.com"`
-		Password               string              `json:"password" gorm:"size:255;not null;" example:"password"`
-		Role                   consttypes.UserRole `json:"role" gorm:"not null" example:"0" default:"0"`
+		Email                  string              `json:"email" gorm:"required;unique" example:"email@email.com"`
+		Password               string              `json:"password" gorm:"size:255;required;" example:"password"`
+		Role                   consttypes.UserRole `json:"role" gorm:"required" example:"0" default:"0"`
 		ResetPasswordToken     string              `json:"-"`
 		ResetPasswordSentAt    time.Time           `json:"-"`
 		RefreshToken           string              `json:"-"`
@@ -30,8 +30,8 @@ type (
 
 	UserImage struct {
 		helper.Model
-		UserID  uuid.UUID `json:"user_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
-		ImageID uuid.UUID `json:"image_id" gorm:"not null" binding:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		UserID  uuid.UUID `json:"user_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		ImageID uuid.UUID `json:"image_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
 		Image   Image     `json:"image"`
 	}
 )
