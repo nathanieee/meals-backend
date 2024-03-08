@@ -1,5 +1,7 @@
 package consttypes
 
+import "encoding/json"
+
 type (
 	MealStatus     string
 	DonationStatus string
@@ -13,3 +15,13 @@ const (
 	DS_ACCEPTED DonationStatus = "Accepted"
 	DS_REJECTED DonationStatus = "Rejected"
 )
+
+func (enum MealStatus) String() string {
+	jsondata, _ := json.Marshal(enum)
+	return string(jsondata)
+}
+
+func (enum DonationStatus) String() string {
+	jsondata, _ := json.Marshal(enum)
+	return string(jsondata)
+}

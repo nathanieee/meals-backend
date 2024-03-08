@@ -98,6 +98,7 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 		&models.Partner{},
 		&models.Patron{},
 		&models.Rating{},
+		&models.Cart{},
 	)
 }
 

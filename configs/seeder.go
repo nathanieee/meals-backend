@@ -59,59 +59,72 @@ func createEnum(db *gorm.DB, enumname string, enumvalues ...string) error {
 func SeedAllergensEnum(db *gorm.DB) error {
 	return createEnum(db,
 		"allergens_enum",
-		string(consttypes.A_FOOD),
-		string(consttypes.A_MEDICAL),
-		string(consttypes.A_ENVIRONMENTAL),
-		string(consttypes.A_CONTACT),
+		consttypes.A_FOOD.String(),
+		consttypes.A_MEDICAL.String(),
+		consttypes.A_ENVIRONMENTAL.String(),
+		consttypes.A_CONTACT.String(),
+	)
+}
+
+func SeedUserRoleEnum(db *gorm.DB) error {
+	return createEnum(db,
+		"user_role_enum",
+		consttypes.UR_ADMIN.String(),
+		consttypes.UR_CAREGIVER.String(),
+		consttypes.UR_MEMBER.String(),
+		consttypes.UR_ORGANIZATION.String(),
+		consttypes.UR_PARTNER.String(),
+		consttypes.UR_PATRON.String(),
+		consttypes.UR_USER.String(),
 	)
 }
 
 func SeedGenderEnum(db *gorm.DB) error {
 	return createEnum(db,
 		"gender_enum",
-		string(consttypes.G_MALE),
-		string(consttypes.G_FEMALE),
-		string(consttypes.G_OTHER),
+		consttypes.G_MALE.String(),
+		consttypes.G_FEMALE.String(),
+		consttypes.G_OTHER.String(),
 	)
 }
 
 func SeedMealStatusEnum(db *gorm.DB) error {
 	return createEnum(db,
 		"meal_status_enum",
-		string(consttypes.MS_ACTIVE),
-		string(consttypes.MS_INACTIVE),
-		string(consttypes.MS_OUTOFSTOCK),
+		consttypes.MS_ACTIVE.String(),
+		consttypes.MS_INACTIVE.String(),
+		consttypes.MS_OUTOFSTOCK.String(),
 	)
 }
 
 func SeedDonationStatusEnum(db *gorm.DB) error {
 	return createEnum(db,
 		"donation_status_enum",
-		string(consttypes.DS_ACCEPTED),
-		string(consttypes.DS_REJECTED),
+		consttypes.DS_ACCEPTED.String(),
+		consttypes.DS_REJECTED.String(),
 	)
 }
 
 func SeedImageTypeEnum(db *gorm.DB) error {
 	return createEnum(db,
 		"image_type_enum",
-		string(consttypes.IT_PROFILE),
-		string(consttypes.IT_MEAL),
+		consttypes.IT_PROFILE.String(),
+		consttypes.IT_MEAL.String(),
 	)
 }
 
 func SeedPatronTypeEnum(db *gorm.DB) error {
 	return createEnum(db,
 		"patron_type_enum",
-		string(consttypes.PT_ORGANIZATION),
-		string(consttypes.PT_PERSONAL),
+		consttypes.PT_ORGANIZATION.String(),
+		consttypes.PT_PERSONAL.String(),
 	)
 }
 
 func SeedOrganizationTypeEnum(db *gorm.DB) error {
 	return createEnum(db,
 		"organization_type_enum",
-		string(consttypes.OT_NURSINGHOME),
+		consttypes.OT_NURSINGHOME.String(),
 	)
 }
 

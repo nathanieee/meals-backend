@@ -40,18 +40,13 @@ type (
 		Update(u models.User) (*models.User, error)
 		Delete(u models.User) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(uid uuid.UUID) (*models.User, error)
+		FindByID(id uuid.UUID) (*models.User, error)
 		FindByEmail(email string) (*models.User, error)
 		FirstOrCreate(u models.User) (*models.User, error)
 	}
 )
 
 func NewUserRepository(db *gorm.DB) *UserRepository {
-	db.
-		Preload(clause.Associations).
-		Preload("Image.Image").
-		Preload("Address")
-
 	return &UserRepository{db: db}
 }
 
@@ -63,7 +58,9 @@ func (r *UserRepository) preload() *gorm.DB {
 }
 
 func (r *UserRepository) Create(u models.User) (*models.User, error) {
-	err := r.db.Create(&u).Error
+	err := r.db.
+		Create(&u).Error
+
 	if err != nil {
 		utlogger.LogError(err)
 		return nil, err
@@ -90,8 +87,7 @@ func (r *UserRepository) Read() ([]*models.User, error) {
 
 func (r *UserRepository) Update(u models.User) (*models.User, error) {
 	err := r.db.
-		Model(&u).
-		Updates(u).Error
+		Save(&u).Error
 
 	if err != nil {
 		utlogger.LogError(err)
@@ -155,12 +151,13 @@ func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 	return &p, nil
 }
 
-func (r *UserRepository) FindByID(uid uuid.UUID) (*models.User, error) {
-	var u models.User
+func (r *UserRepository) FindByID(id uuid.UUID) (*models.User, error) {
+	var u *models.User
+
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.User{Model: helper.Model{ID: uid}}).
+		Where(&models.User{Model: helper.Model{ID: id}}).
 		First(&u).Error
 
 	if err != nil {
@@ -168,11 +165,12 @@ func (r *UserRepository) FindByID(uid uuid.UUID) (*models.User, error) {
 		return nil, err
 	}
 
-	return &u, nil
+	return u, nil
 }
 
 func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
-	var u models.User
+	var u *models.User
+
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
@@ -184,7 +182,7 @@ func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 		return nil, err
 	}
 
-	return &u, nil
+	return u, nil
 }
 
 func (r *UserRepository) FirstOrCreate(u models.User) (*models.User, error) {

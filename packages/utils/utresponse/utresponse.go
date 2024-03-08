@@ -138,7 +138,8 @@ var (
 	resetPasswordCooldown = cfg.ResetPassword.Cooldown
 
 	// General
-	ErrConvertFailed = fmt.Errorf("data type conversion failed")
+	ErrConvertFailed    = fmt.Errorf("data type conversion failed")
+	ErrInvalidReference = fmt.Errorf("invalid reference")
 
 	// Error Field
 	ErrFieldIsEmpty             = fmt.Errorf("field should not be empty")

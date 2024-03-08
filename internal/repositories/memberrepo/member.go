@@ -74,13 +74,7 @@ func (r *MemberRepository) Create(m models.Member) (*models.Member, error) {
 		return nil, err
 	}
 
-	member, err := r.FindByID(m.ID)
-	if err != nil {
-		utlogger.LogError(err)
-		return nil, err
-	}
-
-	return member, err
+	return &m, err
 }
 
 func (r *MemberRepository) Read() ([]*models.Member, error) {
@@ -108,13 +102,7 @@ func (r *MemberRepository) Update(m models.Member) (*models.Member, error) {
 		return nil, err
 	}
 
-	member, err := r.FindByID(m.ID)
-	if err != nil {
-		utlogger.LogError(err)
-		return nil, err
-	}
-
-	return member, nil
+	return &m, nil
 }
 
 func (r *MemberRepository) Delete(m models.Member) error {

@@ -1,4 +1,6 @@
 DOCKER_COMPOSE := docker-compose
+DOCKER_EXEC := docker exec
+APP_CONTAINER := meals-go
 ENV_FILE := .env
 
 ifndef ENV_EXISTS
@@ -10,3 +12,6 @@ endif
 dev:
 	$(DOCKER_COMPOSE) down --volumes --remove-orphans
 	$(DOCKER_COMPOSE) up --build
+
+generate-mockery:
+	$(DOCKER_EXEC) -it $(APP_CONTAINER) /bin/sh -c "mockery --all"

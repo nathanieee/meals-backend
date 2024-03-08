@@ -1,5 +1,7 @@
 package consttypes
 
+import "encoding/json"
+
 type (
 	ImageType          string
 	PatronType         string
@@ -20,3 +22,23 @@ const (
 	RST_FAIL    ResponseStatusType = "fail"
 	RST_ERROR   ResponseStatusType = "error"
 )
+
+func (enum ImageType) String() string {
+	jsondata, _ := json.Marshal(enum)
+	return string(jsondata)
+}
+
+func (enum PatronType) String() string {
+	jsondata, _ := json.Marshal(enum)
+	return string(jsondata)
+}
+
+func (enum OrganizationType) String() string {
+	jsondata, _ := json.Marshal(enum)
+	return string(jsondata)
+}
+
+func (enum ResponseStatusType) String() string {
+	jsondata, _ := json.Marshal(enum)
+	return string(jsondata)
+}
