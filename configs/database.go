@@ -49,6 +49,7 @@ func (db DB) AutoSeedEnum(gdb *gorm.DB) error {
 		SeedImageTypeEnum,
 		SeedPatronTypeEnum,
 		SeedOrganizationTypeEnum,
+		SeedUserRoleEnum,
 	}
 
 	var errs []error
@@ -110,6 +111,8 @@ func (db DB) AutoSeedTable(gdb *gorm.DB) error {
 		SeedOrganizationCredential,
 		SeedPartnerCredential,
 		SeedMealData,
+		SeedMemberCredentials,
+		SeedCartData,
 	}
 
 	var errs []error

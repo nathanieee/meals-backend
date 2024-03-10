@@ -9,7 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type (
@@ -21,7 +20,6 @@ type (
 
 func newMealRoutes(
 	rg *gin.RouterGroup,
-	db *gorm.DB,
 	cfg *configs.Config,
 	smeal mealservice.IMealService,
 ) {

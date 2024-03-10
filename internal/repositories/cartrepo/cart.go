@@ -159,15 +159,22 @@ func (r *CartRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 			if carts.ID == response.ID {
 				switch carts.ReferenceType {
 				case consttypes.UR_MEMBER:
-					r.db.Model(&carts).Association("Member").Find(&member)
+					err := r.db.First(&member, carts.ReferenceID).Error
+					if err != nil {
+						return nil, err
+					}
+
+					response.Member = member.ToResponse()
 				case consttypes.UR_CAREGIVER:
-					r.db.Model(&carts).Association("Caregiver").Find(&caregiver)
+					err := r.db.First(&caregiver, carts.ReferenceID).Error
+					if err != nil {
+						return nil, err
+					}
+
+					response.Caregiver = caregiver.ToResponse()
 				default:
 					return nil, utresponse.ErrInvalidReference
 				}
-
-				response.Member = member.ToResponse()
-				response.Caregiver = caregiver.ToResponse()
 			}
 		}
 	}
@@ -200,6 +207,30 @@ func (r *CartRepository) FindByMemberID(mid uuid.UUID) ([]*models.Cart, error) {
 		preload().
 		Select(SELECTED_FIELDS).
 		Where(&models.Cart{ReferenceID: mid, ReferenceType: consttypes.UR_MEMBER}).
+		Find(&c).Error
+
+	return nil, err
+}
+
+func (r *CartRepository) FindByCaregiverID(cid uuid.UUID) ([]*models.Cart, error) {
+	var c []*models.Cart
+
+	err := r.
+		preload().
+		Select(SELECTED_FIELDS).
+		Where(&models.Cart{ReferenceID: cid, ReferenceType: consttypes.UR_CAREGIVER}).
+		Find(&c).Error
+
+	return nil, err
+}
+
+func (r *CartRepository) FindByMealID(mid uuid.UUID) ([]*models.Cart, error) {
+	var c []*models.Cart
+
+	err := r.
+		preload().
+		Select(SELECTED_FIELDS).
+		Where(&models.Cart{MealID: mid}).
 		Find(&c).Error
 
 	return nil, err

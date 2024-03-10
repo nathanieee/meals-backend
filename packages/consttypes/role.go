@@ -1,7 +1,5 @@
 package consttypes
 
-import "encoding/json"
-
 type (
 	UserRole uint
 )
@@ -16,7 +14,6 @@ const (
 	UR_ORGANIZATION UserRole = 6
 )
 
-func (enum UserRole) String() string {
-	jsondata, _ := json.Marshal(enum)
-	return string(jsondata)
+func (enum UserRole) Uint() uint {
+	return uint(enum)
 }

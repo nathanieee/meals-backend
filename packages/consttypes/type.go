@@ -1,7 +1,5 @@
 package consttypes
 
-import "encoding/json"
-
 type (
 	ImageType          string
 	PatronType         string
@@ -24,21 +22,17 @@ const (
 )
 
 func (enum ImageType) String() string {
-	jsondata, _ := json.Marshal(enum)
-	return string(jsondata)
+	return string(enum)
 }
 
 func (enum PatronType) String() string {
-	jsondata, _ := json.Marshal(enum)
-	return string(jsondata)
+	return string(enum)
 }
 
 func (enum OrganizationType) String() string {
-	jsondata, _ := json.Marshal(enum)
-	return string(jsondata)
+	return string(enum)
 }
 
 func (enum ResponseStatusType) String() string {
-	jsondata, _ := json.Marshal(enum)
-	return string(jsondata)
+	return string(enum)
 }

@@ -1,7 +1,5 @@
 package consttypes
 
-import "encoding/json"
-
 type (
 	Gender string
 )
@@ -13,6 +11,5 @@ const (
 )
 
 func (enum Gender) String() string {
-	jsondata, _ := json.Marshal(enum)
-	return string(jsondata)
+	return string(enum)
 }

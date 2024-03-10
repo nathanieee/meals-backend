@@ -1,10 +1,6 @@
 package consttypes
 
-import "encoding/json"
-
-type (
-	Allergens string
-)
+type Allergens string
 
 const (
 	A_FOOD          Allergens = "Food"
@@ -14,6 +10,5 @@ const (
 )
 
 func (enum Allergens) String() string {
-	jsondata, _ := json.Marshal(enum)
-	return string(jsondata)
+	return string(enum)
 }

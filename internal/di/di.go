@@ -4,6 +4,7 @@ import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/repositories/allergyrepo"
 	"project-skbackend/internal/repositories/caregiverrepo"
+	"project-skbackend/internal/repositories/cartrepo"
 	"project-skbackend/internal/repositories/illnessrepo"
 	"project-skbackend/internal/repositories/mealrepo"
 	"project-skbackend/internal/repositories/memberrepo"
@@ -11,6 +12,7 @@ import (
 	"project-skbackend/internal/repositories/partnerrepo"
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/authservice"
+	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/internal/services/mealservice"
 	"project-skbackend/internal/services/memberservice"
@@ -28,6 +30,7 @@ type DependencyInjection struct {
 	MemberService  *memberservice.MemberService
 	PartnerService *partnerservice.PartnerService
 	MealService    *mealservice.MealService
+	CartService    *cartservice.CartService
 }
 
 func NewDependencyInjection(db *gorm.DB, cfg *configs.Config, rdb *redis.Client) *DependencyInjection {
@@ -38,39 +41,25 @@ func NewDependencyInjection(db *gorm.DB, cfg *configs.Config, rdb *redis.Client)
 		db = db.Debug()
 	}
 
-	/* ---------------------------------- user ---------------------------------- */
+	/* ------------------------------- repository ------------------------------- */
 	ruser := userrepo.NewUserRepository(db)
-	suser := userservice.NewUserService(ruser)
-
-	/* --------------------------------- partner -------------------------------- */
 	rpartner := partnerrepo.NewPartnerRepository(db)
-	spartner := partnerservice.NewPartnerService(rpartner)
-
-	/* ---------------------------------- mail ---------------------------------- */
-	smail := mailservice.NewMailService(cfg)
-
-	/* ---------------------------------- auth ---------------------------------- */
-	sauth := authservice.NewAuthService(cfg, ruser, smail, rdb)
-
-	/* -------------------------------- caregiver ------------------------------- */
 	rcaregiver := caregiverrepo.NewCaregiverRepository(db)
-
-	/* --------------------------------- allergy -------------------------------- */
 	rallergy := allergyrepo.NewAllergyRepository(db)
-
-	/* --------------------------------- illness -------------------------------- */
-	rillness := illnessrepo.NewIllnessRepository(db)
-
-	/* ---------------------------------- meal ---------------------------------- */
 	rmeal := mealrepo.NewMealRepository(db)
-	smeal := mealservice.NewMealService(rmeal, rillness, rallergy, rpartner)
-
-	/* ------------------------------ organization ------------------------------ */
-	rorganization := organizationrepo.NewOrganizationRepository(db)
-
-	/* --------------------------------- member --------------------------------- */
+	rillness := illnessrepo.NewIllnessRepository(db)
 	rmember := memberrepo.NewMemberRepository(db)
+	rorganization := organizationrepo.NewOrganizationRepository(db)
+	rcart := cartrepo.NewCartRepository(db)
+
+	/* --------------------------------- service -------------------------------- */
+	suser := userservice.NewUserService(ruser)
+	spartner := partnerservice.NewPartnerService(rpartner)
+	smail := mailservice.NewMailService(cfg)
+	sauth := authservice.NewAuthService(cfg, ruser, smail, rdb)
+	smeal := mealservice.NewMealService(rmeal, rillness, rallergy, rpartner)
 	smember := memberservice.NewMemberService(rmember, ruser, rcaregiver, rallergy, rillness, *rorganization)
+	scart := cartservice.NewCartService(rcart, rcaregiver, rmember)
 
 	return &DependencyInjection{
 		UserService:    suser,
@@ -79,5 +68,6 @@ func NewDependencyInjection(db *gorm.DB, cfg *configs.Config, rdb *redis.Client)
 		MemberService:  smember,
 		PartnerService: spartner,
 		MealService:    smeal,
+		CartService:    scart,
 	}
 }

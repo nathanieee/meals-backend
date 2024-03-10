@@ -1,7 +1,5 @@
 package consttypes
 
-import "encoding/json"
-
 type (
 	MealStatus     string
 	DonationStatus string
@@ -17,11 +15,9 @@ const (
 )
 
 func (enum MealStatus) String() string {
-	jsondata, _ := json.Marshal(enum)
-	return string(jsondata)
+	return string(enum)
 }
 
 func (enum DonationStatus) String() string {
-	jsondata, _ := json.Marshal(enum)
-	return string(jsondata)
+	return string(enum)
 }

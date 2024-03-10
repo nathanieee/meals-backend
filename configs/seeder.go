@@ -39,11 +39,11 @@ func checkEnumIsExist(db *gorm.DB, key string) bool {
 	return count > 0
 }
 
-func createEnum(db *gorm.DB, enumname string, enumvalues ...string) error {
+func createEnum(db *gorm.DB, enumname string, enumvalues ...interface{}) error {
 	if !checkEnumIsExist(db, enumname) {
 		values := make([]string, len(enumvalues))
 		for i, v := range enumvalues {
-			values[i] = string(v)
+			values[i] = fmt.Sprintf("%v", v)
 		}
 
 		query := fmt.Sprintf("CREATE TYPE %s AS ENUM ('%s');", enumname, strings.Join(values, "','"))
@@ -69,13 +69,13 @@ func SeedAllergensEnum(db *gorm.DB) error {
 func SeedUserRoleEnum(db *gorm.DB) error {
 	return createEnum(db,
 		"user_role_enum",
-		consttypes.UR_ADMIN.String(),
-		consttypes.UR_CAREGIVER.String(),
-		consttypes.UR_MEMBER.String(),
-		consttypes.UR_ORGANIZATION.String(),
-		consttypes.UR_PARTNER.String(),
-		consttypes.UR_PATRON.String(),
-		consttypes.UR_USER.String(),
+		consttypes.UR_ADMIN.Uint(),
+		consttypes.UR_CAREGIVER.Uint(),
+		consttypes.UR_MEMBER.Uint(),
+		consttypes.UR_ORGANIZATION.Uint(),
+		consttypes.UR_PARTNER.Uint(),
+		consttypes.UR_PATRON.Uint(),
+		consttypes.UR_USER.Uint(),
 	)
 }
 
@@ -152,24 +152,42 @@ func SeedAdminCredentials(db *gorm.DB) error {
 	return nil
 }
 
-func SeedCaregiverCredentials(db *gorm.DB) error {
-	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Caregiver{}) {
-		if err := db.First(&models.Caregiver{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			caregivers := []*models.Caregiver{
+func SeedMemberCredentials(db *gorm.DB) error {
+	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Member{}) {
+		if err := db.First(&models.Member{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			members := []*models.Member{
 				{
-					User: models.User{
-						Email:    "caregiver@test.com",
-						Password: getGlobalHashedPassword("password"),
-						Role:     consttypes.UR_CAREGIVER,
+					Model: helper.Model{
+						ID: uuidval,
 					},
-					FirstName:   "Care",
-					LastName:    "Giver",
-					Gender:      consttypes.G_FEMALE,
+					User: models.User{
+						Email:    "member@test.com",
+						Password: getGlobalHashedPassword("password"),
+						Role:     consttypes.UR_MEMBER,
+					},
+					FirstName:   "John",
+					LastName:    "Doe",
+					Gender:      consttypes.G_MALE,
 					DateOfBirth: customs.CDT_DATE{Time: consttypes.DateNow},
+					Caregiver: &models.Caregiver{
+						User: models.User{
+							Email:    "caregiver@test.com",
+							Password: getGlobalHashedPassword("password"),
+							Role:     consttypes.UR_CAREGIVER,
+						},
+						FirstName:   "Care",
+						LastName:    "Giver",
+						Gender:      consttypes.G_FEMALE,
+						DateOfBirth: customs.CDT_DATE{Time: consttypes.DateNow},
+					},
 				},
 			}
 
-			db.Create(caregivers)
+			err = db.Create(members).Error
+			if err != nil {
+				utlogger.LogError(err)
+				return err
+			}
 		}
 	}
 
@@ -258,8 +276,10 @@ func SeedMealData(db *gorm.DB) error {
 			}
 
 			err = db.Create(meals).Error
-			utlogger.LogError(err)
-
+			if err != nil {
+				utlogger.LogError(err)
+				return err
+			}
 		}
 	}
 
@@ -718,6 +738,46 @@ func SeedIllnessData(db *gorm.DB) error {
 			}
 
 			db.Create(illnesses)
+		}
+	}
+
+	return nil
+}
+
+func SeedCartData(db *gorm.DB) error {
+	if db.Migrator().HasTable(&models.Cart{}) && db.Migrator().HasTable(&models.Member{}) && db.Migrator().HasTable(&models.Caregiver{}) {
+		if err := db.First(&models.Cart{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			var member models.Member
+			db.First(&member)
+
+			var caregiver models.Caregiver
+			db.First(&caregiver)
+
+			var meal models.Meal
+			db.First(&meal)
+
+			carts := []*models.Cart{
+				{
+					MealID:        meal.ID,
+					Meal:          meal,
+					ReferenceID:   member.ID,
+					ReferenceType: consttypes.UR_MEMBER,
+					Quantity:      1,
+				},
+				{
+					MealID:        meal.ID,
+					Meal:          meal,
+					ReferenceID:   caregiver.ID,
+					ReferenceType: consttypes.UR_CAREGIVER,
+					Quantity:      1,
+				},
+			}
+
+			err = db.Create(carts).Error
+			if err != nil {
+				utlogger.LogError(err)
+				return err
+			}
 		}
 	}
 
