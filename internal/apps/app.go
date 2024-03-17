@@ -1,6 +1,7 @@
 package apps
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -23,37 +24,52 @@ func Run(cfg *configs.Config) {
 	})
 
 	if err != nil {
-		utlogger.LogError(err)
-		fmt.Errorf("app - Run - postgres: %w", err)
+		utlogger.Error(err)
 	}
 
 	err = cfg.DB.DBSetup(db)
 	if err != nil {
-		utlogger.LogError(err)
-		fmt.Errorf("app - Run - DB setup: %w", err)
+		utlogger.Error(err)
 	}
 
+	// * setup context
+	ctx := context.Background()
+
+	// * setup redis client
 	rdb := cfg.Redis.GetRedisClient()
 
-	di := di.NewDependencyInjection(db, cfg, rdb)
+	// * setup rabbit mq
+	ch, close := cfg.Queue.Init()
+	defer close()
+	cfg.Queue.SetupRabbitMQ(ch, cfg)
+
+	di := di.NewDependencyInjection(db, ch, cfg, rdb, ctx)
+
+	// * setup consumer
+	// TODO - setup the consumer, it gives a "use of closed network connection" error
+	// di.ConsumerService.ConsumeTask()
+
+	var forever chan struct{}
+
+	// HTTP Server
 	handler := gin.New()
 	v1.NewRouter(handler, db, cfg, di)
-	httpserver := servers.NewServer(handler, servers.Port(cfg.HTTP.Port))
+	server := servers.NewServer(handler, servers.Port(cfg.HTTP.Port))
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	select {
 	case s := <-interrupt:
-		fmt.Printf("app run: %s", s.String())
-	case err := <-httpserver.Notify():
-		utlogger.LogError(err)
-		fmt.Errorf("%w", err)
+		utlogger.Info("app run: " + s.String())
+	case err := <-server.Notify():
+		utlogger.Error(fmt.Errorf("%w", err))
 	}
 
-	err = httpserver.Shutdown()
+	err = server.Shutdown()
 	if err != nil {
-		utlogger.LogError(err)
-		fmt.Errorf("%w", err)
+		utlogger.Error(fmt.Errorf("%w", err))
 	}
+
+	<-forever
 }

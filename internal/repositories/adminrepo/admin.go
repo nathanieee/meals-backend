@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -40,8 +40,9 @@ type (
 		Update(a models.Admin) (*models.Admin, error)
 		Delete(a models.Admin) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(aid uuid.UUID) (*models.Admin, error)
+		FindByID(id uuid.UUID) (*models.Admin, error)
 		FindByEmail(email string) (*models.Admin, error)
+		FindByUserID(uid uuid.UUID) (*models.Admin, error)
 	}
 )
 
@@ -58,14 +59,21 @@ func (r *AdminRepository) preload() *gorm.DB {
 
 func (r *AdminRepository) Create(a models.Admin) (*models.Admin, error) {
 	err := r.db.
-		Create(a).Error
+		Create(&a).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &a, err
+	anew, err := r.FindByEmail(a.User.Email)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return anew, err
 }
 
 func (r *AdminRepository) Read() ([]*models.Admin, error) {
@@ -77,7 +85,7 @@ func (r *AdminRepository) Read() ([]*models.Admin, error) {
 		Find(&a).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -89,11 +97,18 @@ func (r *AdminRepository) Update(a models.Admin) (*models.Admin, error) {
 		Save(&a).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &a, nil
+	anew, err := r.FindByEmail(a.User.Email)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return anew, nil
 }
 
 func (r *AdminRepository) Delete(a models.Admin) error {
@@ -101,7 +116,7 @@ func (r *AdminRepository) Delete(a models.Admin) error {
 		Delete(&a).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
@@ -140,7 +155,7 @@ func (r *AdminRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagi
 		Find(&a)
 
 	if err := result.Error; err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -151,17 +166,17 @@ func (r *AdminRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagi
 	return &p, nil
 }
 
-func (r *AdminRepository) FindByID(aid uuid.UUID) (*models.Admin, error) {
+func (r *AdminRepository) FindByID(id uuid.UUID) (*models.Admin, error) {
 	var a *models.Admin
 
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Admin{Model: helper.Model{ID: aid}}).
+		Where(&models.Admin{Model: base.Model{ID: id}}).
 		First(&a).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -178,7 +193,24 @@ func (r *AdminRepository) FindByEmail(email string) (*models.Admin, error) {
 		First(&a).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return a, nil
+}
+
+func (r *AdminRepository) FindByUserID(uid uuid.UUID) (*models.Admin, error) {
+	var a *models.Admin
+
+	err := r.
+		preload().
+		Select(SELECTED_FIELDS).
+		Where(&models.Admin{User: models.User{Model: base.Model{ID: uid}}}).
+		First(&a).Error
+
+	if err != nil {
+		utlogger.Error(err)
 		return nil, err
 	}
 

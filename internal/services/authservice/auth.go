@@ -6,58 +6,58 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/utstring"
 	"project-skbackend/packages/utils/uttoken"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type (
 	AuthService struct {
-		cfg               *configs.Config
-		userrepo          userrepo.IUserRepository
-		mailsvc           mailservice.IMailService
-		rdb               *redis.Client
-		verifyTokenLength int
+		cfg   *configs.Config
+		rdb   *redis.Client
+		ruser userrepo.IUserRepository
+		smail mailservice.IMailService
+
+		vtl int
+		wu  string
 	}
 
 	IAuthService interface {
-		Login(req requests.Login, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
-		Register(req requests.Register, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
+		Signin(req requests.Signin, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
 		ForgotPassword(req requests.ForgotPassword) error
 		ResetPassword(req requests.ResetPassword) error
-		ResetPasswordEmail(id uuid.UUID, token string) error
-		RefreshAuthToken(token string, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
+		SendResetPasswordEmail(user models.User, token string) error
+		RefreshAuthToken(trefresh string, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
 	}
 )
 
 func NewAuthService(
 	cfg *configs.Config,
-	userrepo userrepo.IUserRepository,
-	mailsvc mailservice.IMailService,
+	ruser userrepo.IUserRepository,
+	smail mailservice.IMailService,
 	rdb *redis.Client,
 ) *AuthService {
 	return &AuthService{
-		cfg:               cfg,
-		userrepo:          userrepo,
-		mailsvc:           mailsvc,
-		rdb:               rdb,
-		verifyTokenLength: cfg.VerifyTokenLength,
+		cfg:   cfg,
+		ruser: ruser,
+		smail: smail,
+		rdb:   rdb,
+
+		vtl: cfg.VerifyTokenLength,
+		wu:  cfg.Web.URL,
 	}
 }
 
-func (s *AuthService) Login(req requests.Login, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
-	user, err := s.userrepo.FindByEmail(req.Email)
+func (s *AuthService) Signin(req requests.Signin, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
+	user, err := s.ruser.FindByEmail(req.Email)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -67,53 +67,31 @@ func (s *AuthService) Login(req requests.Login, ctx *gin.Context) (*responses.Us
 		return nil, nil, err
 	}
 
-	tokenHeader, err := s.generateAuthTokens(user, ctx)
+	thead, err := s.generateAuthTokens(user, ctx)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return user.ToResponse(), tokenHeader, nil
-}
-
-func (s *AuthService) Register(req requests.Register, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
-	req.Email = strings.ToLower(req.Email)
-
-	user, err := s.userrepo.FindByEmail(req.Email)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, nil, err
-	}
-
-	if user != nil {
-		return user.ToResponse(), nil, err
-	}
-
-	user = req.ToUserModel()
-
-	user, err = s.userrepo.Create(*user)
+	userres, err := user.ToResponse()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	token, err := s.generateAuthTokens(user, ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return user.ToResponse(), token, nil
+	return userres, thead, nil
 }
 
 func (s *AuthService) ForgotPassword(req requests.ForgotPassword) error {
-	user, err := s.userrepo.FindByEmail(req.Email)
-	if err != nil && err == gorm.ErrRecordNotFound {
-		return err
-	}
-
-	token, err := utstring.GenerateRandomToken(s.verifyTokenLength)
+	user, err := s.ruser.FindByEmail(req.Email)
 	if err != nil {
 		return err
 	}
 
-	err = s.ResetPasswordEmail(user.ID, token)
+	token, err := utstring.GenerateRandomToken(s.vtl)
+	if err != nil {
+		return err
+	}
+
+	err = s.SendResetPasswordEmail(*user, token)
 	if err != nil {
 		return err
 	}
@@ -122,7 +100,7 @@ func (s *AuthService) ForgotPassword(req requests.ForgotPassword) error {
 }
 
 func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
-	user, err := s.userrepo.FindByEmail(req.Email)
+	user, err := s.ruser.FindByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return err
 	}
@@ -132,13 +110,15 @@ func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
 	}
 
 	if !consttypes.DateNow.Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.ResetPassword.Cooldown))) {
-		return utresponse.ErrSendEmailResetRequest
+		return utresponse.ErrTooQuickResetEmail
 	}
 
-	user.Password = req.Password
-	user.ResetPasswordToken = ""
+	user, err = req.ToUserModel(*user)
+	if err != nil {
+		return err
+	}
 
-	_, err = s.userrepo.Update(*user)
+	_, err = s.ruser.Update(*user)
 	if err != nil {
 		return err
 	}
@@ -146,36 +126,27 @@ func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
 	return nil
 }
 
-func (s *AuthService) ResetPasswordEmail(id uuid.UUID, token string) error {
-	user, err := s.userrepo.FindByID(id)
-	if err != nil {
-		return err
-	}
-
+func (s *AuthService) SendResetPasswordEmail(user models.User, token string) error {
 	if consttypes.DateNow.Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.ResetPassword.Cooldown))) {
-		return utresponse.ErrSendEmailResetRequest
+		return utresponse.ErrTooQuickResetEmail
 	}
 
 	user.ResetPasswordToken = token
 	user.ResetPasswordSentAt = consttypes.DateNow
 
-	_, err = s.userrepo.Update(*user)
+	_, err := s.ruser.Update(user)
 	if err != nil {
 		return err
 	}
 
-	emreq := requests.SendMail{
-		To:       []string{user.Email},
-		Subject:  "Reset Password",
-		Template: "reset-password.html",
+	name := "jonathan vince" // TODO - change this into user's name.
+	emreq := requests.SendEmailResetPassword{
+		Name:    name,
+		Email:   user.Email,
+		LinkUrl: fmt.Sprintf("%s/reset-password/%v", s.wu, token),
 	}
 
-	// TODO - change this request to reset password and sent correct data.
-	emreqdata := requests.ResetPasswordEmail{
-		Token: token,
-	}
-
-	err = s.mailsvc.SendResetPassword(emreq, emreqdata)
+	err = s.smail.SendResetPasswordEmail(emreq)
 	if err != nil {
 		return err
 	}
@@ -183,29 +154,34 @@ func (s *AuthService) ResetPasswordEmail(id uuid.UUID, token string) error {
 	return nil
 }
 
-func (s *AuthService) RefreshAuthToken(refreshToken string, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
+func (s *AuthService) RefreshAuthToken(trefresh string, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
 	now := consttypes.DateNow
-	parsedToken, err := uttoken.ParseToken(refreshToken, s.cfg.JWT.RefreshToken.PublicKey)
+	tparsed, err := uttoken.ParseToken(trefresh, s.cfg.JWT.RefreshToken.PublicKey)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	user, err := s.userrepo.FindByID(parsedToken.User.ID)
+	user, err := s.ruser.FindByID(tparsed.User.ID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, nil, fmt.Errorf("the user with id %s does not exist", parsedToken.User.ID)
+			return nil, nil, fmt.Errorf("the user with id %s does not exist", tparsed.User.ID)
 		}
 
 		return nil, nil, err
 	}
 
-	if now.Unix() >= parsedToken.Expires.Unix() {
+	if now.Unix() >= tparsed.Expires.Unix() {
 		return nil, nil, err
 	}
 
-	accessToken, err := uttoken.
+	userres, err := user.ToResponse()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	taccess, err := uttoken.
 		GenerateToken(
-			user.ToResponse(),
+			userres,
 			s.cfg.JWT.AccessToken.Life,
 			s.cfg.JWT.TimeUnit,
 			s.cfg.JWT.AccessToken.PrivateKey,
@@ -216,7 +192,7 @@ func (s *AuthService) RefreshAuthToken(refreshToken string, ctx *gin.Context) (*
 	}
 
 	// * setting the access token into redis
-	err = s.rdb.Set(ctx, accessToken.TokenUUID.String(), user.ID, time.Unix(accessToken.Expires.Unix(), 0).Sub(now)).Err()
+	err = s.rdb.Set(ctx, taccess.TokenUUID.String(), user.ID, time.Unix(taccess.Expires.Unix(), 0).Sub(now)).Err()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -224,24 +200,24 @@ func (s *AuthService) RefreshAuthToken(refreshToken string, ctx *gin.Context) (*
 	// * setting the cookie for access token
 	ctx.SetCookie(
 		"access_token",
-		*accessToken.Token,
-		int(accessToken.Expires.Unix()),
+		*taccess.Token,
+		int(taccess.Expires.Unix()),
 		"/",
-		s.cfg.API.Domain,
+		s.cfg.API.URL,
 		false,
 		true,
 	)
 
-	tokenHeader, err := s.generateAuthTokens(user, ctx)
+	theader, err := s.generateAuthTokens(user, ctx)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return user.ToResponse(), tokenHeader, err
+	return userres, theader, err
 }
 
 func verifyPassword(user models.User, password string) error {
-	ok := helper.CheckPasswordHash(password, user.Password)
+	ok := utstring.CheckPasswordHash(password, user.Password)
 	if !ok {
 		return fmt.Errorf("incorrect email or password")
 	}
@@ -250,10 +226,15 @@ func verifyPassword(user models.User, password string) error {
 }
 
 func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*uttoken.TokenHeader, error) {
+	userres, err := user.ToResponse()
+	if err != nil {
+		return nil, err
+	}
+
 	now := consttypes.DateNow
-	refreshToken, err := uttoken.
+	trefresh, err := uttoken.
 		GenerateToken(
-			user.ToResponse(),
+			userres,
 			s.cfg.JWT.RefreshToken.Life,
 			s.cfg.JWT.TimeUnit,
 			s.cfg.JWT.RefreshToken.PrivateKey,
@@ -263,9 +244,9 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 		return nil, err
 	}
 
-	accessToken, err := uttoken.
+	taccess, err := uttoken.
 		GenerateToken(
-			user.ToResponse(),
+			userres,
 			s.cfg.JWT.AccessToken.Life,
 			s.cfg.JWT.TimeUnit,
 			s.cfg.JWT.AccessToken.PrivateKey,
@@ -275,10 +256,10 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 		return nil, err
 	}
 
-	tokenHeader := uttoken.NewTokenHeader(*accessToken, *refreshToken)
+	theader := uttoken.NewTokenHeader(*taccess, *trefresh)
 
 	// * setting the access token into redis
-	err = s.rdb.Set(ctx, accessToken.TokenUUID.String(), user.ID, time.Unix(accessToken.Expires.Unix(), 0).Sub(now)).Err()
+	err = s.rdb.Set(ctx, taccess.TokenUUID.String(), user.ID, time.Unix(taccess.Expires.Unix(), 0).Sub(now)).Err()
 	if err != nil {
 		return nil, err
 	}
@@ -286,16 +267,16 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 	// * setting the cookie for access token
 	ctx.SetCookie(
 		"access_token",
-		*accessToken.Token,
-		int(accessToken.Expires.Unix()),
+		*taccess.Token,
+		int(taccess.Expires.Unix()),
 		"/",
-		s.cfg.API.Domain,
+		s.cfg.API.URL,
 		false,
 		true,
 	)
 
 	// * setting the refresh token into redis
-	err = s.rdb.Set(ctx, refreshToken.TokenUUID.String(), user.ID, time.Unix(refreshToken.Expires.Unix(), 0).Sub(now)).Err()
+	err = s.rdb.Set(ctx, trefresh.TokenUUID.String(), user.ID, time.Unix(trefresh.Expires.Unix(), 0).Sub(now)).Err()
 	if err != nil {
 		return nil, err
 	}
@@ -303,13 +284,13 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 	// * setting the cookie for refresh token
 	ctx.SetCookie(
 		"refresh-token",
-		*refreshToken.Token,
-		int(refreshToken.Expires.Unix()),
+		*trefresh.Token,
+		int(trefresh.Expires.Unix()),
 		"/",
-		s.cfg.API.Domain,
+		s.cfg.API.URL,
 		false,
 		true,
 	)
 
-	return tokenHeader, err
+	return theader, err
 }

@@ -1,12 +1,11 @@
 package models
 
-import (
-	"project-skbackend/internal/models/helper"
-)
+import "project-skbackend/internal/models/base"
 
 type (
 	Illness struct {
-		helper.Model
+		base.Model
+
 		Name        string `json:"name" gorm:"required" example:"Cold Sore"`
 		Description string `json:"description" gorm:"required" example:"Infection with the herpes simplex virus around the border of the lips."`
 	}

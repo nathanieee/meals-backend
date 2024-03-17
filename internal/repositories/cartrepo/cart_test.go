@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 	})
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		panic(err)
 	}
 

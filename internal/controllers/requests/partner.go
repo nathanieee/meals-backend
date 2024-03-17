@@ -22,14 +22,14 @@ type (
 func (req *CreatePartner) ToModel(
 	user models.User,
 ) (*models.Partner, error) {
-	partner := models.Partner{
-		User: user,
-	}
+	var partner models.Partner
 
 	if err := copier.CopyWithOption(&partner, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
+
+	partner.User = user
 
 	return &partner, nil
 }
@@ -39,7 +39,7 @@ func (req *UpdatePartner) ToModel(
 	user models.User,
 ) (*models.Partner, error) {
 	if err := copier.CopyWithOption(&partner, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 

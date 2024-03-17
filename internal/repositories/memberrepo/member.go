@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -47,6 +47,7 @@ type (
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		FindByID(id uuid.UUID) (*models.Member, error)
 		FindByEmail(email string) (*models.Member, error)
+		FindByUserID(uid uuid.UUID) (*models.Member, error)
 	}
 )
 
@@ -70,11 +71,18 @@ func (r *MemberRepository) Create(m models.Member) (*models.Member, error) {
 		Create(&m).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &m, err
+	mnew, err := r.FindByEmail(m.User.Email)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return mnew, err
 }
 
 func (r *MemberRepository) Read() ([]*models.Member, error) {
@@ -86,7 +94,7 @@ func (r *MemberRepository) Read() ([]*models.Member, error) {
 		Find(&m).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -98,11 +106,18 @@ func (r *MemberRepository) Update(m models.Member) (*models.Member, error) {
 		Save(&m).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &m, nil
+	mnew, err := r.FindByEmail(m.User.Email)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return mnew, nil
 }
 
 func (r *MemberRepository) Delete(m models.Member) error {
@@ -110,7 +125,7 @@ func (r *MemberRepository) Delete(m models.Member) error {
 		Delete(&m).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
@@ -148,9 +163,9 @@ func (r *MemberRepository) FindAll(p utpagination.Pagination) (*utpagination.Pag
 		Scopes(paginationrepo.Paginate(&m, &p, result)).
 		Find(&m)
 
-	if result.Error != nil {
-		utlogger.LogError(result.Error)
-		return nil, result.Error
+	if err := result.Error; err != nil {
+		utlogger.Error(err)
+		return nil, err
 	}
 
 	// * copy the data from model to response
@@ -166,11 +181,11 @@ func (r *MemberRepository) FindByID(id uuid.UUID) (*models.Member, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Member{Model: helper.Model{ID: id}}).
+		Where(&models.Member{Model: base.Model{ID: id}}).
 		First(&m).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -187,7 +202,24 @@ func (r *MemberRepository) FindByEmail(email string) (*models.Member, error) {
 		First(&m).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return m, nil
+}
+
+func (r *MemberRepository) FindByUserID(uid uuid.UUID) (*models.Member, error) {
+	var m *models.Member
+
+	err := r.
+		preload().
+		Select(SELECTED_FIELDS).
+		Where(&models.Member{User: models.User{Model: base.Model{ID: uid}}}).
+		First(&m).Error
+
+	if err != nil {
+		utlogger.Error(err)
 		return nil, err
 	}
 

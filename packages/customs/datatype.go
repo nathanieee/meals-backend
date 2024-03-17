@@ -46,7 +46,7 @@ func (self CDT_DATE) Value() (driver.Value, error) {
 	return self.Time, nil
 }
 
-func (self *CDT_DATE) Scan(value interface{}) error {
+func (self *CDT_DATE) Scan(value any) error {
 	if value == nil {
 		*self = CDT_DATE{}
 		return nil

@@ -52,8 +52,8 @@ func (token *TokenHeader) ToAuthResponse(user responses.User) *responses.Auth {
 		ID:        user.ID,
 		Email:     user.Email,
 		Role:      user.Role,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		CreatedAt: *user.CreatedAt,
+		UpdatedAt: *user.UpdatedAt,
 		Token:     token.AccessToken,
 		Expires:   token.AccessTokenExpires,
 	}
@@ -63,43 +63,43 @@ func GenerateToken(
 	ures *responses.User,
 	lifespan int,
 	timeunit,
-	privateKey string,
+	privatekey string,
 ) (*Token, error) {
-	expTime := consttypes.DateNow.Add(getDuration(lifespan, timeunit))
-	tokenUUID := uuid.New()
+	exptime := consttypes.DateNow.Add(getDuration(lifespan, timeunit))
+	tuuid := uuid.New()
 
 	claims := TokenClaims{
 		Authorized: true,
 		User:       ures,
-		Expire:     expTime.Unix(),
-		TokenUUID:  tokenUUID,
+		Expire:     exptime.Unix(),
+		TokenUUID:  tuuid,
 	}
 
 	token := &Token{
-		TokenUUID: tokenUUID,
-		Expires:   &expTime,
+		TokenUUID: tuuid,
+		Expires:   &exptime,
 		User:      ures,
 	}
 
-	decodedPrivateKey, err := base64.StdEncoding.DecodeString(privateKey)
+	decodedprivatekey, err := base64.StdEncoding.DecodeString(privatekey)
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, fmt.Errorf("could not decode token private key: %w", err)
 	}
 
-	key, err := jwt.ParseRSAPrivateKeyFromPEM(decodedPrivateKey)
+	key, err := jwt.ParseRSAPrivateKeyFromPEM(decodedprivatekey)
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, fmt.Errorf("could not parse token private key: %w", err)
 	}
 
-	newToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(key)
+	tclaim, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(key)
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, fmt.Errorf("could not create token: %w", err)
 	}
 
-	token.Token = &newToken
+	token.Token = &tclaim
 
 	return token, nil
 }
@@ -116,20 +116,20 @@ func getDuration(lifespan int, timeunit string) time.Duration {
 }
 
 func ParseToken(token string, publicKey string) (*Token, error) {
-	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey)
+	decodedpublickey, err := base64.StdEncoding.DecodeString(publicKey)
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, fmt.Errorf("could not decode token public key: %w", err)
 	}
 
-	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedPublicKey)
+	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedpublickey)
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, fmt.Errorf("could not parse token public key: %w", err)
 	}
 
 	claims := &TokenClaims{}
-	parsedToken, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+	tparsed, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %s", token.Header["alg"])
 		}
@@ -143,8 +143,8 @@ func ParseToken(token string, publicKey string) (*Token, error) {
 		return nil, fmt.Errorf("could not parse token: %w", err)
 	}
 
-	claims, ok := parsedToken.Claims.(*TokenClaims)
-	if !ok || !parsedToken.Valid {
+	claims, ok := tparsed.Claims.(*TokenClaims)
+	if !ok || !tparsed.Valid {
 		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 

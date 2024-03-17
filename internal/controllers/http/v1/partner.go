@@ -5,7 +5,6 @@ import (
 	"project-skbackend/internal/services/partnerservice"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type (
@@ -17,7 +16,6 @@ type (
 
 func newPartnerRoutes(
 	rg *gin.RouterGroup,
-	db *gorm.DB,
 	cfg *configs.Config,
 	spartner partnerservice.IPartnerService,
 ) {

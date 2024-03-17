@@ -4,7 +4,7 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/allergyrepo"
 	"project-skbackend/internal/repositories/caregiverrepo"
 	"project-skbackend/internal/repositories/illnessrepo"
@@ -22,12 +22,12 @@ import (
 
 type (
 	MemberService struct {
-		membrepo  memberrepo.IMemberRepository
-		userrepo  userrepo.IUserRepository
-		crgvrrepo caregiverrepo.ICaregiverRepository
-		allgrepo  allergyrepo.IAllergyRepository
-		illrepo   illnessrepo.IIllnessRepository
-		orgrepo   organizationrepo.OrganizationRepository
+		rmemb memberrepo.IMemberRepository
+		ruser userrepo.IUserRepository
+		rcare caregiverrepo.ICaregiverRepository
+		rall  allergyrepo.IAllergyRepository
+		rill  illnessrepo.IIllnessRepository
+		rorg  organizationrepo.OrganizationRepository
 	}
 
 	IMemberService interface {
@@ -41,20 +41,20 @@ type (
 )
 
 func NewMemberService(
-	membrepo memberrepo.IMemberRepository,
-	userrepo userrepo.IUserRepository,
-	crgvrrepo caregiverrepo.ICaregiverRepository,
-	allgrepo allergyrepo.IAllergyRepository,
-	illrepo illnessrepo.IIllnessRepository,
-	orgrepo organizationrepo.OrganizationRepository,
+	rmemb memberrepo.IMemberRepository,
+	ruser userrepo.IUserRepository,
+	rcare caregiverrepo.ICaregiverRepository,
+	rall allergyrepo.IAllergyRepository,
+	rill illnessrepo.IIllnessRepository,
+	rorg organizationrepo.OrganizationRepository,
 ) *MemberService {
 	return &MemberService{
-		membrepo:  membrepo,
-		userrepo:  userrepo,
-		crgvrrepo: crgvrrepo,
-		allgrepo:  allgrepo,
-		illrepo:   illrepo,
-		orgrepo:   orgrepo,
+		rmemb: rmemb,
+		ruser: ruser,
+		rcare: rcare,
+		rall:  rall,
+		rill:  rill,
+		rorg:  rorg,
 	}
 }
 
@@ -80,7 +80,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 
 	// * check the organization id and assign it to the object.
 	if req.OrganizationID != nil {
-		organization, err = s.orgrepo.FindByID(*req.OrganizationID)
+		organization, err = s.rorg.FindByID(*req.OrganizationID)
 		if err != nil {
 			return nil, err
 		}
@@ -88,7 +88,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
-		illness, err := s.illrepo.FindByID(*ill)
+		illness, err := s.rill.FindByID(*ill)
 		if err != nil {
 			return nil, err
 		}
@@ -100,7 +100,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 
 	// * find allergy object and append to the array.
 	for _, all := range req.AllergyID {
-		allergy, err := s.allgrepo.FindByID(*all)
+		allergy, err := s.rall.FindByID(*all)
 		if err != nil {
 			return nil, err
 		}
@@ -115,7 +115,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 		return nil, err
 	}
 
-	member, err = s.membrepo.Create(*member)
+	member, err = s.rmemb.Create(*member)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 }
 
 func (s *MemberService) Read() ([]*responses.Member, error) {
-	members, err := s.membrepo.Read()
+	members, err := s.rmemb.Read()
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 	var organization *models.Organization
 	var err error
 
-	member, err := s.membrepo.FindByID(id)
+	member, err := s.rmemb.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -164,11 +164,11 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 			if member.Caregiver.User.Email != req.Caregiver.User.Email {
 				err := utresponse.ErrCannotChangeEmail
 
-				utlogger.LogError(err)
+				utlogger.Error(err)
 				return nil, err
 			}
 
-			caregiver, err = s.crgvrrepo.FindByID(*member.CaregiverID)
+			caregiver, err = s.rcare.FindByID(*member.CaregiverID)
 			if err != nil {
 				return nil, err
 			}
@@ -182,7 +182,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 
 	// * check the organization id and assign it to the object.
 	if req.OrganizationID != nil {
-		organization, err = s.orgrepo.FindByID(*req.OrganizationID)
+		organization, err = s.rorg.FindByID(*req.OrganizationID)
 		if err != nil {
 			return nil, err
 		}
@@ -202,7 +202,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		if found {
 			continue
 		} else {
-			illness, err := s.illrepo.FindByID(*ill)
+			illness, err := s.rill.FindByID(*ill)
 			if err != nil {
 				return nil, err
 			}
@@ -227,7 +227,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		if found {
 			continue
 		} else {
-			allergy, err := s.allgrepo.FindByID(*all)
+			allergy, err := s.rall.FindByID(*all)
 			if err != nil {
 				return nil, err
 			}
@@ -244,7 +244,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		return nil, err
 	}
 
-	member, err = s.membrepo.Update(*member)
+	member, err = s.rmemb.Update(*member)
 	if err != nil {
 		return nil, err
 	}
@@ -256,10 +256,10 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 
 func (s *MemberService) Delete(id uuid.UUID) error {
 	member := models.Member{
-		Model: helper.Model{ID: id},
+		Model: base.Model{ID: id},
 	}
 
-	err := s.membrepo.Delete(member)
+	err := s.rmemb.Delete(member)
 	if err != nil {
 		return err
 	}
@@ -268,7 +268,7 @@ func (s *MemberService) Delete(id uuid.UUID) error {
 }
 
 func (s *MemberService) FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error) {
-	members, err := s.membrepo.FindAll(preq)
+	members, err := s.rmemb.FindAll(preq)
 	if err != nil {
 		return nil, err
 	}
@@ -277,7 +277,7 @@ func (s *MemberService) FindAll(preq utpagination.Pagination) (*utpagination.Pag
 }
 
 func (s *MemberService) FindByID(id uuid.UUID) (*responses.Member, error) {
-	member, err := s.membrepo.FindByID(id)
+	member, err := s.rmemb.FindByID(id)
 	if err != nil {
 		return nil, err
 	}

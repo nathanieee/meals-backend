@@ -124,12 +124,12 @@ type (
 	ErrorRes struct {
 		Status  consttypes.ResponseStatusType `json:"status"`
 		Message string                        `json:"message"`
-		Data    ErrorData                     `json:"data,omitempty"`
+		Data    *ErrorData                    `json:"data,omitempty"`
 	}
 
 	ErrorData struct {
-		Debug  error `json:"debug,omitempty"`
-		Errors any   `json:"errors"`
+		Debug  *error `json:"debug,omitempty"`
+		Errors any    `json:"errors"`
 	}
 )
 
@@ -147,10 +147,11 @@ var (
 	ErrFieldInvalidEmailAddress = fmt.Errorf("invalid email address format")
 
 	// Token
-	ErrTokenExpired      = fmt.Errorf("token is expired")
-	ErrTokenUnverifiable = fmt.Errorf("token is unverifiable")
-	ErrTokenMismatch     = fmt.Errorf("token is mismatch")
-	ErrTokenNotFound     = fmt.Errorf("token is not found")
+	ErrTokenExpired       = fmt.Errorf("token is expired")
+	ErrTokenUnverifiable  = fmt.Errorf("token is unverifiable")
+	ErrTokenMismatch      = fmt.Errorf("token is mismatch")
+	ErrTokenNotFound      = fmt.Errorf("token is not found")
+	ErrTokenInvalidFormat = fmt.Errorf("token format is invalid")
 
 	// User
 	ErrUserNotFound         = fmt.Errorf("user not found")
@@ -158,13 +159,15 @@ var (
 	ErrUserIDNotFound       = fmt.Errorf("user ID is not found")
 	ErrUserAlreadyExist     = fmt.Errorf("user already exists")
 	ErrUserAlreadyConfirmed = fmt.Errorf("this user is already confirmed")
+	ErrUserNotSignedIn      = fmt.Errorf("you are not signed in")
+	ErrUserInvalidRole      = fmt.Errorf("invalid user role")
 
 	// File
 	ErrInvalidFileType = fmt.Errorf("invalid file type")
 
 	// Email
-	ErrCannotChangeEmail     = fmt.Errorf("cannot change existing email")
-	ErrSendEmailResetRequest = fmt.Errorf("a request for a password reset email was generated just under %v minutes ago", resetPasswordCooldown)
+	ErrCannotChangeEmail  = fmt.Errorf("cannot change existing email")
+	ErrTooQuickResetEmail = fmt.Errorf("a request for a password reset email was generated just under %v minutes ago", resetPasswordCooldown)
 )
 
 func ErrorResponse(ctx *gin.Context, code int, res ErrorRes) {
@@ -200,7 +203,7 @@ func ValidationResponse(err error) []ValidationErrorMessage {
 		out := make([]ValidationErrorMessage, len(ve))
 		for i, fe := range ve {
 			out[i] = ValidationErrorMessage{fe.Namespace(), fmt.Sprintf("%s", fe.Field()), getErrorMsg(fe)}
-			utlogger.LogError(err)
+			utlogger.Error(err)
 		}
 		return out
 	}
@@ -216,8 +219,8 @@ func GeneralInputRequiredError(
 	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
 		Status:  consttypes.RST_ERROR,
 		Message: fmt.Sprintf("Input required on %s", function),
-		Data: ErrorData{
-			Debug:  err,
+		Data: &ErrorData{
+			Debug:  &err,
 			Errors: err.Error(),
 		},
 	})
@@ -231,8 +234,8 @@ func GeneralInternalServerError(
 	ErrorResponse(ctx, http.StatusInternalServerError, ErrorRes{
 		Status:  consttypes.RST_ERROR,
 		Message: fmt.Sprintf("Something went wrong on %s", function),
-		Data: ErrorData{
-			Debug:  err,
+		Data: &ErrorData{
+			Debug:  &err,
 			Errors: err.Error(),
 		},
 	})
@@ -244,17 +247,12 @@ func GeneralInvalidRequest(
 	ve []ValidationErrorMessage,
 	err error,
 ) {
-	var errors []any
-
-	errors = append(errors, ve)
-	errors = append(errors, err.Error())
-
 	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
 		Status:  consttypes.RST_FAIL,
 		Message: fmt.Sprintf("Invalid request on %s", function),
-		Data: ErrorData{
-			Debug:  err,
-			Errors: errors,
+		Data: &ErrorData{
+			Debug:  &err,
+			Errors: ve,
 		},
 	})
 }
@@ -267,8 +265,8 @@ func GeneralNotFound(
 	ErrorResponse(ctx, http.StatusNotFound, ErrorRes{
 		Status:  consttypes.RST_FAIL,
 		Message: fmt.Sprintf("Entity %s is not found", entity),
-		Data: ErrorData{
-			Debug:  err,
+		Data: &ErrorData{
+			Debug:  &err,
 			Errors: err.Error(),
 		},
 	})
@@ -281,8 +279,8 @@ func GeneralUnauthorized(
 	ErrorResponse(ctx, http.StatusUnauthorized, ErrorRes{
 		Status:  consttypes.RST_FAIL,
 		Message: "You are unauthorized to perform this action",
-		Data: ErrorData{
-			Debug:  err,
+		Data: &ErrorData{
+			Debug:  &err,
 			Errors: err.Error(),
 		},
 	})
@@ -296,8 +294,8 @@ func GeneralFailedCreate(
 	ErrorResponse(ctx, http.StatusUnprocessableEntity, ErrorRes{
 		Status:  consttypes.RST_FAIL,
 		Message: fmt.Sprintf("Failed to create %s", entity),
-		Data: ErrorData{
-			Debug:  err,
+		Data: &ErrorData{
+			Debug:  &err,
 			Errors: err.Error(),
 		},
 	})
@@ -311,8 +309,8 @@ func GeneralFailedUpdate(
 	ErrorResponse(ctx, http.StatusUnprocessableEntity, ErrorRes{
 		Status:  consttypes.RST_FAIL,
 		Message: fmt.Sprintf("Failed to update %s", entity),
-		Data: ErrorData{
-			Debug:  err,
+		Data: &ErrorData{
+			Debug:  &err,
 			Errors: err.Error(),
 		},
 	})
@@ -326,8 +324,8 @@ func GeneralDuplicate(
 	ErrorResponse(ctx, http.StatusConflict, ErrorRes{
 		Status:  consttypes.RST_FAIL,
 		Message: fmt.Sprintf("Duplicate %s", field),
-		Data: ErrorData{
-			Debug:  err,
+		Data: &ErrorData{
+			Debug:  &err,
 			Errors: err.Error(),
 		},
 	})

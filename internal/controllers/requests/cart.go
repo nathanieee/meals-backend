@@ -11,17 +11,17 @@ import (
 
 type (
 	CreateCart struct {
-		MealID        uuid.UUID           `json:"meal_id"`
-		ReferenceID   uuid.UUID           `json:"reference_id"`
-		ReferenceType consttypes.UserRole `json:"reference_type"`
-		Quantity      uint                `json:"quantity"`
+		MealID        uuid.UUID           `json:"meal_id" form:"meal_id" binding:"required"`
+		ReferenceID   uuid.UUID           `json:"reference_id" form:"reference_id" binding:"required"`
+		ReferenceType consttypes.UserRole `json:"reference_type" form:"reference_type" binding:"required"`
+		Quantity      uint                `json:"quantity" form:"quantity" binding:"required"`
 	}
 
 	UpdateCart struct {
-		MealID        uuid.UUID           `json:"meal_id"`
-		ReferenceID   uuid.UUID           `json:"reference_id"`
-		ReferenceType consttypes.UserRole `json:"reference_type"`
-		Quantity      uint                `json:"quantity"`
+		MealID        uuid.UUID           `json:"meal_id" form:"meal_id" binding:"required"`
+		ReferenceID   uuid.UUID           `json:"reference_id" form:"reference_id" binding:"required"`
+		ReferenceType consttypes.UserRole `json:"reference_type" form:"reference_type" binding:"required"`
+		Quantity      uint                `json:"quantity" form:"quantity" binding:"required"`
 	}
 )
 
@@ -29,7 +29,7 @@ func (req *CreateCart) ToModel() (*models.Cart, error) {
 	var cart models.Cart
 
 	if err := copier.CopyWithOption(&cart, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -40,7 +40,7 @@ func (req *UpdateCart) ToModel(
 	cart models.Cart,
 ) (*models.Cart, error) {
 	if err := copier.CopyWithOption(&cart, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -36,7 +37,7 @@ type (
 		Update(ill models.Illness) (*models.Illness, error)
 		Delete(ill models.Illness) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(illid uuid.UUID) (*models.Illness, error)
+		FindByID(id uuid.UUID) (*models.Illness, error)
 	}
 )
 
@@ -54,11 +55,18 @@ func (r *IllnessRepository) Create(ill models.Illness) (*models.Illness, error) 
 		Create(ill).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &ill, nil
+	illnew, err := r.FindByID(ill.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return illnew, nil
 }
 
 func (r *IllnessRepository) Read() ([]*models.Illness, error) {
@@ -70,7 +78,7 @@ func (r *IllnessRepository) Read() ([]*models.Illness, error) {
 		Find(&ill).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -82,11 +90,18 @@ func (r *IllnessRepository) Update(ill models.Illness) (*models.Illness, error) 
 		Save(&ill).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &ill, nil
+	illnew, err := r.FindByID(ill.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return illnew, nil
 }
 
 func (r *IllnessRepository) Delete(ill models.Illness) error {
@@ -94,7 +109,7 @@ func (r *IllnessRepository) Delete(ill models.Illness) error {
 		Delete(&ill).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
@@ -133,7 +148,7 @@ func (r *IllnessRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 		Find(&ill)
 
 	if err := result.Error; err != nil {
-		utlogger.LogError(result.Error)
+		utlogger.Error(result.Error)
 		return nil, result.Error
 	}
 
@@ -144,18 +159,19 @@ func (r *IllnessRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 	return &p, nil
 }
 
-func (r *IllnessRepository) FindByID(illid uuid.UUID) (*models.Illness, error) {
-	var illness *models.Illness
+func (r *IllnessRepository) FindByID(id uuid.UUID) (*models.Illness, error) {
+	var ill *models.Illness
+
 	err := r.
 		preload().
-		Model(&models.Illness{}).
-		Group("id").
-		First(&illness, illid).Error
+		Select(SELECTED_FIELDS).
+		Where(&models.Illness{Model: base.Model{ID: id}}).
+		First(&ill).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return illness, nil
+	return ill, nil
 }

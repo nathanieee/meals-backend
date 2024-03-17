@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -38,7 +38,7 @@ type (
 		Update(al models.Allergy) (*models.Allergy, error)
 		Delete(al models.Allergy) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(alid uuid.UUID) (*models.Allergy, error)
+		FindByID(id uuid.UUID) (*models.Allergy, error)
 	}
 )
 
@@ -53,14 +53,20 @@ func (r *AllergyRepository) preload() *gorm.DB {
 
 func (r *AllergyRepository) Create(al models.Allergy) (*models.Allergy, error) {
 	err := r.db.
-		Create(al).Error
+		Create(&al).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &al, nil
+	alnew, err := r.FindByID(al.ID)
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return alnew, nil
 }
 
 func (r *AllergyRepository) Read() ([]*models.Allergy, error) {
@@ -72,7 +78,7 @@ func (r *AllergyRepository) Read() ([]*models.Allergy, error) {
 		Find(&al).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -84,11 +90,18 @@ func (r *AllergyRepository) Update(al models.Allergy) (*models.Allergy, error) {
 		Save(&al).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &al, nil
+	alnew, err := r.FindByID(al.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return alnew, nil
 }
 
 func (r *AllergyRepository) Delete(al models.Allergy) error {
@@ -96,7 +109,7 @@ func (r *AllergyRepository) Delete(al models.Allergy) error {
 		Delete(&al).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
@@ -123,7 +136,7 @@ func (r *AllergyRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 
 	if !p.Filter.CreatedFrom.IsZero() && !p.Filter.CreatedTo.IsZero() {
 		result = result.
-			Where("created_at BETWEEN ? AND ?",
+			Where("date(created_at) BETWEEN ? and ?",
 				p.Filter.CreatedFrom.Format(consttypes.DATEFORMAT),
 				p.Filter.CreatedTo.Format(consttypes.DATEFORMAT),
 			)
@@ -135,27 +148,28 @@ func (r *AllergyRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 		Find(&al)
 
 	if err := result.Error; err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
+	// * copy the data from model to response
 	copier.CopyWithOption(&alres, &al, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	p.Data = alres
 	return &p, nil
 }
 
-func (r *AllergyRepository) FindByID(alid uuid.UUID) (*models.Allergy, error) {
+func (r *AllergyRepository) FindByID(id uuid.UUID) (*models.Allergy, error) {
 	var al *models.Allergy
 
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Allergy{Model: helper.Model{ID: alid}}).
+		Where(&models.Allergy{Model: base.Model{ID: id}}).
 		First(&al).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 

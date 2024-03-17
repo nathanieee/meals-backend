@@ -13,10 +13,10 @@ import (
 
 type (
 	ImageService struct {
-		cfg         *configs.Config
-		imgbaseddir string
-		imgprofdir  string
-		imgmealdir  string
+		cfg *configs.Config
+		ibd string
+		ipd string
+		imd string
 	}
 
 	IImageService interface {
@@ -26,10 +26,10 @@ type (
 
 func NewImageService(cfg *configs.Config) *ImageService {
 	return &ImageService{
-		cfg:         cfg,
-		imgbaseddir: cfg.Image.BaseDir,
-		imgprofdir:  cfg.Image.BaseDir + cfg.Image.ProfileDir,
-		imgmealdir:  cfg.Image.BaseDir + cfg.Image.MealDir,
+		cfg: cfg,
+		ibd: cfg.Image.BaseDir,
+		ipd: cfg.Image.BaseDir + cfg.Image.ProfileDir,
+		imd: cfg.Image.BaseDir + cfg.Image.MealDir,
 	}
 }
 
@@ -39,11 +39,11 @@ func (s *ImageService) Upload(fileheader *multipart.FileHeader, imgtype consttyp
 	// * switch the image type based on the image type
 	switch imgtype {
 	case consttypes.IT_PROFILE:
-		uppath = s.imgprofdir
+		uppath = s.ipd
 	case consttypes.IT_MEAL:
-		uppath = s.imgmealdir
+		uppath = s.imd
 	default:
-		uppath = s.imgbaseddir
+		uppath = s.ibd
 	}
 
 	// * create directory if it does not exist

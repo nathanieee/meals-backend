@@ -13,6 +13,7 @@ import (
 type (
 	CreateMeal struct {
 		*CreateImage
+
 		IllnessID   []*uuid.UUID          `json:"illness_id" form:"illness_id" binding:"-"`
 		AllergyID   []*uuid.UUID          `json:"allergy_id" form:"allergy_id" binding:"-"`
 		PartnerID   uuid.UUID             `json:"partner_id" form:"partner_id" binding:"required"`
@@ -23,6 +24,7 @@ type (
 
 	UpdateMeal struct {
 		*UpdateImage
+
 		IllnessID   []*uuid.UUID          `json:"illness_id" form:"illness_id" binding:"-"`
 		AllergyID   []*uuid.UUID          `json:"allergy_id" form:"allergy_id" binding:"-"`
 		PartnerID   uuid.UUID             `json:"partner_id" form:"partner_id" binding:"required"`
@@ -41,7 +43,7 @@ func (req *CreateMeal) ToModel(
 	var meal models.Meal
 
 	if err := copier.CopyWithOption(&meal, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -62,7 +64,7 @@ func (req *UpdateMeal) ToModel(
 	partner models.Partner,
 ) (*models.Meal, error) {
 	if err := copier.CopyWithOption(&meal, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 

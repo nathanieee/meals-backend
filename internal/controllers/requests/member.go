@@ -14,29 +14,33 @@ import (
 
 type (
 	CreateMember struct {
-		User           CreateUser        `json:"user" form:"user" binding:"required"`
-		Caregiver      *CreateCaregiver  `json:"caregiver" form:"caregiver" binding:"-"`
+		User CreateUser `json:"user" form:"user" binding:"required"`
+
+		Caregiver *CreateCaregiver `json:"caregiver" form:"caregiver" binding:"-"`
+
 		Height         float64           `json:"height" form:"height" binding:"required"`
 		Weight         float64           `json:"weight" form:"weight" binding:"required"`
 		FirstName      string            `json:"first_name" form:"first_name" binding:"required"`
 		LastName       string            `json:"last_name" form:"last_name" binding:"required"`
 		Gender         consttypes.Gender `json:"gender" form:"gender" binding:"required"`
 		DateOfBirth    customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"required"`
-		OrganizationID *uuid.UUID        `json:"organization_id,omitempty" form:"organization_id" binding:"-"`
+		OrganizationID *uuid.UUID        `json:"organization_id" form:"organization_id" binding:"-"`
 		IllnessID      []*uuid.UUID      `json:"illness_id" form:"illness_id" binding:"-"`
 		AllergyID      []*uuid.UUID      `json:"allergy_id" form:"allergy_id" binding:"-"`
 	}
 
 	UpdateMember struct {
-		User           UpdateUser        `json:"user" form:"user" binding:"omitempty"`
-		Caregiver      *UpdateCaregiver  `json:"caregiver" form:"caregiver" binding:"omitempty"`
+		User UpdateUser `json:"user" form:"user" binding:"omitempty"`
+
+		Caregiver *UpdateCaregiver `json:"caregiver" form:"caregiver" binding:"omitempty"`
+
 		Height         float64           `json:"height" form:"height" binding:"-"`
 		Weight         float64           `json:"weight" form:"weight" binding:"-"`
 		FirstName      string            `json:"first_name" form:"first_name" binding:"-"`
 		LastName       string            `json:"last_name" form:"last_name" binding:"-"`
 		Gender         consttypes.Gender `json:"gender" form:"gender" binding:"-"`
 		DateOfBirth    customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"-"`
-		OrganizationID *uuid.UUID        `json:"organization_id,omitempty" form:"organization_id" binding:"-"`
+		OrganizationID *uuid.UUID        `json:"organization_id" form:"organization_id" binding:"-"`
 		IllnessID      []*uuid.UUID      `json:"illness_id" form:"illness_id" binding:"-"`
 		AllergyID      []*uuid.UUID      `json:"allergy_id" form:"allergy_id" binding:"-"`
 	}
@@ -52,7 +56,7 @@ func (req *CreateMember) ToModel(
 	var member models.Member
 
 	if err := copier.CopyWithOption(&member, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -75,7 +79,7 @@ func (req *UpdateMember) ToModel(
 	organization *models.Organization,
 ) (*models.Member, error) {
 	if err := copier.CopyWithOption(&member, &req, copier.Option{IgnoreEmpty: true}); err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 

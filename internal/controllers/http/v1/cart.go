@@ -6,6 +6,7 @@ import (
 	"project-skbackend/packages/utils/utresponse"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type (
@@ -25,9 +26,9 @@ func newCartRoutes(
 		scart: scart,
 	}
 
-	grp := rg.Group("carts")
+	gadmn := rg.Group("carts")
 	{
-		grp.GET("raw", r.getCartsRaw)
+		gadmn.GET("raw", r.getCartsRaw)
 	}
 }
 
@@ -36,7 +37,16 @@ func (r *cartroutes) getCartsRaw(ctx *gin.Context) {
 
 	carts, err := r.scart.Read()
 	if err != nil {
-		utresponse.GeneralNotFound(
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
 			entity,
 			ctx,
 			err,

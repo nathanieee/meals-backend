@@ -42,7 +42,7 @@ func getOffset(p *utpagination.Pagination) int {
 }
 
 func Paginate(
-	utpagination interface{},
+	utpagination any,
 	pagination *utpagination.Pagination,
 	db *gorm.DB,
 ) func(db *gorm.DB) *gorm.DB {

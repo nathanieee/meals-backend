@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -62,11 +62,18 @@ func (r *UserRepository) Create(u models.User) (*models.User, error) {
 		Create(&u).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &u, nil
+	unew, err := r.FindByID(u.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return unew, nil
 }
 
 func (r *UserRepository) Read() ([]*models.User, error) {
@@ -78,7 +85,7 @@ func (r *UserRepository) Read() ([]*models.User, error) {
 		Find(&u).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -90,11 +97,18 @@ func (r *UserRepository) Update(u models.User) (*models.User, error) {
 		Save(&u).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &u, nil
+	unew, err := r.FindByID(u.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return unew, nil
 }
 
 func (r *UserRepository) Delete(u models.User) error {
@@ -102,7 +116,7 @@ func (r *UserRepository) Delete(u models.User) error {
 		Delete(&u).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
@@ -139,9 +153,9 @@ func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 		Scopes(paginationrepo.Paginate(&u, &p, result)).
 		Find(&u)
 
-	if result.Error != nil {
-		utlogger.LogError(result.Error)
-		return nil, result.Error
+	if err := result.Error; err != nil {
+		utlogger.Error(err)
+		return nil, err
 	}
 
 	// * copy the data from model to response
@@ -157,11 +171,11 @@ func (r *UserRepository) FindByID(id uuid.UUID) (*models.User, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.User{Model: helper.Model{ID: id}}).
+		Where(&models.User{Model: base.Model{ID: id}}).
 		First(&u).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -178,7 +192,7 @@ func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 		First(&u).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -190,7 +204,7 @@ func (r *UserRepository) FirstOrCreate(u models.User) (*models.User, error) {
 		FirstOrCreate(&u, u).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 

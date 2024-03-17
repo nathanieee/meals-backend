@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type (
@@ -28,13 +29,13 @@ func newMealRoutes(
 		smeal: smeal,
 	}
 
-	admgrp := rg.Group("meals")
+	gadmn := rg.Group("meals")
 	{
-		admgrp.POST("", r.createMeal)
-		admgrp.GET("", r.getMeals)
-		admgrp.GET("raw", r.getMealsRaw)
-		admgrp.PUT("/:uuid", r.updateMeal)
-		admgrp.DELETE("/:uuid", r.deleteMeal)
+		gadmn.POST("", r.createMeal)
+		gadmn.GET("", r.getMeals)
+		gadmn.GET("raw", r.getMealsRaw)
+		gadmn.PUT("/:uuid", r.updateMeal)
+		gadmn.DELETE("/:uuid", r.deleteMeal)
 	}
 }
 
@@ -55,7 +56,7 @@ func (r *mealroutes) createMeal(ctx *gin.Context) {
 		return
 	}
 
-	meres, err := r.smeal.Create(req)
+	resmeal, err := r.smeal.Create(req)
 	if err != nil {
 		utresponse.GeneralInternalServerError(
 			function,
@@ -68,17 +69,26 @@ func (r *mealroutes) createMeal(ctx *gin.Context) {
 	utresponse.GeneralSuccessCreate(
 		entity,
 		ctx,
-		meres,
+		resmeal,
 	)
 }
 
 func (r *mealroutes) getMeals(ctx *gin.Context) {
 	var entity = "meals"
-	var paginationReq = utrequest.GeneratePaginationFromRequest(ctx)
+	var reqpage = utrequest.GeneratePaginationFromRequest(ctx)
 
-	meals, err := r.smeal.FindAll(paginationReq)
+	meals, err := r.smeal.FindAll(reqpage)
 	if err != nil {
-		utresponse.GeneralNotFound(
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
 			entity,
 			ctx,
 			err,
@@ -98,7 +108,16 @@ func (r *mealroutes) getMealsRaw(ctx *gin.Context) {
 
 	meals, err := r.smeal.Read()
 	if err != nil {
-		utresponse.GeneralNotFound(
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
 			entity,
 			ctx,
 			err,
@@ -142,7 +161,16 @@ func (r *mealroutes) updateMeal(ctx *gin.Context) {
 
 	_, err = r.smeal.FindByID(uuid)
 	if err != nil {
-		utresponse.GeneralNotFound(
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
 			entity,
 			ctx,
 			err,
@@ -150,7 +178,7 @@ func (r *mealroutes) updateMeal(ctx *gin.Context) {
 		return
 	}
 
-	meres, err := r.smeal.Update(uuid, req)
+	resmeal, err := r.smeal.Update(uuid, req)
 	if err != nil {
 		utresponse.GeneralInternalServerError(
 			entity,
@@ -163,7 +191,7 @@ func (r *mealroutes) updateMeal(ctx *gin.Context) {
 	utresponse.GeneralSuccessUpdate(
 		entity,
 		ctx,
-		meres,
+		resmeal,
 	)
 }
 
@@ -183,7 +211,16 @@ func (r *mealroutes) deleteMeal(ctx *gin.Context) {
 
 	_, err = r.smeal.FindByID(uuid)
 	if err != nil {
-		utresponse.GeneralNotFound(
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
 			entity,
 			ctx,
 			err,

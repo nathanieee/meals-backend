@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -44,6 +44,7 @@ type (
 		FindByMemberID(mid uuid.UUID) ([]*models.Cart, error)
 		FindByCaregiverID(cgid uuid.UUID) ([]*models.Cart, error)
 		FindByMealID(mid uuid.UUID) ([]*models.Cart, error)
+		GetCartReferenceObject(cart models.Cart) (*responses.Member, *responses.Caregiver, error)
 	}
 )
 
@@ -66,11 +67,18 @@ func (r *CartRepository) Create(c models.Cart) (*models.Cart, error) {
 		Create(&c).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &c, nil
+	cnew, err := r.FindByID(c.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return cnew, nil
 }
 
 func (r *CartRepository) Read() ([]*models.Cart, error) {
@@ -82,7 +90,7 @@ func (r *CartRepository) Read() ([]*models.Cart, error) {
 		Find(&c).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -94,11 +102,18 @@ func (r *CartRepository) Update(c models.Cart) (*models.Cart, error) {
 		Save(&c).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &c, nil
+	cnew, err := r.FindByID(c.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return cnew, nil
 }
 
 func (r *CartRepository) Delete(c models.Cart) error {
@@ -106,7 +121,7 @@ func (r *CartRepository) Delete(c models.Cart) error {
 		Delete(&c).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
@@ -116,8 +131,6 @@ func (r *CartRepository) Delete(c models.Cart) error {
 func (r *CartRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var c []models.Cart
 	var cres []responses.Cart
-	var member *models.Member
-	var caregiver *models.Caregiver
 
 	result := r.
 		preload().
@@ -146,7 +159,7 @@ func (r *CartRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 		Find(&c)
 
 	if result.Error != nil {
-		utlogger.LogError(result.Error)
+		utlogger.Error(result.Error)
 		return nil, result.Error
 	}
 
@@ -154,27 +167,17 @@ func (r *CartRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 	copier.CopyWithOption(&cres, &c, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	// TODO - fix this to be able to get member and caregiver
-	for _, carts := range c {
-		for _, response := range cres {
-			if carts.ID == response.ID {
-				switch carts.ReferenceType {
-				case consttypes.UR_MEMBER:
-					err := r.db.First(&member, carts.ReferenceID).Error
-					if err != nil {
-						return nil, err
-					}
-
-					response.Member = member.ToResponse()
-				case consttypes.UR_CAREGIVER:
-					err := r.db.First(&caregiver, carts.ReferenceID).Error
-					if err != nil {
-						return nil, err
-					}
-
-					response.Caregiver = caregiver.ToResponse()
-				default:
-					return nil, utresponse.ErrInvalidReference
+	for _, cart := range c {
+		for _, cartres := range cres {
+			if cart.ID == cartres.ID {
+				membres, careres, err := r.GetCartReferenceObject(cart)
+				if err != nil {
+					utlogger.Error(err)
+					return nil, err
 				}
+
+				cartres.Member = membres
+				cartres.Caregiver = careres
 			}
 		}
 	}
@@ -189,11 +192,11 @@ func (r *CartRepository) FindByID(id uuid.UUID) (*models.Cart, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Cart{Model: helper.Model{ID: id}}).
+		Where(&models.Cart{Model: base.Model{ID: id}}).
 		First(&c).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -234,4 +237,34 @@ func (r *CartRepository) FindByMealID(mid uuid.UUID) ([]*models.Cart, error) {
 		Find(&c).Error
 
 	return nil, err
+}
+
+func (r *CartRepository) GetCartReferenceObject(cart models.Cart) (*responses.Member, *responses.Caregiver, error) {
+	var care models.Caregiver
+	var memb models.Member
+	var careres *responses.Caregiver
+	var membres *responses.Member
+
+	switch cart.ReferenceType {
+	case consttypes.UR_CAREGIVER:
+		err := r.db.First(&care, cart.ReferenceID).Error
+		if err != nil {
+			utlogger.Error(err)
+			return nil, nil, err
+		}
+
+		careres = care.ToResponse()
+	case consttypes.UR_MEMBER:
+		err := r.db.First(&memb, cart.ReferenceID).Error
+		if err != nil {
+			utlogger.Error(err)
+			return nil, nil, err
+		}
+
+		membres = memb.ToResponse()
+	default:
+		return nil, nil, utresponse.ErrInvalidReference
+	}
+
+	return membres, careres, nil
 }

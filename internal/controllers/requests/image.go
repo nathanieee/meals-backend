@@ -24,7 +24,7 @@ func (req *CreateImage) IsImage() error {
 	// * open the fileheader to read the file
 	file, err := req.Image.Open()
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 	defer file.Close()
@@ -32,7 +32,7 @@ func (req *CreateImage) IsImage() error {
 	// * convert the file to bytes
 	filebytes, err := io.ReadAll(file)
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
@@ -40,7 +40,7 @@ func (req *CreateImage) IsImage() error {
 	if !filetype.IsImage(filebytes) {
 		err := utresponse.ErrInvalidFileType
 
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 

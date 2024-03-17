@@ -4,7 +4,7 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/partnerrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utpagination"
@@ -14,7 +14,7 @@ import (
 
 type (
 	PartnerService struct {
-		prtrrepo partnerrepo.IPartnerRepository
+		rpart partnerrepo.IPartnerRepository
 	}
 
 	IPartnerService interface {
@@ -28,10 +28,10 @@ type (
 )
 
 func NewPartnerService(
-	prtrrepo partnerrepo.IPartnerRepository,
+	rpart partnerrepo.IPartnerRepository,
 ) *PartnerService {
 	return &PartnerService{
-		prtrrepo: prtrrepo,
+		rpart: rpart,
 	}
 }
 
@@ -46,7 +46,7 @@ func (s *PartnerService) Create(req requests.CreatePartner) (*responses.Partner,
 		return nil, err
 	}
 
-	partner, err = s.prtrrepo.Create(*partner)
+	partner, err = s.rpart.Create(*partner)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (s *PartnerService) Create(req requests.CreatePartner) (*responses.Partner,
 }
 
 func (s *PartnerService) Read() ([]*models.Partner, error) {
-	partners, err := s.prtrrepo.Read()
+	partners, err := s.rpart.Read()
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (s *PartnerService) Read() ([]*models.Partner, error) {
 }
 
 func (s *PartnerService) Update(id uuid.UUID, req requests.UpdatePartner) (*responses.Partner, error) {
-	partner, err := s.prtrrepo.FindByID(id)
+	partner, err := s.rpart.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (s *PartnerService) Update(id uuid.UUID, req requests.UpdatePartner) (*resp
 		return nil, err
 	}
 
-	partner, err = s.prtrrepo.Update(*partner)
+	partner, err = s.rpart.Update(*partner)
 	if err != nil {
 		return nil, err
 	}
@@ -97,10 +97,10 @@ func (s *PartnerService) Update(id uuid.UUID, req requests.UpdatePartner) (*resp
 
 func (s *PartnerService) Delete(id uuid.UUID) error {
 	partner := models.Partner{
-		Model: helper.Model{ID: id},
+		Model: base.Model{ID: id},
 	}
 
-	err := s.prtrrepo.Delete(partner)
+	err := s.rpart.Delete(partner)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func (s *PartnerService) Delete(id uuid.UUID) error {
 }
 
 func (s *PartnerService) FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error) {
-	partners, err := s.prtrrepo.FindAll(preq)
+	partners, err := s.rpart.FindAll(preq)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (s *PartnerService) FindAll(preq utpagination.Pagination) (*utpagination.Pa
 }
 
 func (s *PartnerService) FindByID(id uuid.UUID) (*responses.Partner, error) {
-	partner, err := s.prtrrepo.FindByID(id)
+	partner, err := s.rpart.FindByID(id)
 	if err != nil {
 		return nil, err
 	}

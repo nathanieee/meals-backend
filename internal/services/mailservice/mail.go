@@ -2,11 +2,14 @@ package mailservice
 
 import (
 	"bytes"
-	"log"
+	"fmt"
+	"html/template"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
+	"project-skbackend/internal/repositories/userrepo"
+	"project-skbackend/internal/services/producerservice"
 	"project-skbackend/packages/utils/utlogger"
-	"text/template"
+	"project-skbackend/packages/utils/uttemplate"
 
 	"gopkg.in/gomail.v2"
 )
@@ -24,20 +27,27 @@ var (
 
 type (
 	MailService struct {
-		cfg *configs.Config
+		cfg   *configs.Config
+		ruser userrepo.IUserRepository
+		sprod producerservice.IProducerService
 	}
 
 	IMailService interface {
-		SendMail(req requests.SendMail, data any) error
-		SendResetPassword(reqdef requests.SendMail, reqdata requests.ResetPasswordEmail) error
+		SendEmail(req requests.SendEmail) error
+		SendResetPasswordEmail(data requests.SendEmailResetPassword) error
+		SendVerifyEmail(req requests.SendEmailVerification) error
 	}
 )
 
 func NewMailService(
 	cfg *configs.Config,
+	ruser userrepo.IUserRepository,
+	sprod producerservice.IProducerService,
 ) *MailService {
 	return &MailService{
-		cfg: cfg,
+		cfg:   cfg,
+		ruser: ruser,
+		sprod: sprod,
 	}
 }
 
@@ -49,37 +59,65 @@ func parseTemplate(templateFileName string, data any) (string, error) {
 
 	buf := new(bytes.Buffer)
 	if err = t.Execute(buf, data); err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return "", err
 	}
 
 	return buf.String(), nil
 }
+func (s *MailService) SendEmail(
+	req requests.SendEmail,
+) error {
+	var body bytes.Buffer
 
-func (s *MailService) SendMail(req requests.SendMail, data any) error {
-	// * parsing the template from template dir and its data
-	result, err := parseTemplate(MAIL_TEMDIR+req.Template, data)
+	templates, err := uttemplate.ParseTemplateDir("templates", req.Template)
 	if err != nil {
+		utlogger.Error(err)
 		return err
 	}
 
-	// * create a new mailer config with existing parameter
-	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", MAIL_NAME)
-	mailer.SetHeader("To", req.To...)
-	mailer.SetHeader("Subject", req.Subject)
-	mailer.SetBody("text/html", result)
+	templates = templates.Lookup(req.Template)
 
-	// * create new dialer from existing config
-	dialer := gomail.NewDialer(
-		MAIL_HOST,
-		MAIL_PORT,
-		MAIL_FROM,
-		MAIL_PASS,
-	)
+	err = templates.Execute(&body, &req.Data)
+	if err != nil {
+		utlogger.Error(err)
+		return err
+	}
 
-	// * send the mail using the new dialer
-	err = dialer.DialAndSend(mailer)
+	m := gomail.NewMessage()
+
+	m.SetHeaders(map[string][]string{
+		"From":    {s.cfg.Mail.From},
+		"To":      {req.Email},
+		"Subject": {req.Subject},
+	})
+	m.SetBody("text/html", body.String())
+
+	// TODO - need to enable this
+	// d := gomail.NewDialer(MAIL_HOST, MAIL_PORT, MAIL_FROM, MAIL_PASS)
+	// d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	// err = d.DialAndSend(m)
+	// if err != nil {
+	// 	return err
+	// }
+
+	return nil
+}
+
+func (s *MailService) SendResetPasswordEmail(req requests.SendEmailResetPassword) error {
+	sereq := requests.SendEmail{
+		Template: "reset_password.html",
+		Subject:  "Reset Password Request on Meals to Heals",
+		Email:    req.Email,
+		Data: map[string]any{
+			"Name":    req.Name,
+			"Email":   req.Email,
+			"LinkUrl": template.URL(req.LinkUrl),
+		},
+	}
+
+	err := s.sprod.PublishEmail(sereq)
 	if err != nil {
 		return err
 	}
@@ -87,13 +125,22 @@ func (s *MailService) SendMail(req requests.SendMail, data any) error {
 	return nil
 }
 
-func (s *MailService) SendResetPassword(reqdef requests.SendMail, reqdata requests.ResetPasswordEmail) error {
-	err := s.SendMail(reqdef, reqdata)
+func (s *MailService) SendVerifyEmail(req requests.SendEmailVerification) error {
+	sereq := requests.SendEmail{
+		Template: "verify_email.html",
+		Subject:  fmt.Sprintf("Verify Your Email Address on Meals to Heals"),
+		Email:    req.Email,
+		Data: map[string]any{
+			"Email": req.Email,
+			"Token": req.Token,
+			"Name":  req.Name,
+		},
+	}
+
+	err := s.sprod.PublishEmail(sereq)
 	if err != nil {
 		return err
 	}
-
-	log.Println("Email has been sent!")
 
 	return nil
 }

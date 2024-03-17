@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -40,6 +40,7 @@ type (
 		Delete(m models.Meal) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		FindByID(id uuid.UUID) (*models.Meal, error)
+		FindByPartnerID(pid uuid.UUID) (*models.Meal, error)
 	}
 )
 
@@ -62,11 +63,18 @@ func (r *MealRepository) Create(m models.Meal) (*models.Meal, error) {
 		Create(&m).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &m, err
+	mnew, err := r.FindByID(m.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return mnew, err
 }
 
 func (r *MealRepository) Read() ([]*models.Meal, error) {
@@ -78,7 +86,7 @@ func (r *MealRepository) Read() ([]*models.Meal, error) {
 		Find(&m).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -90,11 +98,18 @@ func (r *MealRepository) Update(m models.Meal) (*models.Meal, error) {
 		Save(&m).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &m, nil
+	mnew, err := r.FindByID(m.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return mnew, nil
 }
 
 func (r *MealRepository) Delete(m models.Meal) error {
@@ -102,7 +117,7 @@ func (r *MealRepository) Delete(m models.Meal) error {
 		Delete(&m).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
@@ -146,7 +161,7 @@ func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 		Find(&m)
 
 	if err := result.Error; err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -154,7 +169,7 @@ func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 	copier.CopyWithOption(&mlres, &m, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	p.Data = mlres
-	return &p, result.Error
+	return &p, nil
 }
 
 func (r *MealRepository) FindByID(id uuid.UUID) (*models.Meal, error) {
@@ -163,11 +178,28 @@ func (r *MealRepository) FindByID(id uuid.UUID) (*models.Meal, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Meal{Model: helper.Model{ID: id}}).
+		Where(&models.Meal{Model: base.Model{ID: id}}).
 		First(&m).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return m, nil
+}
+
+func (r *MealRepository) FindByPartnerID(pid uuid.UUID) (*models.Meal, error) {
+	var m *models.Meal
+
+	err := r.
+		preload().
+		Select(SELECTED_FIELDS).
+		Where(&models.Meal{PartnerID: pid}).
+		First(&m).Error
+
+	if err != nil {
+		utlogger.Error(err)
 		return nil, err
 	}
 

@@ -19,29 +19,24 @@ func (db DB) GetDbConnectionUrl() string {
 }
 
 func (db DB) DBSetup(gdb *gorm.DB) error {
-	err := db.AutoSeedEnum(gdb)
+	err := db.AutoSeedData(gdb)
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
 	err = db.AutoMigrate(gdb)
 	if err != nil {
-		utlogger.LogError(err)
-		return err
-	}
-
-	err = db.AutoSeedTable(gdb)
-	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
 	return nil
 }
 
-func (db DB) AutoSeedEnum(gdb *gorm.DB) error {
+func (db DB) AutoSeedData(gdb *gorm.DB) error {
 	seedfuncs := []func(*gorm.DB) error{
+		/* ---------------------------------- enum ---------------------------------- */
 		SeedAllergensEnum,
 		SeedGenderEnum,
 		SeedMealStatusEnum,
@@ -50,6 +45,18 @@ func (db DB) AutoSeedEnum(gdb *gorm.DB) error {
 		SeedPatronTypeEnum,
 		SeedOrganizationTypeEnum,
 		SeedUserRoleEnum,
+
+		/* ------------------------------- credentials ------------------------------ */
+		SeedAdminCredentials,
+		SeedOrganizationCredentials,
+		SeedPartnerCredentials,
+		SeedMemberCredentials,
+
+		/* ---------------------------------- data ---------------------------------- */
+		SeedCartData,
+		SeedMealData,
+		SeedAllergyData,
+		SeedIllnessData,
 	}
 
 	var errs []error
@@ -61,7 +68,7 @@ func (db DB) AutoSeedEnum(gdb *gorm.DB) error {
 	}
 
 	if len(errs) > 0 {
-		utlogger.LogError(errs...)
+		utlogger.Error(errs...)
 		return errors.New("error seeding enum")
 	}
 
@@ -101,32 +108,4 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 		&models.Rating{},
 		&models.Cart{},
 	)
-}
-
-func (db DB) AutoSeedTable(gdb *gorm.DB) error {
-	seedfuncs := []func(*gorm.DB) error{
-		SeedAdminCredentials,
-		SeedAllergyData,
-		SeedIllnessData,
-		SeedOrganizationCredential,
-		SeedPartnerCredential,
-		SeedMealData,
-		SeedMemberCredentials,
-		SeedCartData,
-	}
-
-	var errs []error
-
-	for _, seedfunc := range seedfuncs {
-		if err := seedfunc(gdb); err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	if len(errs) > 0 {
-		utlogger.LogError(errs...)
-		return errors.New("error seeding table")
-	}
-
-	return nil
 }

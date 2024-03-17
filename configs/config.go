@@ -14,6 +14,7 @@ type (
 		// * internal config
 		API
 		App
+		Web
 		File
 		HTTP
 		DB
@@ -25,11 +26,13 @@ type (
 		Redis
 		Xendit
 		AWS
+		Localstack
+		Queue
 	}
 
 	API struct {
 		VerifyTokenLength int    `env:"API_VERIFY_TOKEN_LENGTH" env-default:"8"`
-		Domain            string `env:"API_DOMAIN" env-default:"localhost"`
+		URL               string `env:"API_URL" env-default:"localhost"`
 		ResetPassword     struct {
 			Cooldown int `env:"API_RESET_PASSWORD_COOLDOWN" env-default:"5"`
 		}
@@ -42,6 +45,10 @@ type (
 		Env         string `env:"APP_ENV" env-default:"development"`
 		Timeout     int    `env:"APP_TIMEOUT" env-default:"30"`
 		DeeplinkUrl string `env:"DEEPLINK_URL"`
+	}
+
+	Web struct {
+		URL string `env:"WEB_URL"`
 	}
 
 	File struct {
@@ -115,6 +122,25 @@ type (
 			PublicKey string `env:"AWS_PUBLIC_ACCESS_KEY"`
 			SecretKey string `env:"AWS_SECRET_ACCESS_KEY"`
 		}
+		Region string `env:"AWS_REGION" env-default:"ap-southeast-1"`
+	}
+
+	Localstack struct {
+		Port  string `env:"LOCALSTACK_PORT" env-default:"4566"`
+		Debug int    `env:"LOCALSTACK_DEBUG" env-default:"0"`
+	}
+
+	Queue struct {
+		Host     string `env:"RABBIT_MQ_HOST"`
+		Port     string `env:"RABBIT_MQ_PORT"`
+		Username string `env:"RABBIT_MQ_USERNAME"`
+		Password string `env:"RABBIT_MQ_PASSWORD"`
+		Mail     struct {
+			QueueName    string `env:"MAIL_QUEUE_NAME"`
+			ExchangeName string `env:"MAIL_EXCHANGE_NAME"`
+			ExchangeType string `env:"MAIL_EXCHANGE_TYPE"`
+			BindingKey   string `env:"MAIL_BINDING_KEY"`
+		}
 	}
 )
 
@@ -129,7 +155,7 @@ func GetInstance() *Config {
 		once.Do(func() {
 			cfg, err := newConfig()
 			if err != nil {
-				utlogger.LogError(err)
+				utlogger.Error(err)
 			}
 
 			instance = cfg
@@ -149,7 +175,7 @@ func newConfig() (*Config, error) {
 
 	err = cleanenv.ReadEnv(cfg)
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -40,8 +40,9 @@ type (
 		Update(cg models.Caregiver) (*models.Caregiver, error)
 		Delete(cg models.Caregiver) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(cgid uuid.UUID) (*models.Caregiver, error)
+		FindByID(id uuid.UUID) (*models.Caregiver, error)
 		FindByEmail(email string) (*models.Caregiver, error)
+		FindByUserID(uid uuid.UUID) (*models.Caregiver, error)
 	}
 )
 
@@ -52,21 +53,27 @@ func NewCaregiverRepository(db *gorm.DB) *CaregiverRepository {
 func (r *CaregiverRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
-		Preload("User").
 		Preload("User.Image.Image").
 		Preload("User.Address")
 }
 
 func (r *CaregiverRepository) Create(cg models.Caregiver) (*models.Caregiver, error) {
 	err := r.db.
-		Create(cg).Error
+		Create(&cg).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &cg, err
+	cgnew, err := r.FindByID(cg.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return cgnew, nil
 }
 
 func (r *CaregiverRepository) Read() ([]*models.Caregiver, error) {
@@ -78,7 +85,7 @@ func (r *CaregiverRepository) Read() ([]*models.Caregiver, error) {
 		Find(&cg).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -90,7 +97,7 @@ func (r *CaregiverRepository) Update(cg models.Caregiver) (*models.Caregiver, er
 		Save(&cg).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -102,7 +109,7 @@ func (r *CaregiverRepository) Delete(cg models.Caregiver) error {
 		Delete(&cg).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
@@ -141,7 +148,7 @@ func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.
 		Find(&cg)
 
 	if err := result.Error; err != nil {
-		utlogger.LogError(result.Error)
+		utlogger.Error(result.Error)
 		return nil, result.Error
 	}
 
@@ -152,17 +159,17 @@ func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.
 	return &p, nil
 }
 
-func (r *CaregiverRepository) FindByID(cgid uuid.UUID) (*models.Caregiver, error) {
+func (r *CaregiverRepository) FindByID(id uuid.UUID) (*models.Caregiver, error) {
 	var cg *models.Caregiver
 
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Caregiver{Model: helper.Model{ID: cgid}}).
+		Where(&models.Caregiver{Model: base.Model{ID: id}}).
 		First(&cg).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -179,7 +186,24 @@ func (r *CaregiverRepository) FindByEmail(email string) (*models.Caregiver, erro
 		First(&cg).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return cg, nil
+}
+
+func (r *CaregiverRepository) FindByUserID(uid uuid.UUID) (*models.Caregiver, error) {
+	var cg *models.Caregiver
+
+	err := r.
+		preload().
+		Select(SELECTED_FIELDS).
+		Where(&models.Caregiver{User: models.User{Model: base.Model{ID: uid}}}).
+		First(&cg).Error
+
+	if err != nil {
+		utlogger.Error(err)
 		return nil, err
 	}
 

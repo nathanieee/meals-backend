@@ -1,12 +1,11 @@
 package responses
 
-import (
-	"project-skbackend/internal/models/helper"
-)
+import "project-skbackend/internal/models/base"
 
 type (
 	Address struct {
-		helper.Model
+		base.Model
+
 		Name      string  `json:"name"`
 		Address   string  `json:"address"`
 		Note      string  `json:"note"`

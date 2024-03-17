@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"os"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/customs"
 
 	"project-skbackend/packages/utils/utlogger"
+	"project-skbackend/packages/utils/utstring"
 	"strings"
 
 	"github.com/google/uuid"
@@ -21,9 +22,9 @@ var (
 )
 
 func getGlobalHashedPassword(password string) string {
-	hash, err := helper.HashPassword(password)
+	hash, err := utstring.HashPassword(password)
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return ""
 	}
 
@@ -39,7 +40,7 @@ func checkEnumIsExist(db *gorm.DB, key string) bool {
 	return count > 0
 }
 
-func createEnum(db *gorm.DB, enumname string, enumvalues ...interface{}) error {
+func createEnum(db *gorm.DB, enumname string, enumvalues ...any) error {
 	if !checkEnumIsExist(db, enumname) {
 		values := make([]string, len(enumvalues))
 		for i, v := range enumvalues {
@@ -49,7 +50,7 @@ func createEnum(db *gorm.DB, enumname string, enumvalues ...interface{}) error {
 		query := fmt.Sprintf("CREATE TYPE %s AS ENUM ('%s');", enumname, strings.Join(values, "','"))
 		err := db.Exec(query).Error
 		if err != nil {
-			utlogger.LogError(err)
+			utlogger.Error(err)
 			return err
 		}
 	}
@@ -145,7 +146,11 @@ func SeedAdminCredentials(db *gorm.DB) error {
 				},
 			}
 
-			db.Create(admins)
+			err := db.Create(admins).Error
+			if err != nil {
+				utlogger.Error(err)
+				return err
+			}
 		}
 	}
 
@@ -157,7 +162,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 		if err := db.First(&models.Member{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			members := []*models.Member{
 				{
-					Model: helper.Model{
+					Model: base.Model{
 						ID: uuidval,
 					},
 					User: models.User{
@@ -185,7 +190,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 
 			err = db.Create(members).Error
 			if err != nil {
-				utlogger.LogError(err)
+				utlogger.Error(err)
 				return err
 			}
 		}
@@ -194,7 +199,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 	return nil
 }
 
-func SeedOrganizationCredential(db *gorm.DB) error {
+func SeedOrganizationCredentials(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Organization{}) {
 		if err := db.First(&models.Organization{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			organizations := []*models.Organization{
@@ -209,19 +214,23 @@ func SeedOrganizationCredential(db *gorm.DB) error {
 				},
 			}
 
-			db.Create(organizations)
+			err := db.Create(organizations).Error
+			if err != nil {
+				utlogger.Error(err)
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func SeedPartnerCredential(db *gorm.DB) error {
+func SeedPartnerCredentials(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Partner{}) {
 		if err := db.First(&models.Partner{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			partners := []*models.Partner{
 				{
-					Model: helper.Model{
+					Model: base.Model{
 						ID: uuidval,
 					},
 					User: models.User{
@@ -235,7 +244,7 @@ func SeedPartnerCredential(db *gorm.DB) error {
 
 			err = db.Create(partners).Error
 			if err != nil {
-				utlogger.LogError(err)
+				utlogger.Error(err)
 				return err
 			}
 		}
@@ -277,7 +286,7 @@ func SeedMealData(db *gorm.DB) error {
 
 			err = db.Create(meals).Error
 			if err != nil {
-				utlogger.LogError(err)
+				utlogger.Error(err)
 				return err
 			}
 		}
@@ -293,7 +302,7 @@ func SeedAllergyData(db *gorm.DB) error {
 			allergies := []*models.Allergy{
 				// ! start of food allergen
 				{
-					Model: helper.Model{
+					Model: base.Model{
 						ID: uuidval,
 					},
 					Name:        "Milk",
@@ -520,7 +529,11 @@ func SeedAllergyData(db *gorm.DB) error {
 				},
 			}
 
-			db.Create(allergies)
+			err := db.Create(allergies).Error
+			if err != nil {
+				utlogger.Error(err)
+				return err
+			}
 		}
 	}
 
@@ -533,7 +546,7 @@ func SeedIllnessData(db *gorm.DB) error {
 		if err := db.First(&models.Illness{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			illnesses := []*models.Illness{
 				{
-					Model: helper.Model{
+					Model: base.Model{
 						ID: uuidval,
 					},
 					Name:        "Covid",
@@ -737,7 +750,11 @@ func SeedIllnessData(db *gorm.DB) error {
 				},
 			}
 
-			db.Create(illnesses)
+			err := db.Create(illnesses).Error
+			if err != nil {
+				utlogger.Error(err)
+				return err
+			}
 		}
 	}
 
@@ -775,7 +792,7 @@ func SeedCartData(db *gorm.DB) error {
 
 			err = db.Create(carts).Error
 			if err != nil {
-				utlogger.LogError(err)
+				utlogger.Error(err)
 				return err
 			}
 		}

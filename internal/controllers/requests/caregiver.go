@@ -11,7 +11,8 @@ import (
 
 type (
 	CreateCaregiver struct {
-		User        CreateUser        `json:"user" form:"user" binding:"required"`
+		User CreateUser `json:"user" form:"user" binding:"required"`
+
 		Gender      consttypes.Gender `json:"gender" form:"gender" binding:"required"`
 		FirstName   string            `json:"first_name" form:"first_name" binding:"required"`
 		LastName    string            `json:"last_name" form:"last_name" binding:"required"`
@@ -19,7 +20,8 @@ type (
 	}
 
 	UpdateCaregiver struct {
-		User        UpdateUser        `json:"user" form:"user" binding:"dive"`
+		User UpdateUser `json:"user" form:"user" binding:"dive"`
+
 		Gender      consttypes.Gender `json:"gender" form:"gender" binding:"-"`
 		FirstName   string            `json:"first_name" form:"first_name" binding:"-"`
 		LastName    string            `json:"last_name" form:"last_name" binding:"-"`
@@ -32,12 +34,12 @@ func (req *CreateCaregiver) ToModel() (*models.Caregiver, error) {
 
 	user, err := req.User.ToModel(consttypes.UR_CAREGIVER)
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
 	if err := copier.CopyWithOption(&caregiver, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -50,7 +52,7 @@ func (req *UpdateCaregiver) ToCreateCaregiver() (*CreateCaregiver, error) {
 	var create CreateCaregiver
 
 	if err := copier.CopyWithOption(&create, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -64,13 +66,13 @@ func (req *UpdateCaregiver) ToModel(
 		createcaregiver, err := req.ToCreateCaregiver()
 
 		if err != nil {
-			utlogger.LogError(err)
+			utlogger.Error(err)
 			return nil, err
 		}
 
 		caregiver, err = createcaregiver.ToModel()
 		if err != nil {
-			utlogger.LogError(err)
+			utlogger.Error(err)
 			return nil, err
 		}
 
@@ -78,7 +80,7 @@ func (req *UpdateCaregiver) ToModel(
 	}
 
 	if err := copier.CopyWithOption(&caregiver, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 

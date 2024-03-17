@@ -4,7 +4,7 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/allergyrepo"
 	"project-skbackend/internal/repositories/illnessrepo"
 	"project-skbackend/internal/repositories/mealrepo"
@@ -16,10 +16,10 @@ import (
 
 type (
 	MealService struct {
-		mealrepo mealrepo.IMealRepository
-		illrepo  illnessrepo.IIllnessRepository
-		allgrepo allergyrepo.IAllergyRepository
-		prtrrepo partnerrepo.IPartnerRepository
+		rmeal mealrepo.IMealRepository
+		rill  illnessrepo.IIllnessRepository
+		rall  allergyrepo.IAllergyRepository
+		rpart partnerrepo.IPartnerRepository
 	}
 
 	IMealService interface {
@@ -33,17 +33,17 @@ type (
 )
 
 func NewMealService(
-	mealrepo mealrepo.IMealRepository,
-	illrepo illnessrepo.IIllnessRepository,
-	allgrepo allergyrepo.IAllergyRepository,
-	prtrrepo partnerrepo.IPartnerRepository,
+	rmeal mealrepo.IMealRepository,
+	rill illnessrepo.IIllnessRepository,
+	rall allergyrepo.IAllergyRepository,
+	rpart partnerrepo.IPartnerRepository,
 
 ) *MealService {
 	return &MealService{
-		mealrepo: mealrepo,
-		illrepo:  illrepo,
-		allgrepo: allgrepo,
-		prtrrepo: prtrrepo,
+		rmeal: rmeal,
+		rill:  rill,
+		rall:  rall,
+		rpart: rpart,
 	}
 }
 
@@ -55,7 +55,7 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
-		illness, err := s.illrepo.FindByID(*ill)
+		illness, err := s.rill.FindByID(*ill)
 		if err != nil {
 			return nil, err
 		}
@@ -67,7 +67,7 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 
 	// * find allergy object and append to the array.
 	for _, all := range req.AllergyID {
-		allergy, err := s.allgrepo.FindByID(*all)
+		allergy, err := s.rall.FindByID(*all)
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +77,7 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 		allergies = append(allergies, mallergy)
 	}
 
-	partner, err := s.prtrrepo.FindByID(req.PartnerID)
+	partner, err := s.rpart.FindByID(req.PartnerID)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 		return nil, err
 	}
 
-	meal, err = s.mealrepo.Create(*meal)
+	meal, err = s.rmeal.Create(*meal)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 }
 
 func (s *MealService) Read() ([]*models.Meal, error) {
-	meals, err := s.mealrepo.Read()
+	meals, err := s.rmeal.Read()
 	if err != nil {
 		return nil, err
 	}
@@ -112,14 +112,14 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 	var allergies []*models.MealAllergy
 	var partner *models.Partner
 
-	meal, err := s.mealrepo.FindByID(id)
+	meal, err := s.rmeal.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
-		illness, err := s.illrepo.FindByID(*ill)
+		illness, err := s.rill.FindByID(*ill)
 		if err != nil {
 			return nil, err
 		}
@@ -131,7 +131,7 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 
 	// * find allergy object and append to the array.
 	for _, all := range req.AllergyID {
-		allergy, err := s.allgrepo.FindByID(*all)
+		allergy, err := s.rall.FindByID(*all)
 		if err != nil {
 			return nil, err
 		}
@@ -141,7 +141,7 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 		allergies = append(allergies, mallergy)
 	}
 
-	partner, err = s.prtrrepo.FindByID(req.PartnerID)
+	partner, err = s.rpart.FindByID(req.PartnerID)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +151,7 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 		return nil, err
 	}
 
-	meal, err = s.mealrepo.Update(*meal)
+	meal, err = s.rmeal.Update(*meal)
 	if err != nil {
 		return nil, err
 	}
@@ -163,10 +163,10 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 
 func (s *MealService) Delete(id uuid.UUID) error {
 	meal := models.Meal{
-		Model: helper.Model{ID: id},
+		Model: base.Model{ID: id},
 	}
 
-	err := s.mealrepo.Delete(meal)
+	err := s.rmeal.Delete(meal)
 	if err != nil {
 		return err
 	}
@@ -175,7 +175,7 @@ func (s *MealService) Delete(id uuid.UUID) error {
 }
 
 func (s *MealService) FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error) {
-	meals, err := s.mealrepo.FindAll(preq)
+	meals, err := s.rmeal.FindAll(preq)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +184,7 @@ func (s *MealService) FindAll(preq utpagination.Pagination) (*utpagination.Pagin
 }
 
 func (s *MealService) FindByID(id uuid.UUID) (*responses.Meal, error) {
-	meal, err := s.mealrepo.FindByID(id)
+	meal, err := s.rmeal.FindByID(id)
 	if err != nil {
 		return nil, err
 	}

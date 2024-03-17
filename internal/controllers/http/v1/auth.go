@@ -26,27 +26,27 @@ func newAuthRoutes(
 		sauth: sauth,
 	}
 
-	usergrp := rg.Group("auth")
+	guser := rg.Group("auth")
 	{
-		usergrp.POST("login", r.login)
-		usergrp.POST("register", r.register)
+		guser.POST("signin", r.signin)
 
-		usergrp.POST("forgot-password", r.forgotPassword)
-		usergrp.POST("reset-password", r.resetPassword)
-		usergrp.GET("refresh-token", r.refreshAuthToken)
+		// TODO - add a verify route group to verify email
+
+		guser.POST("forgot-password", r.forgotPassword)
+		guser.POST("reset-password", r.resetPassword)
+		guser.GET("refresh-token", r.refreshAuthToken)
 	}
 }
 
-func (r *authroutes) login(
+func (r *authroutes) signin(
 	ctx *gin.Context,
 ) {
-	var function = "login"
-	var req requests.Login
+	var function = "signin"
+	var req requests.Signin
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
-
 		utresponse.GeneralInvalidRequest(
 			function,
 			ctx,
@@ -56,7 +56,7 @@ func (r *authroutes) login(
 		return
 	}
 
-	user, token, err := r.sauth.Login(req, ctx)
+	resuser, thead, err := r.sauth.Signin(req, ctx)
 	if err != nil {
 		utresponse.GeneralInternalServerError(
 			function,
@@ -66,52 +66,12 @@ func (r *authroutes) login(
 		return
 	}
 
-	res := token.ToAuthResponse(*user)
-
+	resauth := thead.ToAuthResponse(*resuser)
 	utresponse.GeneralSuccessAuth(
 		function,
 		ctx,
-		res,
-		token,
-	)
-}
-
-func (r *authroutes) register(
-	ctx *gin.Context,
-) {
-	var function = "register"
-	var req requests.Register
-
-	err := ctx.ShouldBindJSON(&req)
-	if err != nil {
-		ve := utresponse.ValidationResponse(err)
-
-		utresponse.GeneralInvalidRequest(
-			function,
-			ctx,
-			ve,
-			err,
-		)
-		return
-	}
-
-	user, token, err := r.sauth.Register(req, ctx)
-	if err != nil {
-		utresponse.GeneralInternalServerError(
-			function,
-			ctx,
-			err,
-		)
-		return
-	}
-
-	res := token.ToAuthResponse(*user)
-
-	utresponse.GeneralSuccessAuth(
-		function,
-		ctx,
-		res,
-		token,
+		resauth,
+		thead,
 	)
 }
 
@@ -124,7 +84,6 @@ func (r *authroutes) forgotPassword(
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
-
 		utresponse.GeneralInvalidRequest(
 			function,
 			ctx,
@@ -160,7 +119,6 @@ func (r *authroutes) resetPassword(
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
-
 		utresponse.GeneralInvalidRequest(
 			function,
 			ctx,
@@ -201,7 +159,7 @@ func (r *authroutes) refreshAuthToken(
 		return
 	}
 
-	user, token, err := r.sauth.RefreshAuthToken(refreshToken, ctx)
+	resuser, thead, err := r.sauth.RefreshAuthToken(refreshToken, ctx)
 	if err != nil {
 		utresponse.GeneralInternalServerError(
 			function,
@@ -211,12 +169,12 @@ func (r *authroutes) refreshAuthToken(
 		return
 	}
 
-	res := token.ToAuthResponse(*user)
+	resauth := thead.ToAuthResponse(*resuser)
 
 	utresponse.GeneralSuccessAuth(
 		function,
 		ctx,
-		res,
-		token,
+		resauth,
+		thead,
 	)
 }

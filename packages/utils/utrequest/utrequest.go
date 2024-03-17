@@ -21,7 +21,6 @@ var (
 func CheckWhitelistUrl(url string) bool {
 	splittedUrl := strings.Split(url, "api/v1/")
 	whitelistedUrl := map[string]bool{
-		"users/me":           true,
 		"auth/refresh-token": true,
 	}
 

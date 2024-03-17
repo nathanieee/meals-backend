@@ -1,7 +1,9 @@
 package di
 
 import (
+	"context"
 	"project-skbackend/configs"
+	"project-skbackend/internal/repositories/adminrepo"
 	"project-skbackend/internal/repositories/allergyrepo"
 	"project-skbackend/internal/repositories/caregiverrepo"
 	"project-skbackend/internal/repositories/cartrepo"
@@ -13,27 +15,31 @@ import (
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/authservice"
 	"project-skbackend/internal/services/cartservice"
+	"project-skbackend/internal/services/consumerservice"
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/internal/services/mealservice"
 	"project-skbackend/internal/services/memberservice"
 	"project-skbackend/internal/services/partnerservice"
+	"project-skbackend/internal/services/producerservice"
 	"project-skbackend/internal/services/userservice"
 
+	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type DependencyInjection struct {
-	UserService    *userservice.UserService
-	AuthService    *authservice.AuthService
-	MailService    *mailservice.MailService
-	MemberService  *memberservice.MemberService
-	PartnerService *partnerservice.PartnerService
-	MealService    *mealservice.MealService
-	CartService    *cartservice.CartService
+	UserService     *userservice.UserService
+	AuthService     *authservice.AuthService
+	MailService     *mailservice.MailService
+	MemberService   *memberservice.MemberService
+	PartnerService  *partnerservice.PartnerService
+	MealService     *mealservice.MealService
+	CartService     *cartservice.CartService
+	ConsumerService *consumerservice.ConsumerService
 }
 
-func NewDependencyInjection(db *gorm.DB, cfg *configs.Config, rdb *redis.Client) *DependencyInjection {
+func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, rdb *redis.Client, ctx context.Context) *DependencyInjection {
 	/* -------------------------------- database -------------------------------- */
 	db = db.Session(&gorm.Session{FullSaveAssociations: true})
 
@@ -43,31 +49,35 @@ func NewDependencyInjection(db *gorm.DB, cfg *configs.Config, rdb *redis.Client)
 
 	/* ------------------------------- repository ------------------------------- */
 	ruser := userrepo.NewUserRepository(db)
-	rpartner := partnerrepo.NewPartnerRepository(db)
-	rcaregiver := caregiverrepo.NewCaregiverRepository(db)
-	rallergy := allergyrepo.NewAllergyRepository(db)
+	rpart := partnerrepo.NewPartnerRepository(db)
+	rcare := caregiverrepo.NewCaregiverRepository(db)
+	rall := allergyrepo.NewAllergyRepository(db)
 	rmeal := mealrepo.NewMealRepository(db)
-	rillness := illnessrepo.NewIllnessRepository(db)
-	rmember := memberrepo.NewMemberRepository(db)
-	rorganization := organizationrepo.NewOrganizationRepository(db)
+	rill := illnessrepo.NewIllnessRepository(db)
+	rmemb := memberrepo.NewMemberRepository(db)
+	rorg := organizationrepo.NewOrganizationRepository(db)
 	rcart := cartrepo.NewCartRepository(db)
+	radmin := adminrepo.NewAdminRepository(db)
 
 	/* --------------------------------- service -------------------------------- */
-	suser := userservice.NewUserService(ruser)
-	spartner := partnerservice.NewPartnerService(rpartner)
-	smail := mailservice.NewMailService(cfg)
+	sprod := producerservice.NewProducerService(ch, cfg, ctx)
+	suser := userservice.NewUserService(ruser, radmin, rcare, rmemb, rorg, rpart)
+	spart := partnerservice.NewPartnerService(rpart)
+	smail := mailservice.NewMailService(cfg, ruser, sprod)
 	sauth := authservice.NewAuthService(cfg, ruser, smail, rdb)
-	smeal := mealservice.NewMealService(rmeal, rillness, rallergy, rpartner)
-	smember := memberservice.NewMemberService(rmember, ruser, rcaregiver, rallergy, rillness, *rorganization)
-	scart := cartservice.NewCartService(rcart, rcaregiver, rmember)
+	smeal := mealservice.NewMealService(rmeal, rill, rall, rpart)
+	smemb := memberservice.NewMemberService(rmemb, ruser, rcare, rall, rill, *rorg)
+	scart := cartservice.NewCartService(rcart, rcare, rmemb)
+	scons := consumerservice.NewConsumerService(ch, cfg, smail)
 
 	return &DependencyInjection{
-		UserService:    suser,
-		AuthService:    sauth,
-		MailService:    smail,
-		MemberService:  smember,
-		PartnerService: spartner,
-		MealService:    smeal,
-		CartService:    scart,
+		UserService:     suser,
+		AuthService:     sauth,
+		MailService:     smail,
+		MemberService:   smemb,
+		PartnerService:  spart,
+		MealService:     smeal,
+		CartService:     scart,
+		ConsumerService: scons,
 	}
 }

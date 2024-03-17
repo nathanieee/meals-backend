@@ -24,7 +24,6 @@ type (
 
 func newMemberRoutes(
 	rg *gin.RouterGroup,
-	db *gorm.DB,
 	cfg *configs.Config,
 	smember memberservice.IMemberService,
 ) {
@@ -33,17 +32,17 @@ func newMemberRoutes(
 		smember: smember,
 	}
 
-	proute := rg.Group("members")
-	proute.Use(middlewares.JWTAuthMiddleware(
+	gadmn := rg.Group("members")
+	gadmn.Use(middlewares.JWTAuthMiddleware(
 		cfg,
 		uint(consttypes.UR_ADMIN),
 	))
 	{
-		proute.POST("", r.createMember)
-		proute.GET("", r.getMembers)
-		proute.GET("raw", r.getMembersRaw)
-		proute.PUT("/:uuid", r.updateMember)
-		proute.DELETE("/:uuid", r.deleteMember)
+		gadmn.POST("", r.createMember)
+		gadmn.GET("", r.getMembers)
+		gadmn.GET("raw", r.getMembersRaw)
+		gadmn.PUT("/:uuid", r.updateMember)
+		gadmn.DELETE("/:uuid", r.deleteMember)
 	}
 }
 
@@ -79,7 +78,7 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 		}
 	}
 
-	meres, err := r.smember.Create(req)
+	resmemb, err := r.smember.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utresponse.GeneralDuplicate(
@@ -100,17 +99,26 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 	utresponse.GeneralSuccessCreate(
 		entity,
 		ctx,
-		meres,
+		resmemb,
 	)
 }
 
 func (r *memberroutes) getMembers(ctx *gin.Context) {
 	var entity = "members"
-	var paginationReq = utrequest.GeneratePaginationFromRequest(ctx)
+	var reqpage = utrequest.GeneratePaginationFromRequest(ctx)
 
-	members, err := r.smember.FindAll(paginationReq)
+	members, err := r.smember.FindAll(reqpage)
 	if err != nil {
-		utresponse.GeneralNotFound(
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
 			entity,
 			ctx,
 			err,
@@ -128,9 +136,18 @@ func (r *memberroutes) getMembers(ctx *gin.Context) {
 func (r *memberroutes) getMembersRaw(ctx *gin.Context) {
 	var entity = "members"
 
-	members, err := r.smember.Read()
+	resmemb, err := r.smember.Read()
 	if err != nil {
-		utresponse.GeneralNotFound(
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
 			entity,
 			ctx,
 			err,
@@ -141,7 +158,7 @@ func (r *memberroutes) getMembersRaw(ctx *gin.Context) {
 	utresponse.GeneralSuccessFetch(
 		entity,
 		ctx,
-		members,
+		resmemb,
 	)
 }
 
@@ -174,7 +191,16 @@ func (r *memberroutes) updateMember(ctx *gin.Context) {
 
 	_, err = r.smember.FindByID(uuid)
 	if err != nil {
-		utresponse.GeneralNotFound(
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
 			entity,
 			ctx,
 			err,
@@ -182,7 +208,7 @@ func (r *memberroutes) updateMember(ctx *gin.Context) {
 		return
 	}
 
-	mres, err := r.smember.Update(uuid, req)
+	resmemb, err := r.smember.Update(uuid, req)
 	if err != nil {
 		utresponse.GeneralFailedUpdate(
 			entity,
@@ -195,7 +221,7 @@ func (r *memberroutes) updateMember(ctx *gin.Context) {
 	utresponse.GeneralSuccessUpdate(
 		entity,
 		ctx,
-		mres,
+		resmemb,
 	)
 }
 
@@ -215,7 +241,16 @@ func (r *memberroutes) deleteMember(ctx *gin.Context) {
 
 	_, err = r.smember.FindByID(uuid)
 	if err != nil {
-		utresponse.GeneralNotFound(
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
 			entity,
 			ctx,
 			err,

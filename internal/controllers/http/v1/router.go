@@ -1,14 +1,12 @@
 package controllers
 
 import (
-	"mime/multipart"
 	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/internal/di"
 	"project-skbackend/internal/middlewares"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
@@ -23,21 +21,11 @@ func NewRouter(ge *gin.Engine, db *gorm.DB, cfg *configs.Config, di *di.Dependen
 
 	h := ge.Group("api/v1")
 	{
-		newUserRoutes(h, db, cfg, di.UserService, di.MailService)
+		newUserRoutes(h, cfg, di.UserService, di.MailService)
 		newAuthRoutes(h, cfg, di.AuthService)
-		newMemberRoutes(h, db, cfg, di.MemberService)
+		newMemberRoutes(h, cfg, di.MemberService)
 		newMealRoutes(h, cfg, di.MealService)
-		newPartnerRoutes(h, db, cfg, di.PartnerService)
+		newPartnerRoutes(h, cfg, di.PartnerService)
 		newCartRoutes(h, cfg, di.CartService)
 	}
-}
-
-func ValidateImage(fl validator.FieldLevel) bool {
-	file, ok := fl.Field().Interface().(*multipart.FileHeader)
-	if !ok {
-		return false
-	}
-
-	// Check if the uploaded file is an image (you may need to improve this check)
-	return file.Header.Get("Content-Type") == "image/jpeg" || file.Header.Get("Content-Type") == "image/png"
 }

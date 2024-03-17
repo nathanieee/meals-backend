@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -35,9 +36,11 @@ type (
 		Create(o models.Organization) (*models.Organization, error)
 		Read() ([]*models.Organization, error)
 		Update(o models.Organization) (*models.Organization, error)
+		Delete(o models.Organization) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(oid uuid.UUID) (*models.Organization, error)
+		FindByID(id uuid.UUID) (*models.Organization, error)
 		FindByEmail(email string) (*models.Organization, error)
+		FindByUserID(uid uuid.UUID) (*models.Organization, error)
 	}
 )
 
@@ -57,11 +60,18 @@ func (r *OrganizationRepository) Create(o models.Organization) (*models.Organiza
 		Create(o).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &o, nil
+	onew, err := r.FindByID(o.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return onew, nil
 }
 
 func (r *OrganizationRepository) Read() ([]*models.Organization, error) {
@@ -73,7 +83,7 @@ func (r *OrganizationRepository) Read() ([]*models.Organization, error) {
 		Find(&o).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -85,11 +95,18 @@ func (r *OrganizationRepository) Update(o models.Organization) (*models.Organiza
 		Save(&o).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &o, nil
+	onew, err := r.FindByID(o.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return onew, nil
 }
 
 func (r *OrganizationRepository) Delete(o models.Organization) error {
@@ -97,7 +114,7 @@ func (r *OrganizationRepository) Delete(o models.Organization) error {
 		Delete(&o).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
@@ -135,7 +152,7 @@ func (r *OrganizationRepository) FindAll(p utpagination.Pagination) (*utpaginati
 		Find(&o)
 
 	if err := result.Error; err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -146,16 +163,17 @@ func (r *OrganizationRepository) FindAll(p utpagination.Pagination) (*utpaginati
 	return &p, result.Error
 }
 
-func (r *OrganizationRepository) FindByID(oid uuid.UUID) (*models.Organization, error) {
+func (r *OrganizationRepository) FindByID(id uuid.UUID) (*models.Organization, error) {
 	var o *models.Organization
 
-	err := r.db.
-		Model(&models.Organization{}).
+	err := r.
+		preload().
 		Select(SELECTED_FIELDS).
-		First(&o, oid).Error
+		Where(&models.Organization{Model: base.Model{ID: id}}).
+		First(&o).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -172,7 +190,24 @@ func (r *OrganizationRepository) FindByEmail(email string) (*models.Organization
 		First(&o).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return o, nil
+}
+
+func (r *OrganizationRepository) FindByUserID(uid uuid.UUID) (*models.Organization, error) {
+	var o *models.Organization
+
+	err := r.
+		preload().
+		Select(SELECTED_FIELDS).
+		Where(&models.Organization{User: models.User{Model: base.Model{ID: uid}}}).
+		First(&o).Error
+
+	if err != nil {
+		utlogger.Error(err)
 		return nil, err
 	}
 

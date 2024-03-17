@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/helper"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/paginationrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -38,6 +38,8 @@ type (
 		Delete(p models.Partner) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		FindByID(pid uuid.UUID) (*models.Partner, error)
+		FindByEmail(email string) (*models.Partner, error)
+		FindByUserID(uid uuid.UUID) (*models.Partner, error)
 	}
 )
 
@@ -57,11 +59,18 @@ func (r *PartnerRepository) Create(p models.Partner) (*models.Partner, error) {
 		Create(&p).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &p, nil
+	pnew, err := r.FindByID(p.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return pnew, nil
 }
 
 func (r *PartnerRepository) Read() ([]*models.Partner, error) {
@@ -73,7 +82,7 @@ func (r *PartnerRepository) Read() ([]*models.Partner, error) {
 		Find(&p).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -85,11 +94,18 @@ func (r *PartnerRepository) Update(p models.Partner) (*models.Partner, error) {
 		Save(&p).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return nil, err
 	}
 
-	return &p, nil
+	pnew, err := r.FindByID(p.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return pnew, nil
 }
 
 func (r *PartnerRepository) Delete(p models.Partner) error {
@@ -97,7 +113,7 @@ func (r *PartnerRepository) Delete(p models.Partner) error {
 		Delete(&p).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
 		return err
 	}
 
@@ -134,11 +150,12 @@ func (r *PartnerRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 		Scopes(paginationrepo.Paginate(&pa, &p, result)).
 		Find(&pa)
 
-	if result.Error != nil {
-		utlogger.LogError(result.Error)
-		return nil, result.Error
+	if err := result.Error; err != nil {
+		utlogger.Error(err)
+		return nil, err
 	}
 
+	// * copy the data from model to response
 	copier.CopyWithOption(&pares, &pa, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	p.Data = pares
@@ -151,11 +168,45 @@ func (r *PartnerRepository) FindByID(pid uuid.UUID) (*models.Partner, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Partner{Model: helper.Model{ID: pid}}).
+		Where(&models.Partner{Model: base.Model{ID: pid}}).
 		First(&p).Error
 
 	if err != nil {
-		utlogger.LogError(err)
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return p, nil
+}
+
+func (r *PartnerRepository) FindByEmail(email string) (*models.Partner, error) {
+	var p *models.Partner
+
+	err := r.
+		preload().
+		Select(SELECTED_FIELDS).
+		Where(&models.Partner{User: models.User{Email: email}}).
+		First(&p).Error
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return p, nil
+}
+
+func (r *PartnerRepository) FindByUserID(uid uuid.UUID) (*models.Partner, error) {
+	var p *models.Partner
+
+	err := r.
+		preload().
+		Select(SELECTED_FIELDS).
+		Where(&models.Partner{User: models.User{Model: base.Model{ID: uid}}}).
+		First(&p).Error
+
+	if err != nil {
+		utlogger.Error(err)
 		return nil, err
 	}
 
