@@ -61,15 +61,14 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedlevel ...uint) gin.HandlerFun
 			return
 		}
 
-		if !slices.Contains(allowedlevel, uint(consttypes.UR_USER)) || !slices.Contains(allowedlevel, uint(consttypes.UR_ADMIN)) {
-			if !slices.Contains(allowedlevel, uint(tparsed.User.Role)) || (consttypes.DateNow.Unix() >= tparsed.Expires.Unix()) {
-				utresponse.GeneralUnauthorized(
-					ctx,
-					err,
-				)
-				ctx.Abort()
-				return
-			}
+		// TODO - fix this fucking function because it lets every role in
+		if !slices.Contains(allowedlevel, uint(tparsed.User.Role)) || (consttypes.DateNow.Unix() >= tparsed.Expires.Unix()) {
+			utresponse.GeneralUnauthorized(
+				ctx,
+				err,
+			)
+			ctx.Abort()
+			return
 		}
 
 		if !utrequest.CheckWhitelistUrl(ctx.Request.URL.Path) {

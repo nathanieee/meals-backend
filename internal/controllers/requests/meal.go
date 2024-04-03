@@ -40,7 +40,9 @@ func (req *CreateMeal) ToModel(
 	allergies []*models.MealAllergy,
 	partner models.Partner,
 ) (*models.Meal, error) {
-	var meal models.Meal
+	var (
+		meal models.Meal
+	)
 
 	if err := copier.CopyWithOption(&meal, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.Error(err)

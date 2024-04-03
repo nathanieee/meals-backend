@@ -75,7 +75,9 @@ func (r *OrganizationRepository) Create(o models.Organization) (*models.Organiza
 }
 
 func (r *OrganizationRepository) Read() ([]*models.Organization, error) {
-	var o []*models.Organization
+	var (
+		o []*models.Organization
+	)
 
 	err := r.
 		preload().
@@ -122,8 +124,10 @@ func (r *OrganizationRepository) Delete(o models.Organization) error {
 }
 
 func (r *OrganizationRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
-	var o []models.Organization
-	var ores []responses.Organization
+	var (
+		o    []models.Organization
+		ores []responses.Organization
+	)
 
 	result := r.
 		preload().
@@ -134,7 +138,7 @@ func (r *OrganizationRepository) FindAll(p utpagination.Pagination) (*utpaginati
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
-				Where(&models.Organization{Name: p.Search}),
+				Where("name LIKE ?", p.Search),
 			)
 	}
 
@@ -164,7 +168,9 @@ func (r *OrganizationRepository) FindAll(p utpagination.Pagination) (*utpaginati
 }
 
 func (r *OrganizationRepository) FindByID(id uuid.UUID) (*models.Organization, error) {
-	var o *models.Organization
+	var (
+		o *models.Organization
+	)
 
 	err := r.
 		preload().
@@ -181,7 +187,9 @@ func (r *OrganizationRepository) FindByID(id uuid.UUID) (*models.Organization, e
 }
 
 func (r *OrganizationRepository) FindByEmail(email string) (*models.Organization, error) {
-	var o *models.Organization
+	var (
+		o *models.Organization
+	)
 
 	err := r.
 		preload().
@@ -198,7 +206,9 @@ func (r *OrganizationRepository) FindByEmail(email string) (*models.Organization
 }
 
 func (r *OrganizationRepository) FindByUserID(uid uuid.UUID) (*models.Organization, error) {
-	var o *models.Organization
+	var (
+		o *models.Organization
+	)
 
 	err := r.
 		preload().

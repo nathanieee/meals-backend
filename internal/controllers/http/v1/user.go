@@ -54,7 +54,9 @@ func newUserRoutes(
 }
 
 func (r *userroutes) createUser(ctx *gin.Context) {
-	var req requests.CreateUser
+	var (
+		req requests.CreateUser
+	)
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {

@@ -32,7 +32,10 @@ func getGlobalHashedPassword(password string) string {
 }
 
 func checkEnumIsExist(db *gorm.DB, key string) bool {
-	var count int64
+	var (
+		count int64
+	)
+
 	if err := db.Table("pg_type").Where("typname = ?", key).Count(&count).Error; err != nil {
 		return false
 	}
@@ -256,13 +259,14 @@ func SeedPartnerCredentials(db *gorm.DB) error {
 func SeedMealData(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.Meal{}) && db.Migrator().HasTable(&models.Partner{}) {
 		if err := db.First(&models.Meal{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			var illness models.Illness
+			var (
+				illness models.Illness
+				allergy models.Allergy
+				partner models.Partner
+			)
+
 			db.First(&illness, uuidval)
-
-			var allergy models.Allergy
 			db.First(&allergy, uuidval)
-
-			var partner models.Partner
 			db.First(&partner, uuidval)
 
 			meals := []*models.Meal{
@@ -764,13 +768,14 @@ func SeedIllnessData(db *gorm.DB) error {
 func SeedCartData(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.Cart{}) && db.Migrator().HasTable(&models.Member{}) && db.Migrator().HasTable(&models.Caregiver{}) {
 		if err := db.First(&models.Cart{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			var member models.Member
+			var (
+				member    models.Member
+				caregiver models.Caregiver
+				meal      models.Meal
+			)
+
 			db.First(&member)
-
-			var caregiver models.Caregiver
 			db.First(&caregiver)
-
-			var meal models.Meal
 			db.First(&meal)
 
 			carts := []*models.Cart{

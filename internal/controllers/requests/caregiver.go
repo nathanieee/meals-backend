@@ -30,7 +30,9 @@ type (
 )
 
 func (req *CreateCaregiver) ToModel() (*models.Caregiver, error) {
-	var caregiver models.Caregiver
+	var (
+		caregiver models.Caregiver
+	)
 
 	user, err := req.User.ToModel(consttypes.UR_CAREGIVER)
 	if err != nil {
@@ -49,7 +51,9 @@ func (req *CreateCaregiver) ToModel() (*models.Caregiver, error) {
 }
 
 func (req *UpdateCaregiver) ToCreateCaregiver() (*CreateCaregiver, error) {
-	var create CreateCaregiver
+	var (
+		create CreateCaregiver
+	)
 
 	if err := copier.CopyWithOption(&create, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.Error(err)

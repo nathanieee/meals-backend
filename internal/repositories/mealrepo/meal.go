@@ -78,7 +78,9 @@ func (r *MealRepository) Create(m models.Meal) (*models.Meal, error) {
 }
 
 func (r *MealRepository) Read() ([]*models.Meal, error) {
-	var m []*models.Meal
+	var (
+		m []*models.Meal
+	)
 
 	err := r.
 		preload().
@@ -125,8 +127,10 @@ func (r *MealRepository) Delete(m models.Meal) error {
 }
 
 func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
-	var m []models.Meal
-	var mlres []responses.Meal
+	var (
+		m     []models.Meal
+		mlres []responses.Meal
+	)
 
 	result := r.
 		preload().
@@ -137,8 +141,8 @@ func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
-				Where(&models.Meal{Name: p.Search}).
-				Or(&models.Meal{Description: p.Search}),
+				Where("name LIKE ?", p.Search).
+				Or("description LIKE ?", p.Search),
 			)
 	}
 
@@ -173,7 +177,9 @@ func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 }
 
 func (r *MealRepository) FindByID(id uuid.UUID) (*models.Meal, error) {
-	var m *models.Meal
+	var (
+		m *models.Meal
+	)
 
 	err := r.
 		preload().
@@ -190,7 +196,9 @@ func (r *MealRepository) FindByID(id uuid.UUID) (*models.Meal, error) {
 }
 
 func (r *MealRepository) FindByPartnerID(pid uuid.UUID) (*models.Meal, error) {
-	var m *models.Meal
+	var (
+		m *models.Meal
+	)
 
 	err := r.
 		preload().

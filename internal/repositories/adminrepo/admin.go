@@ -77,7 +77,9 @@ func (r *AdminRepository) Create(a models.Admin) (*models.Admin, error) {
 }
 
 func (r *AdminRepository) Read() ([]*models.Admin, error) {
-	var a []*models.Admin
+	var (
+		a []*models.Admin
+	)
 
 	err := r.
 		preload().
@@ -124,8 +126,10 @@ func (r *AdminRepository) Delete(a models.Admin) error {
 }
 
 func (r *AdminRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
-	var a []models.Admin
-	var ares []responses.Admin
+	var (
+		a    []models.Admin
+		ares []responses.Admin
+	)
 
 	result := r.
 		preload().
@@ -136,8 +140,8 @@ func (r *AdminRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagi
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
-				Where(&models.Admin{FirstName: p.Search}).
-				Or(&models.Admin{LastName: p.Search}),
+				Where("first_name LIKE ?", p.Search).
+				Or("last_name LIKE ?", p.Search),
 			)
 	}
 
@@ -167,7 +171,9 @@ func (r *AdminRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagi
 }
 
 func (r *AdminRepository) FindByID(id uuid.UUID) (*models.Admin, error) {
-	var a *models.Admin
+	var (
+		a *models.Admin
+	)
 
 	err := r.
 		preload().
@@ -184,7 +190,9 @@ func (r *AdminRepository) FindByID(id uuid.UUID) (*models.Admin, error) {
 }
 
 func (r *AdminRepository) FindByEmail(email string) (*models.Admin, error) {
-	var a *models.Admin
+	var (
+		a *models.Admin
+	)
 
 	err := r.
 		preload().
@@ -201,7 +209,9 @@ func (r *AdminRepository) FindByEmail(email string) (*models.Admin, error) {
 }
 
 func (r *AdminRepository) FindByUserID(uid uuid.UUID) (*models.Admin, error) {
-	var a *models.Admin
+	var (
+		a *models.Admin
+	)
 
 	err := r.
 		preload().

@@ -24,7 +24,7 @@ type (
 		Password string              `json:"password" gorm:"size:255;required;" example:"password"`
 		Role     consttypes.UserRole `json:"role" gorm:"required;type:user_role_enum" example:"0" default:"0"`
 
-		ConfirmationToken  int       `json:"-"`
+		ConfirmationToken  string    `json:"-"`
 		ConfirmedAt        time.Time `json:"confirmed_at"`
 		ConfirmationSentAt time.Time `json:"-"`
 
@@ -43,7 +43,10 @@ type (
 )
 
 func (u *User) ToResponse() (*responses.User, error) {
-	var ures responses.User
+	var (
+		ures responses.User
+	)
+
 	err := copier.CopyWithOption(&ures, &u, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 	if err != nil {
 		utlogger.Error(err)

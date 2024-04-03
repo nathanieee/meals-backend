@@ -40,7 +40,9 @@ func (s *ConsumerService) ConsumeTask() {
 }
 
 func (s *ConsumerService) ConsumeMail() {
-	var qname = s.cfg.Queue.Mail.QueueName
+	var (
+		qname = s.cfg.Queue.Mail.QueueName
+	)
 
 	// Listen to Queue
 	messages, err := s.ch.Consume(
@@ -59,7 +61,10 @@ func (s *ConsumerService) ConsumeMail() {
 		for d := range messages {
 			utlogger.Info(fmt.Sprintf("Received a message: %s", d.Body))
 
-			var data requests.SendEmail
+			var (
+				data requests.SendEmail
+			)
+
 			err := json.Unmarshal(d.Body, &data)
 			if err != nil {
 				utlogger.Error(fmt.Errorf("Unable to unmarshal message: %w", err))

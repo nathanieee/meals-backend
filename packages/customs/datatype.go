@@ -14,7 +14,10 @@ type (
 
 /* -------------------------------- CDT_DATE -------------------------------- */
 func (self *CDT_DATE) UnmarshalJSON(data []byte) error {
-	var datestr string
+	var (
+		datestr string
+	)
+
 	if err := json.Unmarshal(data, &datestr); err != nil {
 		return err
 	}

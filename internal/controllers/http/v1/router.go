@@ -22,7 +22,7 @@ func NewRouter(ge *gin.Engine, db *gorm.DB, cfg *configs.Config, di *di.Dependen
 	h := ge.Group("api/v1")
 	{
 		newUserRoutes(h, cfg, di.UserService, di.MailService)
-		newAuthRoutes(h, cfg, di.AuthService)
+		newAuthRoutes(h, cfg, di.AuthService, di.UserService)
 		newMemberRoutes(h, cfg, di.MemberService)
 		newMealRoutes(h, cfg, di.MealService)
 		newPartnerRoutes(h, cfg, di.PartnerService)

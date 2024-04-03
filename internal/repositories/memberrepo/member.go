@@ -86,7 +86,9 @@ func (r *MemberRepository) Create(m models.Member) (*models.Member, error) {
 }
 
 func (r *MemberRepository) Read() ([]*models.Member, error) {
-	var m []*models.Member
+	var (
+		m []*models.Member
+	)
 
 	err := r.
 		preload().
@@ -133,8 +135,10 @@ func (r *MemberRepository) Delete(m models.Member) error {
 }
 
 func (r *MemberRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
-	var m []models.Member
-	var mres []responses.Member
+	var (
+		m    []models.Member
+		mres []responses.Member
+	)
 
 	result := r.
 		preload().
@@ -145,8 +149,8 @@ func (r *MemberRepository) FindAll(p utpagination.Pagination) (*utpagination.Pag
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
-				Where(&models.Member{FirstName: p.Search}).
-				Or(&models.Member{LastName: p.Search}),
+				Where("first_name LIKE ?", p.Search).
+				Or("last_name LIKE ?", p.Search),
 			)
 	}
 
@@ -176,7 +180,9 @@ func (r *MemberRepository) FindAll(p utpagination.Pagination) (*utpagination.Pag
 }
 
 func (r *MemberRepository) FindByID(id uuid.UUID) (*models.Member, error) {
-	var m *models.Member
+	var (
+		m *models.Member
+	)
 
 	err := r.
 		preload().
@@ -193,7 +199,9 @@ func (r *MemberRepository) FindByID(id uuid.UUID) (*models.Member, error) {
 }
 
 func (r *MemberRepository) FindByEmail(email string) (*models.Member, error) {
-	var m *models.Member
+	var (
+		m *models.Member
+	)
 
 	err := r.
 		preload().
@@ -210,7 +218,9 @@ func (r *MemberRepository) FindByEmail(email string) (*models.Member, error) {
 }
 
 func (r *MemberRepository) FindByUserID(uid uuid.UUID) (*models.Member, error) {
-	var m *models.Member
+	var (
+		m *models.Member
+	)
 
 	err := r.
 		preload().

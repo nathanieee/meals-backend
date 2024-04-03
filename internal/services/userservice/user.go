@@ -2,7 +2,6 @@ package userservice
 
 import (
 	"encoding/json"
-	"fmt"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
@@ -37,6 +36,7 @@ type (
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		Delete(uid uuid.UUID) error
 		Update(req requests.UpdateUser, uid uuid.UUID) (*responses.User, error)
+		GetUserName(uid uuid.UUID) (string, string, error)
 	}
 )
 
@@ -61,7 +61,9 @@ func NewUserService(
 }
 
 func (s *UserService) Create(req requests.CreateUser) (*responses.User, error) {
-	var ures *responses.User
+	var (
+		ures *responses.User
+	)
 
 	u := &models.User{
 		Email:    req.Email,
@@ -145,55 +147,66 @@ func (s *UserService) Update(
 	return ures, err
 }
 
-func (s *UserService) GetUserName(uid uuid.UUID) (string, error) {
-	var name string
+func (s *UserService) GetUserName(uid uuid.UUID) (string, string, error) {
+	var (
+		firstname string = ""
+		lastname  string = ""
+	)
 
 	user, err := s.ruser.FindByID(uid)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	switch user.Role {
 	case consttypes.UR_ADMIN:
 		a, err := s.radmn.FindByUserID(uid)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 
-		name = fmt.Sprintf("%s %s", a.FirstName, a.LastName)
+		firstname = a.FirstName
+		lastname = a.LastName
 	case consttypes.UR_CAREGIVER:
 		c, err := s.rcare.FindByUserID(uid)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 
-		name = fmt.Sprintf("%s %s", c.FirstName, c.LastName)
+		firstname = c.FirstName
+		lastname = c.LastName
 	case consttypes.UR_MEMBER:
 		m, err := s.rmemb.FindByUserID(uid)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 
-		name = fmt.Sprintf("%s %s", m.FirstName, m.LastName)
+		firstname = m.FirstName
+		lastname = m.LastName
 	case consttypes.UR_ORGANIZATION:
 		o, err := s.rorga.FindByUserID(uid)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 
-		name = o.Name
+		firstname = o.Name
 	case consttypes.UR_PARTNER:
 		p, err := s.rpart.FindByUserID(uid)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 
-		name = p.Name
+		firstname = p.Name
 	case consttypes.UR_PATRON:
-		// p, err := s.rpatr.FindByUserID(uid) // TODO - update this with patron data
+		p, err := s.rpart.FindByUserID(uid)
+		if err != nil {
+			return "", "", err
+		}
+
+		firstname = p.Name
 	default:
-		return "", utresponse.ErrUserInvalidRole
+		return "", "", utresponse.ErrUserInvalidRole
 	}
 
-	return name, nil
+	return firstname, lastname, nil
 }

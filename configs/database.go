@@ -59,7 +59,9 @@ func (db DB) AutoSeedData(gdb *gorm.DB) error {
 		SeedIllnessData,
 	}
 
-	var errs []error
+	var (
+		errs []error
+	)
 
 	for _, seedfunc := range seedfuncs {
 		if err := seedfunc(gdb); err != nil {

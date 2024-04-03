@@ -70,7 +70,9 @@ func (r *IllnessRepository) Create(ill models.Illness) (*models.Illness, error) 
 }
 
 func (r *IllnessRepository) Read() ([]*models.Illness, error) {
-	var ill []*models.Illness
+	var (
+		ill []*models.Illness
+	)
 
 	err := r.
 		preload().
@@ -117,8 +119,10 @@ func (r *IllnessRepository) Delete(ill models.Illness) error {
 }
 
 func (r *IllnessRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
-	var ill []models.Illness
-	var illres []responses.Illness
+	var (
+		ill    []models.Illness
+		illres []responses.Illness
+	)
 
 	result := r.
 		preload().
@@ -129,8 +133,8 @@ func (r *IllnessRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
-				Where(&models.Illness{Name: p.Search}).
-				Or(&models.Illness{Description: p.Search}),
+				Where("name LIKE ?", p.Search).
+				Or("description LIKE ?", p.Search),
 			)
 	}
 
@@ -160,7 +164,9 @@ func (r *IllnessRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 }
 
 func (r *IllnessRepository) FindByID(id uuid.UUID) (*models.Illness, error) {
-	var ill *models.Illness
+	var (
+		ill *models.Illness
+	)
 
 	err := r.
 		preload().

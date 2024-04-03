@@ -27,7 +27,9 @@ func (c *Cart) ToResponse(
 	member *responses.Member,
 	caregiver *responses.Caregiver,
 ) (*responses.Cart, error) {
-	var cres responses.Cart
+	var (
+		cres responses.Cart
+	)
 
 	if err := copier.CopyWithOption(&cres, &c, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.Error(err)

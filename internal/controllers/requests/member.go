@@ -53,7 +53,9 @@ func (req *CreateMember) ToModel(
 	illnesses []*models.MemberIllness,
 	organization *models.Organization,
 ) (*models.Member, error) {
-	var member models.Member
+	var (
+		member models.Member
+	)
 
 	if err := copier.CopyWithOption(&member, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.Error(err)

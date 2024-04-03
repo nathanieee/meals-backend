@@ -34,7 +34,9 @@ func NewImageService(cfg *configs.Config) *ImageService {
 }
 
 func (s *ImageService) Upload(fileheader *multipart.FileHeader, imgtype consttypes.ImageType, ctx *gin.Context) error {
-	var uppath, filename string
+	var (
+		uppath, filename string
+	)
 
 	// * switch the image type based on the image type
 	switch imgtype {

@@ -166,8 +166,8 @@ var (
 	ErrInvalidFileType = fmt.Errorf("invalid file type")
 
 	// Email
-	ErrCannotChangeEmail  = fmt.Errorf("cannot change existing email")
-	ErrTooQuickResetEmail = fmt.Errorf("a request for a password reset email was generated just under %v minutes ago", resetPasswordCooldown)
+	ErrCannotChangeEmail = fmt.Errorf("cannot change existing email")
+	ErrTooQuickSendEmail = fmt.Errorf("an email was sent just under %v minutes ago", resetPasswordCooldown)
 )
 
 func ErrorResponse(ctx *gin.Context, code int, res ErrorRes) {
@@ -197,7 +197,9 @@ func getErrorMsg(fe validator.FieldError) string {
 }
 
 func ValidationResponse(err error) []ValidationErrorMessage {
-	var ve validator.ValidationErrors
+	var (
+		ve validator.ValidationErrors
+	)
 
 	if errors.As(err, &ve) {
 		out := make([]ValidationErrorMessage, len(ve))

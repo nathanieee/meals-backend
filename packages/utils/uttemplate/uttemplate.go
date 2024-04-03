@@ -9,7 +9,9 @@ import (
 )
 
 func ParseTemplateDir(dir string, file string) (*template.Template, error) {
-	var paths []string
+	var (
+		paths []string
+	)
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err

@@ -31,6 +31,6 @@ type (
 	SendEmailVerification struct {
 		Name  string `validate:"required"`
 		Email string `validate:"required,email"`
-		Token int    `validate:"required"`
+		Token string `validate:"required"`
 	}
 )

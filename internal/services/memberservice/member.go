@@ -59,11 +59,13 @@ func NewMemberService(
 }
 
 func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, error) {
-	var illnesses []*models.MemberIllness
-	var allergies []*models.MemberAllergy
-	var caregiver *models.Caregiver
-	var organization *models.Organization
-	var err error
+	var (
+		illnesses    []*models.MemberIllness
+		allergies    []*models.MemberAllergy
+		caregiver    *models.Caregiver
+		organization *models.Organization
+		err          error
+	)
 
 	user, err := req.User.ToModel(consttypes.UR_MEMBER)
 	if err != nil {
@@ -141,11 +143,13 @@ func (s *MemberService) Read() ([]*responses.Member, error) {
 }
 
 func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*responses.Member, error) {
-	var illnesses []*models.MemberIllness
-	var allergies []*models.MemberAllergy
-	var caregiver *models.Caregiver
-	var organization *models.Organization
-	var err error
+	var (
+		illnesses    []*models.MemberIllness
+		allergies    []*models.MemberAllergy
+		caregiver    *models.Caregiver
+		organization *models.Organization
+		err          error
+	)
 
 	member, err := s.rmemb.FindByID(id)
 	if err != nil {
@@ -190,7 +194,9 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
-		var found = false
+		var (
+			found = false
+		)
 
 		for _, mill := range member.Illnesses {
 			if *ill == mill.Illness.ID {
@@ -215,7 +221,9 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 
 	// * find allergy object and append to the array.
 	for _, all := range req.AllergyID {
-		var found = false
+		var (
+			found = false
+		)
 
 		for _, mall := range member.Allergies {
 			if *all == mall.Allergy.ID {

@@ -29,20 +29,22 @@ func newMealRoutes(
 		smeal: smeal,
 	}
 
-	gadmn := rg.Group("meals")
+	h := rg.Group("meals")
 	{
-		gadmn.POST("", r.createMeal)
-		gadmn.GET("", r.getMeals)
-		gadmn.GET("raw", r.getMealsRaw)
-		gadmn.PUT("/:uuid", r.updateMeal)
-		gadmn.DELETE("/:uuid", r.deleteMeal)
+		h.POST("", r.createMeal)
+		h.GET("", r.getMeals)
+		h.GET("raw", r.getMealsRaw)
+		h.PUT("/:uuid", r.updateMeal)
+		h.DELETE("/:uuid", r.deleteMeal)
 	}
 }
 
 func (r *mealroutes) createMeal(ctx *gin.Context) {
-	var function = "create meal"
-	var entity = "meal"
-	var req requests.CreateMeal
+	var (
+		function = "create meal"
+		entity   = "meal"
+		req      requests.CreateMeal
+	)
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -74,8 +76,10 @@ func (r *mealroutes) createMeal(ctx *gin.Context) {
 }
 
 func (r *mealroutes) getMeals(ctx *gin.Context) {
-	var entity = "meals"
-	var reqpage = utrequest.GeneratePaginationFromRequest(ctx)
+	var (
+		entity  = "meals"
+		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
+	)
 
 	meals, err := r.smeal.FindAll(reqpage)
 	if err != nil {
@@ -104,7 +108,9 @@ func (r *mealroutes) getMeals(ctx *gin.Context) {
 }
 
 func (r *mealroutes) getMealsRaw(ctx *gin.Context) {
-	var entity = "meals"
+	var (
+		entity = "meals"
+	)
 
 	meals, err := r.smeal.Read()
 	if err != nil {
@@ -133,9 +139,11 @@ func (r *mealroutes) getMealsRaw(ctx *gin.Context) {
 }
 
 func (r *mealroutes) updateMeal(ctx *gin.Context) {
-	var function = "update meal"
-	var entity = "meal"
-	var req requests.UpdateMeal
+	var (
+		function = "update meal"
+		entity   = "meal"
+		req      requests.UpdateMeal
+	)
 
 	err := ctx.ShouldBind(&req)
 	if err != nil {
@@ -196,8 +204,10 @@ func (r *mealroutes) updateMeal(ctx *gin.Context) {
 }
 
 func (r *mealroutes) deleteMeal(ctx *gin.Context) {
-	var function = "delete meal"
-	var entity = "meal"
+	var (
+		function = "delete meal"
+		entity   = "meal"
+	)
 
 	uuid, err := uuid.Parse(ctx.Param("uuid"))
 	if err != nil {

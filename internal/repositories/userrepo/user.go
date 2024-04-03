@@ -77,7 +77,9 @@ func (r *UserRepository) Create(u models.User) (*models.User, error) {
 }
 
 func (r *UserRepository) Read() ([]*models.User, error) {
-	var u []*models.User
+	var (
+		u []*models.User
+	)
 
 	err := r.
 		preload().
@@ -124,8 +126,10 @@ func (r *UserRepository) Delete(u models.User) error {
 }
 
 func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
-	var u []models.User
-	var ures []responses.User
+	var (
+		u    []models.User
+		ures []responses.User
+	)
 
 	result := r.
 		preload().
@@ -136,7 +140,7 @@ func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
-				Where(&models.User{Email: p.Search}),
+				Where("email LIKE ?", p.Search),
 			)
 	}
 
@@ -166,7 +170,9 @@ func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 }
 
 func (r *UserRepository) FindByID(id uuid.UUID) (*models.User, error) {
-	var u *models.User
+	var (
+		u *models.User
+	)
 
 	err := r.
 		preload().
@@ -183,7 +189,9 @@ func (r *UserRepository) FindByID(id uuid.UUID) (*models.User, error) {
 }
 
 func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
-	var u *models.User
+	var (
+		u *models.User
+	)
 
 	err := r.
 		preload().

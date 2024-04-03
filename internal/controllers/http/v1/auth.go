@@ -3,8 +3,12 @@ package controllers
 import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
+	"project-skbackend/internal/middlewares"
 	"project-skbackend/internal/services/authservice"
+	"project-skbackend/internal/services/userservice"
+	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utresponse"
+	"project-skbackend/packages/utils/uttoken"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,6 +17,7 @@ type (
 	authroutes struct {
 		cfg   *configs.Config
 		sauth authservice.IAuthService
+		suser userservice.IUserService
 	}
 )
 
@@ -20,29 +25,45 @@ func newAuthRoutes(
 	rg *gin.RouterGroup,
 	cfg *configs.Config,
 	sauth authservice.IAuthService,
+	suser userservice.IUserService,
 ) {
 	r := &authroutes{
 		cfg:   cfg,
 		sauth: sauth,
+		suser: suser,
 	}
 
-	guser := rg.Group("auth")
+	h := rg.Group("auth")
 	{
-		guser.POST("signin", r.signin)
+		h.POST("signin", r.signin)
 
-		// TODO - add a verify route group to verify email
+		gverif := h.Group("verify").Use(middlewares.JWTAuthMiddleware(cfg,
+			uint(consttypes.UR_ADMIN),
+			uint(consttypes.UR_CAREGIVER),
+			uint(consttypes.UR_MEMBER),
+			uint(consttypes.UR_ORGANIZATION),
+			uint(consttypes.UR_PARTNER),
+			uint(consttypes.UR_PATRON),
+			uint(consttypes.UR_USER),
+		))
+		{
+			gverif.POST("", r.verifyToken)
+			gverif.POST("send", r.sendVerifyEmail)
+		}
 
-		guser.POST("forgot-password", r.forgotPassword)
-		guser.POST("reset-password", r.resetPassword)
-		guser.GET("refresh-token", r.refreshAuthToken)
+		h.POST("forgot-password", r.forgotPassword)
+		h.POST("reset-password", r.resetPassword)
+		h.GET("refresh-token", r.refreshAuthToken)
 	}
 }
 
 func (r *authroutes) signin(
 	ctx *gin.Context,
 ) {
-	var function = "signin"
-	var req requests.Signin
+	var (
+		function = "signin"
+		req      requests.Signin
+	)
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -78,8 +99,10 @@ func (r *authroutes) signin(
 func (r *authroutes) forgotPassword(
 	ctx *gin.Context,
 ) {
-	var function = "forgot password"
-	var req requests.ForgotPassword
+	var (
+		function = "forgot password"
+		req      requests.ForgotPassword
+	)
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -113,8 +136,10 @@ func (r *authroutes) forgotPassword(
 func (r *authroutes) resetPassword(
 	ctx *gin.Context,
 ) {
-	var function = "reset password"
-	var req requests.ResetPassword
+	var (
+		function = "reset password"
+		req      requests.ResetPassword
+	)
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -148,10 +173,12 @@ func (r *authroutes) resetPassword(
 func (r *authroutes) refreshAuthToken(
 	ctx *gin.Context,
 ) {
-	var function = "refresh token"
+	var (
+		function = "refresh token"
+	)
 
-	refreshToken, err := ctx.Cookie("refresh-token")
-	if refreshToken == "" || err != nil {
+	trefresh, err := ctx.Cookie("refresh-token")
+	if trefresh == "" || err != nil {
 		utresponse.GeneralUnauthorized(
 			ctx,
 			utresponse.ErrTokenNotFound,
@@ -159,7 +186,7 @@ func (r *authroutes) refreshAuthToken(
 		return
 	}
 
-	resuser, thead, err := r.sauth.RefreshAuthToken(refreshToken, ctx)
+	resuser, thead, err := r.sauth.RefreshAuthToken(trefresh, ctx)
 	if err != nil {
 		utresponse.GeneralInternalServerError(
 			function,
@@ -176,5 +203,77 @@ func (r *authroutes) refreshAuthToken(
 		ctx,
 		resauth,
 		thead,
+	)
+}
+
+func (r *authroutes) verifyToken(ctx *gin.Context) {
+	var (
+		function = "verify token"
+		req      requests.VerifyToken
+	)
+
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	resuser, theader, err := r.sauth.VerifyToken(req, ctx)
+	if err != nil {
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			nil,
+			err,
+		)
+		return
+	}
+
+	resauth := theader.ToAuthResponse(*resuser)
+	utresponse.GeneralSuccessAuth(
+		function,
+		ctx,
+		resauth,
+		theader,
+	)
+}
+
+func (r *authroutes) sendVerifyEmail(ctx *gin.Context) {
+	var (
+		function = "send verify email"
+	)
+
+	user, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.sauth.SendVerificationEmail(user.ID)
+	if err != nil {
+		var (
+			entity = "user"
+		)
+		utresponse.GeneralNotFound(
+			entity,
+			ctx,
+			utresponse.ErrUserNotFound,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccess(
+		function,
+		ctx,
+		nil,
 	)
 }

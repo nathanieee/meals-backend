@@ -1,6 +1,7 @@
 package authservice
 
 import (
+	"errors"
 	"fmt"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
@@ -8,6 +9,7 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/mailservice"
+	"project-skbackend/internal/services/userservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/utstring"
@@ -15,6 +17,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -24,6 +27,7 @@ type (
 		cfg   *configs.Config
 		rdb   *redis.Client
 		ruser userrepo.IUserRepository
+		suser userservice.IUserService
 		smail mailservice.IMailService
 
 		vtl int
@@ -34,21 +38,25 @@ type (
 		Signin(req requests.Signin, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
 		ForgotPassword(req requests.ForgotPassword) error
 		ResetPassword(req requests.ResetPassword) error
-		SendResetPasswordEmail(user models.User, token string) error
+		SendResetPasswordEmail(user models.User) error
 		RefreshAuthToken(trefresh string, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
+		SendVerificationEmail(id uuid.UUID) error
+		VerifyToken(req requests.VerifyToken, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error)
 	}
 )
 
 func NewAuthService(
 	cfg *configs.Config,
+	rdb *redis.Client,
 	ruser userrepo.IUserRepository,
 	smail mailservice.IMailService,
-	rdb *redis.Client,
+	suser userservice.IUserService,
 ) *AuthService {
 	return &AuthService{
 		cfg:   cfg,
 		ruser: ruser,
 		smail: smail,
+		suser: suser,
 		rdb:   rdb,
 
 		vtl: cfg.VerifyTokenLength,
@@ -86,12 +94,7 @@ func (s *AuthService) ForgotPassword(req requests.ForgotPassword) error {
 		return err
 	}
 
-	token, err := utstring.GenerateRandomToken(s.vtl)
-	if err != nil {
-		return err
-	}
-
-	err = s.SendResetPasswordEmail(*user, token)
+	err = s.SendResetPasswordEmail(*user)
 	if err != nil {
 		return err
 	}
@@ -110,7 +113,7 @@ func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
 	}
 
 	if !consttypes.DateNow.Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.ResetPassword.Cooldown))) {
-		return utresponse.ErrTooQuickResetEmail
+		return utresponse.ErrTooQuickSendEmail
 	}
 
 	user, err = req.ToUserModel(*user)
@@ -126,15 +129,20 @@ func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
 	return nil
 }
 
-func (s *AuthService) SendResetPasswordEmail(user models.User, token string) error {
+func (s *AuthService) SendResetPasswordEmail(user models.User) error {
+	token, err := utstring.GenerateRandomToken(s.vtl)
+	if err != nil {
+		return err
+	}
+
 	if consttypes.DateNow.Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.ResetPassword.Cooldown))) {
-		return utresponse.ErrTooQuickResetEmail
+		return utresponse.ErrTooQuickSendEmail
 	}
 
 	user.ResetPasswordToken = token
 	user.ResetPasswordSentAt = consttypes.DateNow
 
-	_, err := s.ruser.Update(user)
+	_, err = s.ruser.Update(user)
 	if err != nil {
 		return err
 	}
@@ -293,4 +301,91 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 	)
 
 	return theader, err
+}
+
+func (s *AuthService) SendVerificationEmail(id uuid.UUID) error {
+	tverif, err := utstring.GenerateRandomToken(s.vtl)
+	if err != nil {
+		return err
+	}
+
+	user, err := s.ruser.FindByID(id)
+	if err != nil {
+		return err
+	}
+
+	if consttypes.DateNow.Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
+		return utresponse.ErrTooQuickSendEmail
+	}
+
+	user.ConfirmationToken = tverif
+	user.ConfirmationSentAt = consttypes.DateNow
+
+	user, err = s.ruser.Update(*user)
+	if err != nil {
+		return err
+	}
+
+	userres, err := user.ToResponse()
+	if err != nil {
+		return err
+	}
+
+	firstname, lastname, err := s.suser.GetUserName(user.ID)
+	if err != nil {
+		return err
+	}
+
+	name := utstring.AppendName(firstname, lastname)
+	emailData := requests.SendEmailVerification{
+		Name:  name,
+		Email: userres.Email,
+		Token: tverif,
+	}
+
+	err = s.smail.SendVerifyEmail(emailData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *AuthService) VerifyToken(req requests.VerifyToken, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
+	user, err := s.ruser.FindByEmail(req.Email)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if !consttypes.DateNow.Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
+		return nil, nil, errors.New("this token is expired")
+	}
+
+	if !user.ConfirmedAt.Equal(time.Time{}) {
+		return nil, nil, errors.New("this user is already confirmed")
+	}
+
+	if req.Token != user.ConfirmationToken {
+		return nil, nil, errors.New("this token is not the same")
+	}
+
+	user.ConfirmationSentAt = consttypes.DateNow
+	user.ConfirmationToken = ""
+
+	user, err = s.ruser.Update(*user)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	theader, err := s.generateAuthTokens(user, ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	userres, err := user.ToResponse()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return userres, theader, nil
 }

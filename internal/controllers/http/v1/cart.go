@@ -33,7 +33,9 @@ func newCartRoutes(
 }
 
 func (r *cartroutes) getCartsRaw(ctx *gin.Context) {
-	var entity = "carts"
+	var (
+		entity = "carts"
+	)
 
 	carts, err := r.scart.Read()
 	if err != nil {

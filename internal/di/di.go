@@ -64,7 +64,7 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	suser := userservice.NewUserService(ruser, radmin, rcare, rmemb, rorg, rpart)
 	spart := partnerservice.NewPartnerService(rpart)
 	smail := mailservice.NewMailService(cfg, ruser, sprod)
-	sauth := authservice.NewAuthService(cfg, ruser, smail, rdb)
+	sauth := authservice.NewAuthService(cfg, rdb, ruser, smail, suser)
 	smeal := mealservice.NewMealService(rmeal, rill, rall, rpart)
 	smemb := memberservice.NewMemberService(rmemb, ruser, rcare, rall, rill, *rorg)
 	scart := cartservice.NewCartService(rcart, rcare, rmemb)

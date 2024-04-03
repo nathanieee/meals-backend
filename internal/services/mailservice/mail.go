@@ -68,7 +68,9 @@ func parseTemplate(templateFileName string, data any) (string, error) {
 func (s *MailService) SendEmail(
 	req requests.SendEmail,
 ) error {
-	var body bytes.Buffer
+	var (
+		body bytes.Buffer
+	)
 
 	templates, err := uttemplate.ParseTemplateDir("templates", req.Template)
 	if err != nil {

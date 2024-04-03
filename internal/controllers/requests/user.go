@@ -36,7 +36,9 @@ type (
 func (req *CreateUser) ToModel(
 	role consttypes.UserRole,
 ) (*models.User, error) {
-	var user models.User
+	var (
+		user models.User
+	)
 
 	hash, err := utstring.HashPassword(req.Password)
 	if err != nil {

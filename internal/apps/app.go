@@ -47,7 +47,7 @@ func Run(cfg *configs.Config) {
 
 	// * setup consumer
 	// TODO - setup the consumer, it gives a "use of closed network connection" error
-	// di.ConsumerService.ConsumeTask()
+	di.ConsumerService.ConsumeTask()
 
 	var forever chan struct{}
 

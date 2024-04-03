@@ -77,7 +77,9 @@ func (r *CaregiverRepository) Create(cg models.Caregiver) (*models.Caregiver, er
 }
 
 func (r *CaregiverRepository) Read() ([]*models.Caregiver, error) {
-	var cg []*models.Caregiver
+	var (
+		cg []*models.Caregiver
+	)
 
 	err := r.
 		preload().
@@ -117,8 +119,10 @@ func (r *CaregiverRepository) Delete(cg models.Caregiver) error {
 }
 
 func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
-	var cg []models.Caregiver
-	var cgres []responses.Caregiver
+	var (
+		cg    []models.Caregiver
+		cgres []responses.Caregiver
+	)
 
 	result := r.
 		preload().
@@ -129,8 +133,8 @@ func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
-				Where(&models.Caregiver{FirstName: p.Search}).
-				Or(&models.Caregiver{LastName: p.Search}),
+				Where("first_name LIKE ?", p.Search).
+				Or("last_name LIKE ?", p.Search),
 			)
 	}
 
@@ -160,7 +164,9 @@ func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.
 }
 
 func (r *CaregiverRepository) FindByID(id uuid.UUID) (*models.Caregiver, error) {
-	var cg *models.Caregiver
+	var (
+		cg *models.Caregiver
+	)
 
 	err := r.
 		preload().
@@ -177,7 +183,9 @@ func (r *CaregiverRepository) FindByID(id uuid.UUID) (*models.Caregiver, error) 
 }
 
 func (r *CaregiverRepository) FindByEmail(email string) (*models.Caregiver, error) {
-	var cg *models.Caregiver
+	var (
+		cg *models.Caregiver
+	)
 
 	err := r.
 		preload().
@@ -194,7 +202,9 @@ func (r *CaregiverRepository) FindByEmail(email string) (*models.Caregiver, erro
 }
 
 func (r *CaregiverRepository) FindByUserID(uid uuid.UUID) (*models.Caregiver, error) {
-	var cg *models.Caregiver
+	var (
+		cg *models.Caregiver
+	)
 
 	err := r.
 		preload().

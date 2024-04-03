@@ -48,10 +48,12 @@ func NewMealService(
 }
 
 func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
-	var illnesses []*models.MealIllness
-	var allergies []*models.MealAllergy
-	var images []*models.MealImage
-	var partner *models.Partner
+	var (
+		illnesses []*models.MealIllness
+		allergies []*models.MealAllergy
+		images    []*models.MealImage
+		partner   *models.Partner
+	)
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
@@ -107,10 +109,12 @@ func (s *MealService) Read() ([]*models.Meal, error) {
 }
 
 func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.Meal, error) {
-	var images []*models.MealImage
-	var illnesses []*models.MealIllness
-	var allergies []*models.MealAllergy
-	var partner *models.Partner
+	var (
+		images    []*models.MealImage
+		illnesses []*models.MealIllness
+		allergies []*models.MealAllergy
+		partner   *models.Partner
+	)
 
 	meal, err := s.rmeal.FindByID(id)
 	if err != nil {

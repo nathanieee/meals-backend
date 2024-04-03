@@ -70,7 +70,9 @@ func (r *AllergyRepository) Create(al models.Allergy) (*models.Allergy, error) {
 }
 
 func (r *AllergyRepository) Read() ([]*models.Allergy, error) {
-	var al []*models.Allergy
+	var (
+		al []*models.Allergy
+	)
 
 	err := r.
 		preload().
@@ -117,8 +119,10 @@ func (r *AllergyRepository) Delete(al models.Allergy) error {
 }
 
 func (r *AllergyRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
-	var al []models.Allergy
-	var alres []responses.Admin
+	var (
+		al    []models.Allergy
+		alres []responses.Admin
+	)
 
 	result := r.
 		preload().
@@ -129,8 +133,8 @@ func (r *AllergyRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
 			Where(r.db.
-				Where(&models.Allergy{Name: p.Search}).
-				Or(&models.Allergy{Description: p.Search}),
+				Where("name LIKE ?", p.Search).
+				Or("description LIKE ?", p.Search),
 			)
 	}
 
@@ -160,7 +164,9 @@ func (r *AllergyRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 }
 
 func (r *AllergyRepository) FindByID(id uuid.UUID) (*models.Allergy, error) {
-	var al *models.Allergy
+	var (
+		al *models.Allergy
+	)
 
 	err := r.
 		preload().

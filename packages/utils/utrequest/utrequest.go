@@ -28,13 +28,15 @@ func CheckWhitelistUrl(url string) bool {
 }
 
 func GeneratePaginationFromRequest(ctx *gin.Context) utpagination.Pagination {
-	limit := 10
-	page := 1
-	search := ""
-	sort := "id"
-	direction := "asc"
-	var createdFrom time.Time
-	var createdTo time.Time
+	var (
+		limit       = 10
+		page        = 1
+		search      = ""
+		sort        = "id"
+		direction   = "asc"
+		createdFrom time.Time
+		createdTo   time.Time
+	)
 
 	query := ctx.Request.URL.Query()
 	for key, value := range query {

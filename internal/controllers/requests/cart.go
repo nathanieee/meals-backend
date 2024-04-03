@@ -26,7 +26,9 @@ type (
 )
 
 func (req *CreateCart) ToModel() (*models.Cart, error) {
-	var cart models.Cart
+	var (
+		cart models.Cart
+	)
 
 	if err := copier.CopyWithOption(&cart, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.Error(err)

@@ -32,24 +32,24 @@ func newMemberRoutes(
 		smember: smember,
 	}
 
-	gadmn := rg.Group("members")
-	gadmn.Use(middlewares.JWTAuthMiddleware(
-		cfg,
+	h := rg.Group("members").Use(middlewares.JWTAuthMiddleware(cfg,
 		uint(consttypes.UR_ADMIN),
 	))
 	{
-		gadmn.POST("", r.createMember)
-		gadmn.GET("", r.getMembers)
-		gadmn.GET("raw", r.getMembersRaw)
-		gadmn.PUT("/:uuid", r.updateMember)
-		gadmn.DELETE("/:uuid", r.deleteMember)
+		h.POST("", r.createMember)
+		h.GET("", r.getMembers)
+		h.GET("raw", r.getMembersRaw)
+		h.PUT("/:uuid", r.updateMember)
+		h.DELETE("/:uuid", r.deleteMember)
 	}
 }
 
 func (r *memberroutes) createMember(ctx *gin.Context) {
-	var function = "create member"
-	var entity = "member"
-	var req requests.CreateMember
+	var (
+		function = "create member"
+		entity   = "member"
+		req      requests.CreateMember
+	)
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -104,8 +104,10 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 }
 
 func (r *memberroutes) getMembers(ctx *gin.Context) {
-	var entity = "members"
-	var reqpage = utrequest.GeneratePaginationFromRequest(ctx)
+	var (
+		entity  = "members"
+		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
+	)
 
 	members, err := r.smember.FindAll(reqpage)
 	if err != nil {
@@ -134,7 +136,9 @@ func (r *memberroutes) getMembers(ctx *gin.Context) {
 }
 
 func (r *memberroutes) getMembersRaw(ctx *gin.Context) {
-	var entity = "members"
+	var (
+		entity = "members"
+	)
 
 	resmemb, err := r.smember.Read()
 	if err != nil {
@@ -163,9 +167,11 @@ func (r *memberroutes) getMembersRaw(ctx *gin.Context) {
 }
 
 func (r *memberroutes) updateMember(ctx *gin.Context) {
-	var function = "update member"
-	var entity = "member"
-	var req requests.UpdateMember
+	var (
+		function = "update member"
+		entity   = "member"
+		req      requests.UpdateMember
+	)
 
 	err := ctx.ShouldBind(&req)
 	if err != nil {
@@ -226,8 +232,10 @@ func (r *memberroutes) updateMember(ctx *gin.Context) {
 }
 
 func (r *memberroutes) deleteMember(ctx *gin.Context) {
-	var function = "delete member"
-	var entity = "member"
+	var (
+		function = "delete member"
+		entity   = "member"
+	)
 
 	uuid, err := uuid.Parse(ctx.Param("uuid"))
 	if err != nil {
