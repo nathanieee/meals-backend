@@ -46,7 +46,6 @@ func Run(cfg *configs.Config) {
 	di := di.NewDependencyInjection(db, ch, cfg, rdb, ctx)
 
 	// * setup consumer
-	// TODO - setup the consumer, it gives a "use of closed network connection" error
 	di.ConsumerService.ConsumeTask()
 
 	var forever chan struct{}

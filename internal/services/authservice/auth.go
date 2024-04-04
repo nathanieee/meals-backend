@@ -147,7 +147,12 @@ func (s *AuthService) SendResetPasswordEmail(user models.User) error {
 		return err
 	}
 
-	name := "jonathan vince" // TODO - change this into user's name.
+	firstname, lastname, err := s.suser.GetUserName(user.ID)
+	if err != nil {
+		return err
+	}
+
+	name := utstring.AppendName(firstname, lastname)
 	emreq := requests.SendEmailResetPassword{
 		Name:    name,
 		Email:   user.Email,

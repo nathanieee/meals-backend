@@ -2,7 +2,7 @@ package configs
 
 import (
 	"fmt"
-	"log"
+	"project-skbackend/packages/utils/utlogger"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -10,10 +10,10 @@ import (
 func (rmq *Queue) Init() (*amqp.Channel, func()) {
 	url := fmt.Sprintf("amqp://%s:%s@%s:%s/", rmq.Username, rmq.Password, rmq.Host, rmq.Port)
 	conn, err := amqp.Dial(url)
-	FailOnError(err, "Failed to connect to Queue")
+	utlogger.Fatal(err)
 
 	ch, err := conn.Channel()
-	FailOnError(err, "Failed to open a channel")
+	utlogger.Fatal(err)
 
 	return ch, func() {
 		conn.Close()
@@ -25,47 +25,41 @@ func (rmq *Queue) SetupRabbitMQ(ch *amqp.Channel, cfg *Config) {
 	rmq.SetupMailQueue(ch, cfg.Queue)
 }
 
-func FailOnError(err error, msg string) {
-	if err != nil {
-		log.Fatal(fmt.Sprintf("%s: %s", msg, err))
-	}
-}
-
 func (rmq *Queue) SetupMailQueue(ch *amqp.Channel, cfg Queue) {
-	exchangeName := cfg.Mail.ExchangeName
-	exchangeType := cfg.Mail.ExchangeType
-	queueName := cfg.Mail.QueueName
-	bindingKey := cfg.Mail.BindingKey
+	xname := cfg.Mail.ExchangeName
+	xtype := cfg.Mail.ExchangeType
+	qname := cfg.Mail.QueueName
+	bkey := cfg.Mail.BindingKey
 
 	// Declare Exchange
 	err := ch.ExchangeDeclare(
-		exchangeName, // name
-		exchangeType, // type
-		true,         // durable
-		false,        // auto-deleted
-		false,        // internal
-		false,        // no-wait
-		nil,          // arguments
+		xname, // name
+		xtype, // type
+		true,  // durable
+		false, // auto-deleted
+		false, // internal
+		false, // no-wait
+		nil,   // arguments
 	)
-	FailOnError(err, "Failed to declare an exchange")
+	utlogger.Fatal(err)
 
 	// Declare Queue
 	q, err := ch.QueueDeclare(
-		queueName, // name
-		true,      // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
+		qname, // name
+		true,  // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
 	)
-	FailOnError(err, "Failed to declare a queue")
+	utlogger.Fatal(err)
 
 	// Binding Exchange and Queue
 	err = ch.QueueBind(
-		q.Name,       // queue name
-		bindingKey,   // routing key
-		exchangeName, // exchange
+		q.Name, // queue name
+		bkey,   // routing key
+		xname,  // exchange
 		false,
 		nil)
-	FailOnError(err, "Failed to bind a queue")
+	utlogger.Fatal(err)
 }

@@ -43,7 +43,6 @@ func (s *ConsumerService) ConsumeMail() {
 	var (
 		qname = s.cfg.Queue.Mail.QueueName
 	)
-
 	// Listen to Queue
 	messages, err := s.ch.Consume(
 		qname, // queue

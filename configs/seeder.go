@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/base"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/customs"
 
@@ -13,12 +12,7 @@ import (
 	"project-skbackend/packages/utils/utstring"
 	"strings"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
-)
-
-var (
-	uuidval, _ = uuid.Parse("123e4567-e89b-12d3-a456-426614174000")
 )
 
 func getGlobalHashedPassword(password string) string {
@@ -165,9 +159,6 @@ func SeedMemberCredentials(db *gorm.DB) error {
 		if err := db.First(&models.Member{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			members := []*models.Member{
 				{
-					Model: base.Model{
-						ID: uuidval,
-					},
 					User: models.User{
 						Email:    "member@test.com",
 						Password: getGlobalHashedPassword("password"),
@@ -233,9 +224,6 @@ func SeedPartnerCredentials(db *gorm.DB) error {
 		if err := db.First(&models.Partner{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			partners := []*models.Partner{
 				{
-					Model: base.Model{
-						ID: uuidval,
-					},
 					User: models.User{
 						Email:    "partner@test.com",
 						Password: getGlobalHashedPassword("password"),
@@ -265,9 +253,11 @@ func SeedMealData(db *gorm.DB) error {
 				partner models.Partner
 			)
 
-			db.First(&illness, uuidval)
-			db.First(&allergy, uuidval)
-			db.First(&partner, uuidval)
+			db.First(&illness)
+			db.First(&allergy)
+			db.First(&partner)
+
+			utlogger.Info(fmt.Sprintf("illness: %s, allergy: %s, partner: %s", illness.Name, allergy.Name, partner.Name))
 
 			meals := []*models.Meal{
 				{
@@ -281,6 +271,7 @@ func SeedMealData(db *gorm.DB) error {
 							Allergy: allergy,
 						},
 					},
+					PartnerID:   partner.ID,
 					Partner:     partner,
 					Name:        "Nasi Goyeng",
 					Status:      consttypes.MS_ACTIVE,
@@ -306,9 +297,6 @@ func SeedAllergyData(db *gorm.DB) error {
 			allergies := []*models.Allergy{
 				// ! start of food allergen
 				{
-					Model: base.Model{
-						ID: uuidval,
-					},
 					Name:        "Milk",
 					Description: "A milk allergy, also known as a dairy allergy, is an adverse immune system response to one or more proteins found in cow's milk. It is different from lactose intolerance, which is a non-immune digestive disorder where the body has difficulty digesting lactose, a sugar found in milk. A milk allergy is an immune system disorder and can be more severe.",
 					Allergens:   consttypes.A_FOOD,
@@ -550,9 +538,6 @@ func SeedIllnessData(db *gorm.DB) error {
 		if err := db.First(&models.Illness{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			illnesses := []*models.Illness{
 				{
-					Model: base.Model{
-						ID: uuidval,
-					},
 					Name:        "Covid",
 					Description: "Coronavirus disease (COVID-19) is an infectious disease caused by the SARS-CoV-2 virus.",
 				},

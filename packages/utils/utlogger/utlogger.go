@@ -2,7 +2,7 @@ package utlogger
 
 import (
 	"fmt"
-	"os"
+	"log"
 	"runtime"
 )
 
@@ -29,11 +29,12 @@ func Info(data any) {
 }
 
 func Fatal(err error) {
-	pc := make([]uintptr, 15)
-	n := runtime.Callers(2, pc)
-	frames := runtime.CallersFrames(pc[:n])
-	frame, _ := frames.Next()
+	if err != nil {
+		pc := make([]uintptr, 15)
+		n := runtime.Callers(2, pc)
+		frames := runtime.CallersFrames(pc[:n])
+		frame, _ := frames.Next()
 
-	fmt.Printf("\nFatal error occurred at: %s:%d\nError: %s\n\n", frame.File, frame.Line, err.Error())
-	os.Exit(1)
+		log.Fatalf("\nFatal error occurred at: %s:%d\nError: %s\n\n", frame.File, frame.Line, err.Error())
+	}
 }
