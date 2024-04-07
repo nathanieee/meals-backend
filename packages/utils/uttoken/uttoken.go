@@ -2,11 +2,11 @@ package uttoken
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -115,14 +115,14 @@ func getDuration(lifespan int, timeunit string) time.Duration {
 	}
 }
 
-func ParseToken(token string, publicKey string) (*Token, error) {
-	decodedpublickey, err := base64.StdEncoding.DecodeString(publicKey)
+func ParseToken(token string, pubkey string) (*Token, error) {
+	decodedpubkey, err := base64.StdEncoding.DecodeString(pubkey)
 	if err != nil {
 		utlogger.Error(err)
 		return nil, fmt.Errorf("could not decode token public key: %w", err)
 	}
 
-	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedpublickey)
+	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedpubkey)
 	if err != nil {
 		utlogger.Error(err)
 		return nil, fmt.Errorf("could not parse token public key: %w", err)
@@ -138,7 +138,7 @@ func ParseToken(token string, publicKey string) (*Token, error) {
 
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
-			return nil, errors.New("invalid token signature")
+			return nil, fmt.Errorf("invalid token signature")
 		}
 		return nil, fmt.Errorf("could not parse token: %w", err)
 	}
@@ -156,6 +156,36 @@ func ParseToken(token string, publicKey string) (*Token, error) {
 		Expires:   &expires,
 		User:      claims.User,
 	}, nil
+}
+
+func GetToken(ctx *gin.Context) (string, string, error) {
+	taccess := ctx.Request.Header.Get("Authorization")
+	if taccess == "" {
+		taccess = ctx.Request.Header.Get("X-Authorization")
+	}
+
+	if taccess == "" {
+		return "", "", fmt.Errorf("access token not found")
+	}
+
+	splitToken := strings.Split(taccess, " ")
+	if len(splitToken) != 2 {
+		return "", "", fmt.Errorf("invalid access token")
+	}
+
+	taccess = splitToken[1]
+
+	trefresh := ctx.Request.Header.Get("Refresh-Token")
+	if trefresh == "" {
+		return "", "", fmt.Errorf("refresh token not found")
+	}
+
+	return taccess, trefresh, nil
+}
+
+func DeleteToken(ctx *gin.Context) {
+	ctx.Request.Header.Del("Refresh-Token")
+	ctx.Request.Header.Del("Authorization")
 }
 
 func GetUser(ctx *gin.Context) (*responses.User, error) {

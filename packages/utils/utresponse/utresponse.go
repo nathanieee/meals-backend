@@ -137,23 +137,24 @@ var (
 	cfg                   = configs.GetInstance()
 	resetPasswordCooldown = cfg.ResetPassword.Cooldown
 
-	// General
+	// general
 	ErrConvertFailed    = fmt.Errorf("data type conversion failed")
 	ErrInvalidReference = fmt.Errorf("invalid reference")
 
-	// Error Field
+	// field
 	ErrFieldIsEmpty             = fmt.Errorf("field should not be empty")
 	ErrFieldInvalidFormat       = fmt.Errorf("field format is invalid")
 	ErrFieldInvalidEmailAddress = fmt.Errorf("invalid email address format")
 
-	// Token
-	ErrTokenExpired       = fmt.Errorf("token is expired")
-	ErrTokenUnverifiable  = fmt.Errorf("token is unverifiable")
-	ErrTokenMismatch      = fmt.Errorf("token is mismatch")
-	ErrTokenNotFound      = fmt.Errorf("token is not found")
-	ErrTokenInvalidFormat = fmt.Errorf("token format is invalid")
+	// token
+	ErrTokenExpired               = fmt.Errorf("token is expired")
+	ErrTokenUnverifiable          = fmt.Errorf("token is unverifiable")
+	ErrTokenMismatch              = fmt.Errorf("token is mismatch")
+	ErrTokenNotFound              = fmt.Errorf("token is not found")
+	ErrTokenInvalidFormat         = fmt.Errorf("token format is invalid")
+	ErrTokenCannotDecodePublicKey = fmt.Errorf("cannot decode token public key")
 
-	// User
+	// user
 	ErrUserNotFound         = fmt.Errorf("user not found")
 	ErrIncorrectPassword    = fmt.Errorf("incorrect password")
 	ErrUserIDNotFound       = fmt.Errorf("user ID is not found")
@@ -162,10 +163,10 @@ var (
 	ErrUserNotSignedIn      = fmt.Errorf("you are not signed in")
 	ErrUserInvalidRole      = fmt.Errorf("invalid user role")
 
-	// File
+	// file
 	ErrInvalidFileType = fmt.Errorf("invalid file type")
 
-	// Email
+	// email
 	ErrCannotChangeEmail = fmt.Errorf("cannot change existing email")
 	ErrTooQuickSendEmail = fmt.Errorf("an email was sent just under %v minutes ago", resetPasswordCooldown)
 )

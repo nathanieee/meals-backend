@@ -52,7 +52,7 @@ func Run(cfg *configs.Config) {
 
 	// HTTP Server
 	handler := gin.New()
-	v1.NewRouter(handler, db, cfg, di)
+	v1.NewRouter(handler, db, cfg, di, rdb)
 	server := servers.NewServer(handler, servers.Port(cfg.HTTP.Port))
 
 	interrupt := make(chan os.Signal, 1)

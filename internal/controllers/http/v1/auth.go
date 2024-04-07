@@ -11,11 +11,13 @@ import (
 	"project-skbackend/packages/utils/uttoken"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 type (
 	authroutes struct {
 		cfg   *configs.Config
+		rdb   *redis.Client
 		sauth authservice.IAuthService
 		suser userservice.IUserService
 	}
@@ -24,11 +26,13 @@ type (
 func newAuthRoutes(
 	rg *gin.RouterGroup,
 	cfg *configs.Config,
+	rdb *redis.Client,
 	sauth authservice.IAuthService,
 	suser userservice.IUserService,
 ) {
 	r := &authroutes{
 		cfg:   cfg,
+		rdb:   rdb,
 		sauth: sauth,
 		suser: suser,
 	}
@@ -270,6 +274,77 @@ func (r *authroutes) sendVerifyEmail(ctx *gin.Context) {
 		)
 		return
 	}
+
+	utresponse.GeneralSuccess(
+		function,
+		ctx,
+		nil,
+	)
+}
+
+func (r *authroutes) signout(ctx *gin.Context) {
+	var (
+		function = "signout"
+	)
+
+	taccess, trefresh, err := uttoken.GetToken(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	if taccess == "" || trefresh == "" {
+		var (
+			entity = "token"
+		)
+		utresponse.GeneralNotFound(
+			entity,
+			ctx,
+			utresponse.ErrTokenNotFound,
+		)
+		return
+	}
+
+	taccessparsed, err := uttoken.ParseToken(taccess, r.cfg.JWT.AccessToken.PublicKey)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	trefreshparsed, err := uttoken.ParseToken(trefresh, r.cfg.JWT.RefreshToken.PublicKey)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	// * delete access token from Redis
+	if err = r.rdb.Del(ctx, taccessparsed.TokenUUID.String()).Err(); err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	// * delete refresh token from Redis
+	if err = r.rdb.Del(ctx, trefreshparsed.TokenUUID.String()).Err(); err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	uttoken.DeleteToken(ctx)
 
 	utresponse.GeneralSuccess(
 		function,
