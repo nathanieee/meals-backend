@@ -41,8 +41,6 @@ type DependencyInjection struct {
 
 func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, rdb *redis.Client, ctx context.Context) *DependencyInjection {
 	/* -------------------------------- database -------------------------------- */
-	db = db.Session(&gorm.Session{FullSaveAssociations: true})
-
 	if cfg.DB.LogMode {
 		db = db.Debug()
 	}

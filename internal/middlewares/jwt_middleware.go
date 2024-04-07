@@ -61,7 +61,6 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedlevel ...uint) gin.HandlerFun
 			return
 		}
 
-		// TODO - fix this fucking function because it lets every role in
 		if !slices.Contains(allowedlevel, uint(tparsed.User.Role)) || (consttypes.DateNow.Unix() >= tparsed.Expires.Unix()) {
 			utresponse.GeneralUnauthorized(
 				ctx,

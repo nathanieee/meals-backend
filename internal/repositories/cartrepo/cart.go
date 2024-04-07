@@ -1,7 +1,6 @@
 package cartrepo
 
 import (
-	"fmt"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/models/base"
@@ -140,15 +139,6 @@ func (r *CartRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 		preload().
 		Model(&c).
 		Select(SELECTED_FIELDS)
-
-		// TODO - add correct filter here using like
-	if p.Search != "" {
-		p.Search = fmt.Sprintf("%%%s%%", p.Search)
-		result = result.
-			Where(r.db.
-				Where(&models.Cart{Meal: models.Meal{Name: p.Search}}),
-			)
-	}
 
 	if !p.Filter.CreatedFrom.IsZero() && !p.Filter.CreatedTo.IsZero() {
 		result = result.
