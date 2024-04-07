@@ -40,6 +40,7 @@ func newAuthRoutes(
 	h := rg.Group("auth")
 	{
 		h.POST("signin", r.signin)
+		h.POST("signout", r.signout)
 
 		gverif := h.Group("verify").Use(middlewares.JWTAuthMiddleware(cfg,
 			uint(consttypes.UR_ADMIN),
