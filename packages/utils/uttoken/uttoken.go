@@ -189,6 +189,15 @@ func DeleteToken(ctx *gin.Context) {
 }
 
 func GetUser(ctx *gin.Context) (*responses.User, error) {
-	claims := ctx.MustGet("claims").(*TokenClaims)
-	return claims.User, nil
+	userctx, exists := ctx.Get("user")
+	if !exists {
+		return nil, consttypes.ErrUserIDNotFound
+	}
+
+	userres, ok := userctx.(responses.User)
+	if !ok {
+		return nil, consttypes.ErrUserNotFound
+	}
+
+	return &userres, nil
 }

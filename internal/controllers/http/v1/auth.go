@@ -43,13 +43,13 @@ func newAuthRoutes(
 		h.POST("signout", r.signout)
 
 		gverif := h.Group("verify").Use(middlewares.JWTAuthMiddleware(cfg,
-			uint(consttypes.UR_ADMIN),
-			uint(consttypes.UR_CAREGIVER),
-			uint(consttypes.UR_MEMBER),
-			uint(consttypes.UR_ORGANIZATION),
-			uint(consttypes.UR_PARTNER),
-			uint(consttypes.UR_PATRON),
-			uint(consttypes.UR_USER),
+			consttypes.UR_ADMIN,
+			consttypes.UR_CAREGIVER,
+			consttypes.UR_MEMBER,
+			consttypes.UR_ORGANIZATION,
+			consttypes.UR_PARTNER,
+			consttypes.UR_PATRON,
+			consttypes.UR_USER,
 		))
 		{
 			gverif.POST("", r.verifyToken)
@@ -186,7 +186,7 @@ func (r *authroutes) refreshAuthToken(
 	if trefresh == "" || err != nil {
 		utresponse.GeneralUnauthorized(
 			ctx,
-			utresponse.ErrTokenNotFound,
+			consttypes.ErrTokenNotFound,
 		)
 		return
 	}
@@ -271,7 +271,7 @@ func (r *authroutes) sendVerifyEmail(ctx *gin.Context) {
 		utresponse.GeneralNotFound(
 			entity,
 			ctx,
-			utresponse.ErrUserNotFound,
+			consttypes.ErrUserNotFound,
 		)
 		return
 	}
@@ -304,7 +304,7 @@ func (r *authroutes) signout(ctx *gin.Context) {
 		utresponse.GeneralNotFound(
 			entity,
 			ctx,
-			utresponse.ErrTokenNotFound,
+			consttypes.ErrTokenNotFound,
 		)
 		return
 	}

@@ -14,7 +14,6 @@ import (
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utpagination"
-	"project-skbackend/packages/utils/utresponse"
 
 	"github.com/google/uuid"
 )
@@ -37,6 +36,7 @@ type (
 		Delete(uid uuid.UUID) error
 		Update(req requests.UpdateUser, uid uuid.UUID) (*responses.User, error)
 		GetUserName(uid uuid.UUID) (string, string, error)
+		GetRoleDataByUserID(uid uuid.UUID) (*responses.BaseRole, error)
 	}
 )
 
@@ -198,6 +198,7 @@ func (s *UserService) GetUserName(uid uuid.UUID) (string, string, error) {
 
 		firstname = p.Name
 	case consttypes.UR_PATRON:
+		// TODO - change this into patron repo, not partner
 		p, err := s.rpart.FindByUserID(uid)
 		if err != nil {
 			return "", "", err
@@ -205,8 +206,72 @@ func (s *UserService) GetUserName(uid uuid.UUID) (string, string, error) {
 
 		firstname = p.Name
 	default:
-		return "", "", utresponse.ErrUserInvalidRole
+		return "", "", consttypes.ErrUserInvalidRole
 	}
 
 	return firstname, lastname, nil
+}
+
+func (s *UserService) GetRoleDataByUserID(uid uuid.UUID) (*responses.BaseRole, error) {
+	var (
+		data any
+	)
+
+	user, err := s.ruser.FindByID(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	switch user.Role {
+	case consttypes.UR_ADMIN:
+		a, err := s.radmn.FindByUserID(uid)
+		if err != nil {
+			return nil, err
+		}
+
+		data = a
+	case consttypes.UR_CAREGIVER:
+		c, err := s.rcare.FindByUserID(uid)
+		if err != nil {
+			return nil, err
+		}
+
+		data = c
+	case consttypes.UR_MEMBER:
+		m, err := s.rmemb.FindByUserID(uid)
+		if err != nil {
+			return nil, err
+		}
+
+		data = m
+	case consttypes.UR_ORGANIZATION:
+		o, err := s.rorga.FindByUserID(uid)
+		if err != nil {
+			return nil, err
+		}
+
+		data = o
+	case consttypes.UR_PARTNER:
+		p, err := s.rpart.FindByUserID(uid)
+		if err != nil {
+			return nil, err
+		}
+
+		data = p
+	case consttypes.UR_PATRON:
+		// TODO - change this into patron repo, not partner
+		p, err := s.rpart.FindByUserID(uid)
+		if err != nil {
+			return nil, err
+		}
+
+		data = p
+	default:
+		return nil, consttypes.ErrUserInvalidRole
+	}
+
+	return &responses.BaseRole{
+		Data: data,
+		Role: user.Role,
+	}, nil
 }

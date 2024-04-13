@@ -3,8 +3,8 @@ package requests
 import (
 	"io"
 	"mime/multipart"
+	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
-	"project-skbackend/packages/utils/utresponse"
 
 	"github.com/h2non/filetype"
 )
@@ -38,7 +38,7 @@ func (req *CreateImage) IsImage() error {
 
 	// * check if the file is an image
 	if !filetype.IsImage(filebytes) {
-		err := utresponse.ErrInvalidFileType
+		err := consttypes.ErrInvalidFileType
 
 		utlogger.Error(err)
 		return err

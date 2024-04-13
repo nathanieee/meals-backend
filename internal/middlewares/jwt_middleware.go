@@ -19,12 +19,12 @@ func extractToken(c *gin.Context) (string, error) {
 	}
 
 	if tbearer == "" {
-		return "", utresponse.ErrTokenNotFound
+		return "", consttypes.ErrTokenNotFound
 	}
 
 	splitToken := strings.Split(tbearer, " ")
 	if len(splitToken) != 2 {
-		return "", utresponse.ErrTokenInvalidFormat
+		return "", consttypes.ErrTokenInvalidFormat
 	}
 
 	tbearer = splitToken[1]
@@ -33,13 +33,13 @@ func extractToken(c *gin.Context) (string, error) {
 	if err != nil {
 		return "", err
 	} else if taccess == "" {
-		return "", utresponse.ErrUserNotSignedIn
+		return "", consttypes.ErrUserNotSignedIn
 	}
 
 	return tbearer, nil
 }
 
-func JWTAuthMiddleware(cfg *configs.Config, allowedlevel ...uint) gin.HandlerFunc {
+func JWTAuthMiddleware(cfg *configs.Config, allowedlevel ...consttypes.UserRole) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		textract, err := extractToken(ctx)
 		if err != nil {
@@ -61,7 +61,7 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedlevel ...uint) gin.HandlerFun
 			return
 		}
 
-		if !slices.Contains(allowedlevel, uint(tparsed.User.Role)) || (consttypes.DateNow.Unix() >= tparsed.Expires.Unix()) {
+		if !slices.Contains(allowedlevel, tparsed.User.Role) || (consttypes.DateNow.Unix() >= tparsed.Expires.Unix()) {
 			utresponse.GeneralUnauthorized(
 				ctx,
 				err,

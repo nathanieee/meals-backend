@@ -15,7 +15,6 @@ import (
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
-	"project-skbackend/packages/utils/utresponse"
 
 	"github.com/google/uuid"
 )
@@ -166,7 +165,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 	if req.Caregiver != nil {
 		if member.Caregiver != nil {
 			if member.Caregiver.User.Email != req.Caregiver.User.Email {
-				err := utresponse.ErrCannotChangeEmail
+				err := consttypes.ErrCannotChangeEmail
 
 				utlogger.Error(err)
 				return nil, err

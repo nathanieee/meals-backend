@@ -8,7 +8,6 @@ import (
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
-	"project-skbackend/packages/utils/utresponse"
 
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -267,7 +266,7 @@ func (r *CartRepository) GetCartReferenceObject(cart models.Cart) (*responses.Me
 
 		mres = m.ToResponse()
 	default:
-		return nil, nil, utresponse.ErrInvalidReference
+		return nil, nil, consttypes.ErrInvalidReference
 	}
 
 	return mres, cgres, nil

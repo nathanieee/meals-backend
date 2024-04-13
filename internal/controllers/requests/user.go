@@ -4,7 +4,6 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
-	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/utstring"
 	"strings"
 
@@ -71,7 +70,7 @@ func (req *UpdateUser) ToModel(
 	}
 
 	if req.Email != user.Email {
-		err := utresponse.ErrCannotChangeEmail
+		err := consttypes.ErrCannotChangeEmail
 
 		utlogger.Error(err)
 		return nil, err

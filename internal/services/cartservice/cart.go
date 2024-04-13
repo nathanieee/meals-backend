@@ -25,6 +25,7 @@ type (
 		Update(id uuid.UUID, req requests.UpdateCart) (*responses.Cart, error)
 		Delete(id uuid.UUID) error
 		FindByID(id uuid.UUID) (*responses.Cart, error)
+		GetCartReferenceObject(cart models.Cart) (*responses.Member, *responses.Caregiver, error)
 	}
 )
 

@@ -11,7 +11,6 @@ import (
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/internal/services/userservice"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/utstring"
 	"project-skbackend/packages/utils/uttoken"
 	"time"
@@ -109,11 +108,11 @@ func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
 	}
 
 	if req.Token != user.ResetPasswordToken {
-		return utresponse.ErrTokenMismatch
+		return consttypes.ErrTokenMismatch
 	}
 
 	if !consttypes.DateNow.Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.ResetPassword.Cooldown))) {
-		return utresponse.ErrTooQuickSendEmail
+		return consttypes.ErrTooQuickSendEmail
 	}
 
 	user, err = req.ToUserModel(*user)
@@ -136,7 +135,7 @@ func (s *AuthService) SendResetPasswordEmail(user models.User) error {
 	}
 
 	if consttypes.DateNow.Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.ResetPassword.Cooldown))) {
-		return utresponse.ErrTooQuickSendEmail
+		return consttypes.ErrTooQuickSendEmail
 	}
 
 	user.ResetPasswordToken = token
@@ -320,7 +319,7 @@ func (s *AuthService) SendVerificationEmail(id uuid.UUID) error {
 	}
 
 	if consttypes.DateNow.Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
-		return utresponse.ErrTooQuickSendEmail
+		return consttypes.ErrTooQuickSendEmail
 	}
 
 	user.ConfirmationToken = tverif

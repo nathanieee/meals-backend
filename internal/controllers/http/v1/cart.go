@@ -2,8 +2,14 @@ package controllers
 
 import (
 	"project-skbackend/configs"
+	"project-skbackend/internal/controllers/requests"
+	"project-skbackend/internal/controllers/responses"
+	"project-skbackend/internal/middlewares"
 	"project-skbackend/internal/services/cartservice"
+	"project-skbackend/internal/services/userservice"
+	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utresponse"
+	"project-skbackend/packages/utils/uttoken"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -13,6 +19,7 @@ type (
 	cartroutes struct {
 		cfg   *configs.Config
 		scart cartservice.ICartService
+		suser userservice.IUserService
 	}
 )
 
@@ -20,16 +27,134 @@ func newCartRoutes(
 	rg *gin.RouterGroup,
 	cfg *configs.Config,
 	scart cartservice.ICartService,
+	suser userservice.IUserService,
 ) {
 	r := &cartroutes{
 		cfg:   cfg,
 		scart: scart,
+		suser: suser,
 	}
 
-	gadmn := rg.Group("carts")
+	gcart := rg.Group("carts")
 	{
-		gadmn.GET("raw", r.getCartsRaw)
+
+		gmember := gcart.Group("").Use(middlewares.JWTAuthMiddleware(cfg, consttypes.UR_MEMBER))
+		{
+			gmember.POST("", r.createCart)
+		}
+
+		gcare := gcart.Group("").Use(middlewares.JWTAuthMiddleware(cfg, consttypes.UR_CAREGIVER))
+		{
+			gcare.POST("", r.createCart)
+		}
+
+		gcart.GET("raw", r.getCartsRaw)
 	}
+}
+
+// TODO - continue working on the create cart function
+func (r *cartroutes) createCart(ctx *gin.Context) {
+	var (
+		function = "create cart"
+		entity   = "cart"
+		req      *requests.CreateCart
+		err      error
+	)
+
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	roleres, err := r.suser.GetRoleDataByUserID(userres.ID)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	if roleres != nil {
+		switch roleres.Role {
+		case consttypes.UR_CAREGIVER:
+			res, ok := roleres.Data.(responses.Caregiver)
+			if !ok {
+				utresponse.GeneralUnauthorized(
+					ctx,
+					consttypes.ErrUserInvalidRole,
+				)
+				return
+			}
+
+			req, err = req.New(res.ID, res.User.Role)
+			if err != nil {
+				utresponse.GeneralUnauthorized(
+					ctx,
+					err,
+				)
+				return
+			}
+		case consttypes.UR_MEMBER:
+			res, ok := roleres.Data.(responses.Member)
+			if !ok {
+				utresponse.GeneralUnauthorized(
+					ctx,
+					consttypes.ErrUserInvalidRole,
+				)
+				return
+			}
+
+			req, err = req.New(res.ID, res.User.Role)
+			if err != nil {
+				utresponse.GeneralUnauthorized(
+					ctx,
+					err,
+				)
+				return
+			}
+
+		default:
+			utresponse.GeneralUnauthorized(
+				ctx,
+				consttypes.ErrUserInvalidRole,
+			)
+			return
+		}
+
+	}
+
+	rescart, err := r.scart.Create(*req)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessCreate(
+		entity,
+		ctx,
+		rescart,
+	)
 }
 
 func (r *cartroutes) getCartsRaw(ctx *gin.Context) {

@@ -12,8 +12,8 @@ import (
 type (
 	CreateCart struct {
 		MealID        uuid.UUID           `json:"meal_id" form:"meal_id" binding:"required"`
-		ReferenceID   uuid.UUID           `json:"reference_id" form:"reference_id" binding:"required"`
-		ReferenceType consttypes.UserRole `json:"reference_type" form:"reference_type" binding:"required"`
+		ReferenceID   uuid.UUID           `json:"-"`
+		ReferenceType consttypes.UserRole `json:"-"`
 		Quantity      uint                `json:"quantity" form:"quantity" binding:"required"`
 	}
 
@@ -47,4 +47,14 @@ func (req *UpdateCart) ToModel(
 	}
 
 	return &cart, nil
+}
+
+func (req *CreateCart) New(
+	rid uuid.UUID,
+	rt consttypes.UserRole,
+) (*CreateCart, error) {
+	req.ReferenceID = rid
+	req.ReferenceType = rt
+
+	return req, nil
 }

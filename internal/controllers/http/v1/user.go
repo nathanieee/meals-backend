@@ -45,7 +45,7 @@ func newUserRoutes(
 	guser := rg.Group("users")
 	guser.Use(middlewares.JWTAuthMiddleware(
 		cfg,
-		uint(consttypes.UR_USER),
+		consttypes.UR_USER,
 	))
 	{
 		guser.GET("me", r.getCurrentUser)

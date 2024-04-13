@@ -33,7 +33,7 @@ func newMemberRoutes(
 	}
 
 	h := rg.Group("members").Use(middlewares.JWTAuthMiddleware(cfg,
-		uint(consttypes.UR_ADMIN),
+		consttypes.UR_ADMIN,
 	))
 	{
 		h.POST("", r.createMember)
