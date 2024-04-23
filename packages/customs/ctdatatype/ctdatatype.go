@@ -1,4 +1,4 @@
-package customs
+package ctdatatype
 
 import (
 	"database/sql/driver"

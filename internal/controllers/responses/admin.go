@@ -3,7 +3,7 @@ package responses
 import (
 	"project-skbackend/internal/models/base"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/customs"
+	"project-skbackend/packages/customs/ctdatatype"
 )
 
 type (
@@ -12,9 +12,9 @@ type (
 
 		User User `json:"user"`
 
-		FirstName   string            `json:"first_name"`
-		LastName    string            `json:"last_name"`
-		Gender      consttypes.Gender `json:"gender"`
-		DateOfBirth customs.CDT_DATE  `json:"date_of_birth"`
+		FirstName   string              `json:"first_name"`
+		LastName    string              `json:"last_name"`
+		Gender      consttypes.Gender   `json:"gender"`
+		DateOfBirth ctdatatype.CDT_DATE `json:"date_of_birth"`
 	}
 )

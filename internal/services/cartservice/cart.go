@@ -54,10 +54,30 @@ func (s *CartService) Create(req requests.CreateCart) (*responses.Cart, error) {
 		return nil, err
 	}
 
-	cart, err = s.rcart.Create(*cart)
+	// TODO - update this function to add the quantity instead of creating a new cart
+	// TODO - if it is the same meal id and reference id
+	cart, err = s.rcart.GetCartByMealIDAndReferenceID(cart.MealID, cart.ReferenceID)
+	utlogger.Info(cart)
+
 	if err != nil {
 		utlogger.Error(err)
 		return nil, err
+	}
+
+	if cart != nil {
+		cart.Quantity = cart.Quantity + req.Quantity
+
+		cart, err = s.rcart.Update(*cart)
+		if err != nil {
+			utlogger.Error(err)
+			return nil, err
+		}
+	} else {
+		cart, err = s.rcart.Create(*cart)
+		if err != nil {
+			utlogger.Error(err)
+			return nil, err
+		}
 	}
 
 	cartres, err := cart.ToResponse(membres, careres)

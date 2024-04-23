@@ -18,7 +18,7 @@ type (
 		Meal   Meal      `json:"meal"`
 
 		ReferenceID   uuid.UUID           `json:"reference_id" gorm:"required;<-:create"`
-		ReferenceType consttypes.UserRole `json:"referenceType" gorm:"required; oneof='Member' 'Caregiver';type:user_role_enum;<-:create"`
+		ReferenceType consttypes.UserRole `json:"reference_type" gorm:"required; oneof='Member' 'Caregiver';type:user_role_enum;<-:create"`
 		Quantity      uint                `json:"quantity" gorm:"required"`
 	}
 )

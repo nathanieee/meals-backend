@@ -195,6 +195,7 @@ func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 
 	err := r.
 		preload().
+		Debug().
 		Select(SELECTED_FIELDS).
 		Where(&models.User{Email: email}).
 		First(&u).Error

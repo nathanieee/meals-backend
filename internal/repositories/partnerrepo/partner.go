@@ -50,8 +50,8 @@ func NewPartnerRepository(db *gorm.DB) *PartnerRepository {
 func (r *PartnerRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
-		Preload("User.Image.Image").
-		Preload("User.Address")
+		Preload("User.Address").
+		Preload("User.Image.Image")
 }
 
 func (r *PartnerRepository) Create(p models.Partner) (*models.Partner, error) {

@@ -33,16 +33,17 @@ type (
 	}
 
 	ICartRepository interface {
-		Create(m models.Cart) (*models.Cart, error)
+		Create(c models.Cart) (*models.Cart, error)
 		Read() ([]*models.Cart, error)
-		Update(m models.Cart) (*models.Cart, error)
-		Delete(m models.Cart) error
+		Update(c models.Cart) (*models.Cart, error)
+		Delete(c models.Cart) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		FindByID(id uuid.UUID) (*models.Cart, error)
 		FindByMemberID(mid uuid.UUID) ([]*models.Cart, error)
 		FindByCaregiverID(cgid uuid.UUID) ([]*models.Cart, error)
 		FindByMealID(mid uuid.UUID) ([]*models.Cart, error)
 		GetCartReferenceObject(cart models.Cart) (*responses.Member, *responses.Caregiver, error)
+		GetCartByMealIDAndReferenceID(mid uuid.UUID, rid uuid.UUID) (*models.Cart, error)
 	}
 )
 
@@ -99,7 +100,8 @@ func (r *CartRepository) Read() ([]*models.Cart, error) {
 
 func (r *CartRepository) Update(c models.Cart) (*models.Cart, error) {
 	err := r.db.
-		Save(&c).Error
+		Model(&c).
+		Updates(&c).Error
 
 	if err != nil {
 		utlogger.Error(err)
@@ -209,7 +211,12 @@ func (r *CartRepository) FindByMemberID(mid uuid.UUID) ([]*models.Cart, error) {
 		Where(&models.Cart{ReferenceID: mid, ReferenceType: consttypes.UR_MEMBER}).
 		Find(&c).Error
 
-	return nil, err
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return c, nil
 }
 
 func (r *CartRepository) FindByCaregiverID(cid uuid.UUID) ([]*models.Cart, error) {
@@ -223,7 +230,12 @@ func (r *CartRepository) FindByCaregiverID(cid uuid.UUID) ([]*models.Cart, error
 		Where(&models.Cart{ReferenceID: cid, ReferenceType: consttypes.UR_CAREGIVER}).
 		Find(&c).Error
 
-	return nil, err
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return c, nil
 }
 
 func (r *CartRepository) FindByMealID(mid uuid.UUID) ([]*models.Cart, error) {
@@ -237,7 +249,12 @@ func (r *CartRepository) FindByMealID(mid uuid.UUID) ([]*models.Cart, error) {
 		Where(&models.Cart{MealID: mid}).
 		Find(&c).Error
 
-	return nil, err
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return c, nil
 }
 
 func (r *CartRepository) GetCartReferenceObject(cart models.Cart) (*responses.Member, *responses.Caregiver, error) {
@@ -250,7 +267,12 @@ func (r *CartRepository) GetCartReferenceObject(cart models.Cart) (*responses.Me
 
 	switch cart.ReferenceType {
 	case consttypes.UR_CAREGIVER:
-		err := r.db.First(&cg, cart.ReferenceID).Error
+		err := r.db.
+			Preload(clause.Associations).
+			Preload("User.Image.Image").
+			Preload("User.Address").
+			First(&cg, cart.ReferenceID).Error
+
 		if err != nil {
 			utlogger.Error(err)
 			return nil, nil, err
@@ -258,7 +280,17 @@ func (r *CartRepository) GetCartReferenceObject(cart models.Cart) (*responses.Me
 
 		cgres = cg.ToResponse()
 	case consttypes.UR_MEMBER:
-		err := r.db.First(&m, cart.ReferenceID).Error
+		err := r.db.
+			Preload(clause.Associations).
+			Preload("User.Image.Image").
+			Preload("User.Address").
+			Preload("Caregiver.User.Image.Image").
+			Preload("Caregiver.User.Address").
+			Preload("Organization").
+			Preload("Allergies.Allergy").
+			Preload("Illnesses.Illness").
+			First(&m, cart.ReferenceID).Error
+
 		if err != nil {
 			utlogger.Error(err)
 			return nil, nil, err
@@ -270,4 +302,22 @@ func (r *CartRepository) GetCartReferenceObject(cart models.Cart) (*responses.Me
 	}
 
 	return mres, cgres, nil
+}
+
+func (r *CartRepository) GetCartByMealIDAndReferenceID(mid uuid.UUID, rid uuid.UUID) (*models.Cart, error) {
+	var (
+		c *models.Cart
+	)
+
+	err := r.db.
+		Select(SELECTED_FIELDS).
+		Where(&models.Cart{MealID: mid, ReferenceID: rid}).
+		First(&c).Error
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return c, nil
 }

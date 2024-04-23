@@ -6,7 +6,7 @@ import (
 	"os"
 	"project-skbackend/internal/models"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/customs"
+	"project-skbackend/packages/customs/ctdatatype"
 
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utstring"
@@ -139,7 +139,7 @@ func SeedAdminCredentials(db *gorm.DB) error {
 					FirstName:   os.Getenv("ADMIN_FIRSTNAME"),
 					LastName:    os.Getenv("ADMIN_LASTNAME"),
 					Gender:      consttypes.G_MALE,
-					DateOfBirth: customs.CDT_DATE{Time: consttypes.DateNow},
+					DateOfBirth: ctdatatype.CDT_DATE{Time: consttypes.DateNow},
 				},
 			}
 
@@ -167,7 +167,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 					FirstName:   "John",
 					LastName:    "Doe",
 					Gender:      consttypes.G_MALE,
-					DateOfBirth: customs.CDT_DATE{Time: consttypes.DateNow},
+					DateOfBirth: ctdatatype.CDT_DATE{Time: consttypes.DateNow},
 					Caregiver: &models.Caregiver{
 						User: models.User{
 							Email:    "caregiver@test.com",
@@ -177,7 +177,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 						FirstName:   "Care",
 						LastName:    "Giver",
 						Gender:      consttypes.G_FEMALE,
-						DateOfBirth: customs.CDT_DATE{Time: consttypes.DateNow},
+						DateOfBirth: ctdatatype.CDT_DATE{Time: consttypes.DateNow},
 					},
 				},
 			}

@@ -4,7 +4,7 @@ import (
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models/base"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/customs"
+	"project-skbackend/packages/customs/ctdatatype"
 	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/google/uuid"
@@ -28,13 +28,13 @@ type (
 
 		Allergies []*MemberAllergy `json:"allergies,omitempty"`
 
-		Height      float64           `json:"height" gorm:"required" example:"100"`
-		Weight      float64           `json:"weight" gorm:"required" example:"150"`
-		BMI         float64           `json:"bmi" gorm:"required;type:decimal(10,2)" example:"19"`
-		FirstName   string            `json:"first_name" gorm:"required" example:"Jonathan"`
-		LastName    string            `json:"last_name" gorm:"required" example:"Vince"`
-		Gender      consttypes.Gender `json:"gender" gorm:"required; type:gender_enum" example:"Male"`
-		DateOfBirth customs.CDT_DATE  `json:"date_of_birth" gorm:"required" example:"2000-10-20"`
+		Height      float64             `json:"height" gorm:"required" example:"100"`
+		Weight      float64             `json:"weight" gorm:"required" example:"150"`
+		BMI         float64             `json:"bmi" gorm:"required;type:decimal(10,2)" example:"19"`
+		FirstName   string              `json:"first_name" gorm:"required" example:"Jonathan"`
+		LastName    string              `json:"last_name" gorm:"required" example:"Vince"`
+		Gender      consttypes.Gender   `json:"gender" gorm:"required; type:gender_enum" example:"Male"`
+		DateOfBirth ctdatatype.CDT_DATE `json:"date_of_birth" gorm:"required" example:"2000-10-20"`
 	}
 
 	MemberIllness struct {

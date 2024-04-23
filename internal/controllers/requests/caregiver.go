@@ -3,7 +3,7 @@ package requests
 import (
 	"project-skbackend/internal/models"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/customs"
+	"project-skbackend/packages/customs/ctdatatype"
 	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/jinzhu/copier"
@@ -13,19 +13,19 @@ type (
 	CreateCaregiver struct {
 		User CreateUser `json:"user" form:"user" binding:"required"`
 
-		Gender      consttypes.Gender `json:"gender" form:"gender" binding:"required"`
-		FirstName   string            `json:"first_name" form:"first_name" binding:"required"`
-		LastName    string            `json:"last_name" form:"last_name" binding:"required"`
-		DateOfBirth customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"required"`
+		Gender      consttypes.Gender   `json:"gender" form:"gender" binding:"required"`
+		FirstName   string              `json:"first_name" form:"first_name" binding:"required"`
+		LastName    string              `json:"last_name" form:"last_name" binding:"required"`
+		DateOfBirth ctdatatype.CDT_DATE `json:"date_of_birth" form:"date_of_birth" binding:"required"`
 	}
 
 	UpdateCaregiver struct {
 		User UpdateUser `json:"user" form:"user" binding:"dive"`
 
-		Gender      consttypes.Gender `json:"gender" form:"gender" binding:"-"`
-		FirstName   string            `json:"first_name" form:"first_name" binding:"-"`
-		LastName    string            `json:"last_name" form:"last_name" binding:"-"`
-		DateOfBirth customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"-"`
+		Gender      consttypes.Gender   `json:"gender" form:"gender" binding:"-"`
+		FirstName   string              `json:"first_name" form:"first_name" binding:"-"`
+		LastName    string              `json:"last_name" form:"last_name" binding:"-"`
+		DateOfBirth ctdatatype.CDT_DATE `json:"date_of_birth" form:"date_of_birth" binding:"-"`
 	}
 )
 

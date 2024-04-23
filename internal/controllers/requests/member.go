@@ -4,7 +4,7 @@ import (
 	"math"
 	"project-skbackend/internal/models"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/customs"
+	"project-skbackend/packages/customs/ctdatatype"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utmath"
 
@@ -18,15 +18,15 @@ type (
 
 		Caregiver *CreateCaregiver `json:"caregiver" form:"caregiver" binding:"-"`
 
-		Height         float64           `json:"height" form:"height" binding:"required"`
-		Weight         float64           `json:"weight" form:"weight" binding:"required"`
-		FirstName      string            `json:"first_name" form:"first_name" binding:"required"`
-		LastName       string            `json:"last_name" form:"last_name" binding:"required"`
-		Gender         consttypes.Gender `json:"gender" form:"gender" binding:"required"`
-		DateOfBirth    customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"required"`
-		OrganizationID *uuid.UUID        `json:"organization_id" form:"organization_id" binding:"-"`
-		IllnessID      []*uuid.UUID      `json:"illness_id" form:"illness_id" binding:"-"`
-		AllergyID      []*uuid.UUID      `json:"allergy_id" form:"allergy_id" binding:"-"`
+		Height         float64             `json:"height" form:"height" binding:"required"`
+		Weight         float64             `json:"weight" form:"weight" binding:"required"`
+		FirstName      string              `json:"first_name" form:"first_name" binding:"required"`
+		LastName       string              `json:"last_name" form:"last_name" binding:"required"`
+		Gender         consttypes.Gender   `json:"gender" form:"gender" binding:"required"`
+		DateOfBirth    ctdatatype.CDT_DATE `json:"date_of_birth" form:"date_of_birth" binding:"required"`
+		OrganizationID *uuid.UUID          `json:"organization_id" form:"organization_id" binding:"-"`
+		IllnessID      []*uuid.UUID        `json:"illness_id" form:"illness_id" binding:"-"`
+		AllergyID      []*uuid.UUID        `json:"allergy_id" form:"allergy_id" binding:"-"`
 	}
 
 	UpdateMember struct {
@@ -34,15 +34,15 @@ type (
 
 		Caregiver *UpdateCaregiver `json:"caregiver" form:"caregiver" binding:"omitempty"`
 
-		Height         float64           `json:"height" form:"height" binding:"-"`
-		Weight         float64           `json:"weight" form:"weight" binding:"-"`
-		FirstName      string            `json:"first_name" form:"first_name" binding:"-"`
-		LastName       string            `json:"last_name" form:"last_name" binding:"-"`
-		Gender         consttypes.Gender `json:"gender" form:"gender" binding:"-"`
-		DateOfBirth    customs.CDT_DATE  `json:"date_of_birth" form:"date_of_birth" binding:"-"`
-		OrganizationID *uuid.UUID        `json:"organization_id" form:"organization_id" binding:"-"`
-		IllnessID      []*uuid.UUID      `json:"illness_id" form:"illness_id" binding:"-"`
-		AllergyID      []*uuid.UUID      `json:"allergy_id" form:"allergy_id" binding:"-"`
+		Height         float64             `json:"height" form:"height" binding:"-"`
+		Weight         float64             `json:"weight" form:"weight" binding:"-"`
+		FirstName      string              `json:"first_name" form:"first_name" binding:"-"`
+		LastName       string              `json:"last_name" form:"last_name" binding:"-"`
+		Gender         consttypes.Gender   `json:"gender" form:"gender" binding:"-"`
+		DateOfBirth    ctdatatype.CDT_DATE `json:"date_of_birth" form:"date_of_birth" binding:"-"`
+		OrganizationID *uuid.UUID          `json:"organization_id" form:"organization_id" binding:"-"`
+		IllnessID      []*uuid.UUID        `json:"illness_id" form:"illness_id" binding:"-"`
+		AllergyID      []*uuid.UUID        `json:"allergy_id" form:"allergy_id" binding:"-"`
 	}
 )
 

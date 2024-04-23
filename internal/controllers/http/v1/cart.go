@@ -3,8 +3,8 @@ package controllers
 import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
-	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/middlewares"
+	"project-skbackend/internal/models"
 	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/userservice"
 	"project-skbackend/packages/consttypes"
@@ -38,14 +38,9 @@ func newCartRoutes(
 	gcart := rg.Group("carts")
 	{
 
-		gmember := gcart.Group("").Use(middlewares.JWTAuthMiddleware(cfg, consttypes.UR_MEMBER))
+		gmembcare := gcart.Group("").Use(middlewares.JWTAuthMiddleware(cfg, consttypes.UR_MEMBER, consttypes.UR_CAREGIVER))
 		{
-			gmember.POST("", r.createCart)
-		}
-
-		gcare := gcart.Group("").Use(middlewares.JWTAuthMiddleware(cfg, consttypes.UR_CAREGIVER))
-		{
-			gcare.POST("", r.createCart)
+			gmembcare.POST("", r.createCart)
 		}
 
 		gcart.GET("raw", r.getCartsRaw)
@@ -94,7 +89,7 @@ func (r *cartroutes) createCart(ctx *gin.Context) {
 	if roleres != nil {
 		switch roleres.Role {
 		case consttypes.UR_CAREGIVER:
-			res, ok := roleres.Data.(responses.Caregiver)
+			res, ok := roleres.Data.(*models.Caregiver)
 			if !ok {
 				utresponse.GeneralUnauthorized(
 					ctx,
@@ -112,7 +107,7 @@ func (r *cartroutes) createCart(ctx *gin.Context) {
 				return
 			}
 		case consttypes.UR_MEMBER:
-			res, ok := roleres.Data.(responses.Member)
+			res, ok := roleres.Data.(*models.Member)
 			if !ok {
 				utresponse.GeneralUnauthorized(
 					ctx,

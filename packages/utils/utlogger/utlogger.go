@@ -1,6 +1,7 @@
 package utlogger
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"runtime"
@@ -19,13 +20,15 @@ func Error(errs ...error) {
 	}
 }
 
-func Info(data any) {
+func Info(data ...any) {
 	pc := make([]uintptr, 15)
 	n := runtime.Callers(2, pc)
 	frames := runtime.CallersFrames(pc[:n])
 	frame, _ := frames.Next()
 
-	fmt.Printf("\nInfo occurred at: %s:%d\nInfo: %s\n\n", frame.File, frame.Line, data)
+	jsondata, _ := json.MarshalIndent(data, "", "\t")
+
+	fmt.Printf("\nInfo occurred at: %s:%d\nInfo: %s\n\n", frame.File, frame.Line, jsondata)
 }
 
 func Fatal(err error) {
