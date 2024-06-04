@@ -769,13 +769,6 @@ func SeedCartData(db *gorm.DB) error {
 					ReferenceType: consttypes.UR_MEMBER,
 					Quantity:      1,
 				},
-				{
-					MealID:        meal.ID,
-					Meal:          meal,
-					ReferenceID:   caregiver.ID,
-					ReferenceType: consttypes.UR_CAREGIVER,
-					Quantity:      1,
-				},
 			}
 
 			err = db.Create(carts).Error

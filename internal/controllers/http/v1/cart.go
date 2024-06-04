@@ -47,9 +47,9 @@ func newCartRoutes(
 		{
 			gmembcare.POST("", r.createCart)
 			gmembcare.DELETE(":muuid", r.deleteCart)
+			gmembcare.GET("raw", r.getCartsRaw)
 		}
 
-		gcart.GET("raw", r.getCartsRaw)
 	}
 }
 
@@ -164,10 +164,75 @@ func (r *cartroutes) createCart(ctx *gin.Context) {
 
 func (r *cartroutes) getCartsRaw(ctx *gin.Context) {
 	var (
-		entity = "carts"
+		function = "get carts raw"
+		entity   = "carts"
+
+		rid  uuid.UUID
+		role consttypes.UserRole
+		ok   bool
 	)
 
-	carts, err := r.scart.Read()
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	roleres, err := r.suser.GetRoleDataByUserID(userres.ID)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	if roleres == nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			consttypes.ErrUserInvalidRole,
+		)
+		return
+	}
+
+	rid, role, ok = utrole.CartRoleCheck(*roleres)
+	if !ok {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			consttypes.ErrUserInvalidRole,
+		)
+		return
+	}
+
+	if role == consttypes.UR_CAREGIVER {
+		m, err := r.smmbr.FindByCaregiverID(rid)
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				utresponse.GeneralNotFound(
+					entity,
+					ctx,
+					err,
+				)
+				return
+			}
+
+			utresponse.GeneralInternalServerError(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		rid = m.ID
+		role = m.User.Role
+	}
+
+	carts, err := r.scart.ReadWithReference(rid, role)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			utresponse.GeneralNotFound(

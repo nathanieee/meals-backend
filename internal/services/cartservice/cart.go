@@ -26,6 +26,7 @@ type (
 		Read() ([]*responses.Cart, error)
 		Update(req requests.UpdateCart) (*responses.Cart, error)
 		Delete(id uuid.UUID) error
+		ReadWithReference(rid uuid.UUID, rtype consttypes.UserRole) ([]*responses.Cart, error)
 
 		FindByID(id uuid.UUID) (*responses.Cart, error)
 		GetCartByMealIDAndReference(mid uuid.UUID, rid uuid.UUID, rtype consttypes.UserRole) (*responses.Cart, error)
@@ -97,6 +98,33 @@ func (s *CartService) Create(req requests.CreateCart) (*responses.Cart, error) {
 
 func (s *CartService) Read() ([]*responses.Cart, error) {
 	carts, err := s.rcart.Read()
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	cartreses := make([]*responses.Cart, 0, len(carts))
+	for _, cart := range carts {
+		membres, careres, err := s.GetCartReferenceObject(*cart)
+		if err != nil {
+			utlogger.Error(err)
+			return nil, err
+		}
+
+		cartres, err := cart.ToResponse(membres, careres)
+		if err != nil {
+			utlogger.Error(err)
+			return nil, err
+		}
+
+		cartreses = append(cartreses, cartres)
+	}
+
+	return cartreses, nil
+}
+
+func (s *CartService) ReadWithReference(rid uuid.UUID, rtype consttypes.UserRole) ([]*responses.Cart, error) {
+	carts, err := s.rcart.ReadWithReference(rid, rtype)
 	if err != nil {
 		utlogger.Error(err)
 		return nil, err

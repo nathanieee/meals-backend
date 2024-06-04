@@ -35,6 +35,7 @@ type (
 	ICartRepository interface {
 		Create(c models.Cart) (*models.Cart, error)
 		Read() ([]*models.Cart, error)
+		ReadWithReference(rid uuid.UUID, rtype consttypes.UserRole) ([]*models.Cart, error)
 		Update(c models.Cart) (*models.Cart, error)
 		Delete(c models.Cart) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
@@ -88,6 +89,25 @@ func (r *CartRepository) Read() ([]*models.Cart, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
+		Find(&c).Error
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func (r *CartRepository) ReadWithReference(rid uuid.UUID, rtype consttypes.UserRole) ([]*models.Cart, error) {
+	var (
+		c []*models.Cart
+	)
+
+	err := r.
+		preload().
+		Select(SELECTED_FIELDS).
+		Where(&models.Cart{ReferenceID: rid, ReferenceType: rtype}).
 		Find(&c).Error
 
 	if err != nil {
