@@ -36,6 +36,7 @@ type (
 		Delete(id uuid.UUID) error
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
 		FindByID(id uuid.UUID) (*responses.Member, error)
+		FindByCaregiverID(cgid uuid.UUID) (*responses.Member, error)
 	}
 )
 
@@ -285,6 +286,17 @@ func (s *MemberService) FindAll(preq utpagination.Pagination) (*utpagination.Pag
 
 func (s *MemberService) FindByID(id uuid.UUID) (*responses.Member, error) {
 	member, err := s.rmemb.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	mres := member.ToResponse()
+
+	return mres, nil
+}
+
+func (s *MemberService) FindByCaregiverID(cgid uuid.UUID) (*responses.Member, error) {
+	member, err := s.rmemb.FindByCaregiverID(cgid)
 	if err != nil {
 		return nil, err
 	}

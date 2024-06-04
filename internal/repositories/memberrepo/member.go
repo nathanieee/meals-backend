@@ -48,6 +48,7 @@ type (
 		FindByID(id uuid.UUID) (*models.Member, error)
 		FindByEmail(email string) (*models.Member, error)
 		FindByUserID(uid uuid.UUID) (*models.Member, error)
+		FindByCaregiverID(cgid uuid.UUID) (*models.Member, error)
 	}
 )
 
@@ -227,6 +228,25 @@ func (r *MemberRepository) FindByUserID(uid uuid.UUID) (*models.Member, error) {
 		preload().
 		Select(SELECTED_FIELDS).
 		Where(&models.Member{User: models.User{Model: base.Model{ID: uid}}}).
+		First(&m).Error
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return m, nil
+}
+
+func (r *MemberRepository) FindByCaregiverID(cgid uuid.UUID) (*models.Member, error) {
+	var (
+		m *models.Member
+	)
+
+	err := r.
+		preload().
+		Select(SELECTED_FIELDS).
+		Where(&models.Member{CaregiverID: &cgid}).
 		First(&m).Error
 
 	if err != nil {

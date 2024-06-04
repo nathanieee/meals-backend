@@ -43,7 +43,7 @@ type (
 		FindByCaregiverID(cgid uuid.UUID) ([]*models.Cart, error)
 		FindByMealID(mid uuid.UUID) ([]*models.Cart, error)
 		GetCartReferenceObject(cart models.Cart) (*responses.Member, *responses.Caregiver, error)
-		GetCartByMealIDAndReferenceID(mid uuid.UUID, rid uuid.UUID) (*models.Cart, error)
+		GetCartByMealIDAndReference(mid uuid.UUID, rid uuid.UUID, rtype consttypes.UserRole) (*models.Cart, error)
 	}
 )
 
@@ -304,14 +304,14 @@ func (r *CartRepository) GetCartReferenceObject(cart models.Cart) (*responses.Me
 	return mres, cgres, nil
 }
 
-func (r *CartRepository) GetCartByMealIDAndReferenceID(mid uuid.UUID, rid uuid.UUID) (*models.Cart, error) {
+func (r *CartRepository) GetCartByMealIDAndReference(mid uuid.UUID, rid uuid.UUID, rtype consttypes.UserRole) (*models.Cart, error) {
 	var (
 		c *models.Cart
 	)
 
 	err := r.db.
 		Select(SELECTED_FIELDS).
-		Where(&models.Cart{MealID: mid, ReferenceID: rid}).
+		Where(&models.Cart{MealID: mid, ReferenceID: rid, ReferenceType: rtype}).
 		First(&c).Error
 
 	if err != nil {

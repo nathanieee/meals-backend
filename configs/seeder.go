@@ -257,8 +257,6 @@ func SeedMealData(db *gorm.DB) error {
 			db.First(&allergy)
 			db.First(&partner)
 
-			utlogger.Info(fmt.Sprintf("illness: %s, allergy: %s, partner: %s", illness.Name, allergy.Name, partner.Name))
-
 			meals := []*models.Meal{
 				{
 					Illnesses: []*models.MealIllness{

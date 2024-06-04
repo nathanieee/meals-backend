@@ -7,9 +7,11 @@ import (
 	"project-skbackend/internal/repositories/caregiverrepo"
 	"project-skbackend/internal/repositories/cartrepo"
 	"project-skbackend/internal/repositories/memberrepo"
+	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type (
@@ -22,9 +24,11 @@ type (
 	ICartService interface {
 		Create(req requests.CreateCart) (*responses.Cart, error)
 		Read() ([]*responses.Cart, error)
-		Update(id uuid.UUID, req requests.UpdateCart) (*responses.Cart, error)
+		Update(req requests.UpdateCart) (*responses.Cart, error)
 		Delete(id uuid.UUID) error
+
 		FindByID(id uuid.UUID) (*responses.Cart, error)
+		GetCartByMealIDAndReference(mid uuid.UUID, rid uuid.UUID, rtype consttypes.UserRole) (*responses.Cart, error)
 		GetCartReferenceObject(cart models.Cart) (*responses.Member, *responses.Caregiver, error)
 	}
 )
@@ -42,37 +46,38 @@ func NewCartService(
 }
 
 func (s *CartService) Create(req requests.CreateCart) (*responses.Cart, error) {
+	// Convert request to model
 	cart, err := req.ToModel()
 	if err != nil {
 		utlogger.Error(err)
 		return nil, err
 	}
 
+	// Get cart reference objects
 	membres, careres, err := s.GetCartReferenceObject(*cart)
 	if err != nil {
 		utlogger.Error(err)
 		return nil, err
 	}
 
-	// TODO - update this function to add the quantity instead of creating a new cart
-	// TODO - if it is the same meal id and reference id
-	cart, err = s.rcart.GetCartByMealIDAndReferenceID(cart.MealID, cart.ReferenceID)
-	utlogger.Info(cart)
-
-	if err != nil {
+	// Try to get existing cart by meal ID and reference
+	existingcart, err := s.rcart.GetCartByMealIDAndReference(cart.MealID, cart.ReferenceID, cart.ReferenceType)
+	if err != nil && err != gorm.ErrRecordNotFound {
 		utlogger.Error(err)
 		return nil, err
 	}
 
-	if cart != nil {
-		cart.Quantity = cart.Quantity + req.Quantity
+	// If an existing cart is found, update its quantity
+	if existingcart != nil {
+		existingcart.Quantity += req.Quantity
 
-		cart, err = s.rcart.Update(*cart)
+		cart, err = s.rcart.Update(*existingcart)
 		if err != nil {
 			utlogger.Error(err)
 			return nil, err
 		}
 	} else {
+		// Create a new cart
 		cart, err = s.rcart.Create(*cart)
 		if err != nil {
 			utlogger.Error(err)
@@ -80,6 +85,7 @@ func (s *CartService) Create(req requests.CreateCart) (*responses.Cart, error) {
 		}
 	}
 
+	// Convert cart to response
 	cartres, err := cart.ToResponse(membres, careres)
 	if err != nil {
 		utlogger.Error(err)
@@ -116,8 +122,9 @@ func (s *CartService) Read() ([]*responses.Cart, error) {
 	return cartreses, nil
 }
 
-func (s *CartService) Update(id uuid.UUID, req requests.UpdateCart) (*responses.Cart, error) {
-	cart, err := s.rcart.FindByID(id)
+func (s *CartService) Update(req requests.UpdateCart) (*responses.Cart, error) {
+	cart, err := s.rcart.GetCartByMealIDAndReference(req.MealID, req.ReferenceID, req.ReferenceType)
+
 	if err != nil {
 		utlogger.Error(err)
 		return nil, err
@@ -128,6 +135,8 @@ func (s *CartService) Update(id uuid.UUID, req requests.UpdateCart) (*responses.
 		utlogger.Error(err)
 		return nil, err
 	}
+
+	cart.Quantity = cart.Quantity + req.Quantity
 
 	cart, err = s.rcart.Update(*cart)
 	if err != nil {
@@ -175,7 +184,6 @@ func (s *CartService) FindByID(id uuid.UUID) (*responses.Cart, error) {
 
 	membres, careres, err := s.GetCartReferenceObject(*cart)
 	if err != nil {
-		utlogger.Error(err)
 		return nil, err
 	}
 
@@ -190,4 +198,26 @@ func (s *CartService) FindByID(id uuid.UUID) (*responses.Cart, error) {
 
 func (s *CartService) GetCartReferenceObject(cart models.Cart) (*responses.Member, *responses.Caregiver, error) {
 	return s.rcart.GetCartReferenceObject(cart)
+}
+
+func (s *CartService) GetCartByMealIDAndReference(mid uuid.UUID, rid uuid.UUID, rtype consttypes.UserRole) (*responses.Cart, error) {
+	cart, err := s.rcart.GetCartByMealIDAndReference(mid, rid, rtype)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	membres, careres, err := s.GetCartReferenceObject(*cart)
+	if err != nil {
+		return nil, err
+	}
+
+	cartres, err := cart.ToResponse(membres, careres)
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return cartres, nil
 }

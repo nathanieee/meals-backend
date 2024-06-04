@@ -45,7 +45,7 @@ func GenerateRandomToken(length int) (string, error) {
 }
 
 func PrintJSON(data any) string {
-	json, _ := json.Marshal(data)
+	json, _ := json.MarshalIndent(data, "", "\t")
 	utlogger.Info(json)
 
 	return string(json)

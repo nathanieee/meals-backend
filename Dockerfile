@@ -19,7 +19,7 @@ RUN apk update \
   && update-ca-certificates
 
 # Install tools and dependencies
-RUN go install github.com/cosmtrek/air@latest \
+RUN go install github.com/air-verse/air@latest \
   && go install github.com/go-delve/delve/cmd/dlv@latest \
   && go install github.com/vektra/mockery/v2@latest
 
