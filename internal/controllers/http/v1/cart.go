@@ -49,7 +49,6 @@ func newCartRoutes(
 			gmembcare.DELETE(":muuid", r.deleteCart)
 			gmembcare.GET("raw", r.getCartsRaw)
 		}
-
 	}
 }
 
