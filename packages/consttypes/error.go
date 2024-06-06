@@ -12,6 +12,7 @@ var (
 	// general
 	ErrConvertFailed    = fmt.Errorf("data type conversion failed")
 	ErrInvalidReference = fmt.Errorf("invalid reference")
+	ErrUnauthorized     = fmt.Errorf("you are unauthorized to access this resource")
 
 	// field
 	ErrFieldIsEmpty             = fmt.Errorf("field should not be empty")

@@ -273,6 +273,7 @@ func (r *memberroutes) deleteMember(ctx *gin.Context) {
 			ctx,
 			err,
 		)
+		return
 	}
 
 	utresponse.GeneralSuccessDelete(

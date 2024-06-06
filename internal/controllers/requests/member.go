@@ -14,7 +14,7 @@ import (
 
 type (
 	CreateMember struct {
-		User CreateUser `json:"user" form:"user" binding:"required"`
+		User CreateUser `json:"user" form:"user" binding:"required,dive"`
 
 		Caregiver *CreateCaregiver `json:"caregiver" form:"caregiver" binding:"-"`
 
@@ -30,7 +30,7 @@ type (
 	}
 
 	UpdateMember struct {
-		User UpdateUser `json:"user" form:"user" binding:"omitempty"`
+		User UpdateUser `json:"user" form:"user" binding:"dive"`
 
 		Caregiver *UpdateCaregiver `json:"caregiver" form:"caregiver" binding:"omitempty"`
 

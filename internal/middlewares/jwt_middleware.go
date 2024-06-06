@@ -6,10 +6,10 @@ import (
 	"project-skbackend/packages/utils/utrequest"
 	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/uttoken"
+	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/exp/slices"
 )
 
 func extractToken(c *gin.Context) (string, error) {
@@ -64,7 +64,7 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedlevel ...consttypes.UserRole)
 		if !slices.Contains(allowedlevel, tparsed.User.Role) || (consttypes.DateNow.Unix() >= tparsed.Expires.Unix()) {
 			utresponse.GeneralUnauthorized(
 				ctx,
-				err,
+				consttypes.ErrUnauthorized,
 			)
 			ctx.Abort()
 			return

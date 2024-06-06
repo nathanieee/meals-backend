@@ -12,6 +12,7 @@ import (
 	"project-skbackend/internal/repositories/memberrepo"
 	"project-skbackend/internal/repositories/organizationrepo"
 	"project-skbackend/internal/repositories/partnerrepo"
+	"project-skbackend/internal/repositories/patronrepo"
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/authservice"
 	"project-skbackend/internal/services/cartservice"
@@ -20,6 +21,7 @@ import (
 	"project-skbackend/internal/services/mealservice"
 	"project-skbackend/internal/services/memberservice"
 	"project-skbackend/internal/services/partnerservice"
+	"project-skbackend/internal/services/patronservice"
 	"project-skbackend/internal/services/producerservice"
 	"project-skbackend/internal/services/userservice"
 
@@ -37,6 +39,7 @@ type DependencyInjection struct {
 	MealService     *mealservice.MealService
 	CartService     *cartservice.CartService
 	ConsumerService *consumerservice.ConsumerService
+	PatronService   *patronservice.PatronService
 }
 
 func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, rdb *redis.Client, ctx context.Context) *DependencyInjection {
@@ -56,6 +59,7 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	rorg := organizationrepo.NewOrganizationRepository(db)
 	rcart := cartrepo.NewCartRepository(db)
 	radmin := adminrepo.NewAdminRepository(db)
+	rpatron := patronrepo.NewPatronRepository(db)
 
 	/* --------------------------------- service -------------------------------- */
 	sprod := producerservice.NewProducerService(ch, cfg, ctx)
@@ -67,6 +71,7 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	smemb := memberservice.NewMemberService(rmemb, ruser, rcare, rall, rill, *rorg)
 	scart := cartservice.NewCartService(rcart, rcare, rmemb)
 	scons := consumerservice.NewConsumerService(ch, cfg, smail)
+	spatr := patronservice.NewPatronService(rpatron)
 
 	return &DependencyInjection{
 		UserService:     suser,
@@ -77,5 +82,6 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 		MealService:     smeal,
 		CartService:     scart,
 		ConsumerService: scons,
+		PatronService:   spatr,
 	}
 }

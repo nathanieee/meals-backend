@@ -9,12 +9,12 @@ import (
 
 type (
 	CreatePartner struct {
-		User CreateUser `json:"user" form:"user" binding:"required"`
+		User CreateUser `json:"user" form:"user" binding:"required,dive"`
 		Name string     `json:"name" form:"name" binding:"required"`
 	}
 
 	UpdatePartner struct {
-		User UpdateUser `json:"user" form:"user" binding:"-"`
+		User UpdateUser `json:"user" form:"user" binding:"dive"`
 		Name string     `json:"name" form:"name" binding:"-"`
 	}
 )

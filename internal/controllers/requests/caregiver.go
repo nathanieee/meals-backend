@@ -11,7 +11,7 @@ import (
 
 type (
 	CreateCaregiver struct {
-		User CreateUser `json:"user" form:"user" binding:"required"`
+		User CreateUser `json:"user" form:"user" binding:"required,dive"`
 
 		Gender      consttypes.Gender   `json:"gender" form:"gender" binding:"required"`
 		FirstName   string              `json:"first_name" form:"first_name" binding:"required"`

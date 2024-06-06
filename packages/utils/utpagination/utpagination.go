@@ -27,10 +27,10 @@ type (
 	}
 
 	Meal struct {
-		Partner Partner
+		ID *uuid.UUID `json:"meal_id"`
 	}
 
 	Partner struct {
-		ID *uuid.UUID
+		ID *uuid.UUID `json:"partner_id"`
 	}
 )
