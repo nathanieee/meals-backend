@@ -84,7 +84,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 	if req.OrganizationID != nil {
 		organization, err = s.rorg.FindByID(*req.OrganizationID)
 		if err != nil {
-			return nil, err
+			return nil, consttypes.ErrOrganizationNotFound
 		}
 	}
 
@@ -92,7 +92,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 	for _, ill := range req.IllnessID {
 		illness, err := s.rill.FindByID(*ill)
 		if err != nil {
-			return nil, err
+			return nil, consttypes.ErrIllnessNotFound
 		}
 
 		millness := illness.ToMemberIllness()
@@ -104,7 +104,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 	for _, all := range req.AllergyID {
 		allergy, err := s.rall.FindByID(*all)
 		if err != nil {
-			return nil, err
+			return nil, consttypes.ErrAllergiesNotFound
 		}
 
 		mallergy := allergy.ToMemberAllergy()
@@ -122,7 +122,10 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 		return nil, err
 	}
 
-	mres := member.ToResponse()
+	mres, err := member.ToResponse()
+	if err != nil {
+		return nil, err
+	}
 
 	return mres, nil
 }
@@ -135,7 +138,11 @@ func (s *MemberService) Read() ([]*responses.Member, error) {
 
 	mereses := make([]*responses.Member, 0, len(members))
 	for _, member := range members {
-		meres := member.ToResponse()
+		meres, err := member.ToResponse()
+		if err != nil {
+			return nil, err
+		}
+
 		mereses = append(mereses, meres)
 	}
 
@@ -257,7 +264,10 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		return nil, err
 	}
 
-	mres := member.ToResponse()
+	mres, err := member.ToResponse()
+	if err != nil {
+		return nil, err
+	}
 
 	return mres, nil
 }
@@ -290,7 +300,10 @@ func (s *MemberService) FindByID(id uuid.UUID) (*responses.Member, error) {
 		return nil, err
 	}
 
-	mres := member.ToResponse()
+	mres, err := member.ToResponse()
+	if err != nil {
+		return nil, err
+	}
 
 	return mres, nil
 }
@@ -301,7 +314,10 @@ func (s *MemberService) FindByCaregiverID(cgid uuid.UUID) (*responses.Member, er
 		return nil, err
 	}
 
-	mres := member.ToResponse()
+	mres, err := member.ToResponse()
+	if err != nil {
+		return nil, err
+	}
 
 	return mres, nil
 }

@@ -4,21 +4,25 @@ import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
+	"project-skbackend/internal/services/authservice"
+	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/memberservice"
+	"project-skbackend/internal/services/userservice"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils/utrequest"
 	"project-skbackend/packages/utils/utresponse"
+	"project-skbackend/packages/utils/uttoken"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type (
 	memberroutes struct {
 		cfg     *configs.Config
 		smember memberservice.IMemberService
+		scart   cartservice.ICartService
+		suser   userservice.IUserService
+		sauth   authservice.IAuthService
 	}
 )
 
@@ -26,33 +30,41 @@ func newMemberRoutes(
 	rg *gin.RouterGroup,
 	cfg *configs.Config,
 	smember memberservice.IMemberService,
+	scart cartservice.ICartService,
+	suser userservice.IUserService,
+	sauth authservice.IAuthService,
 ) {
 	r := &memberroutes{
 		cfg:     cfg,
 		smember: smember,
+		scart:   scart,
+		suser:   suser,
+		sauth:   sauth,
 	}
 
-	h := rg.Group("members").Use(middlewares.JWTAuthMiddleware(cfg,
-		consttypes.UR_ADMIN,
-	))
+	gmemberspub := rg.Group("members")
 	{
-		h.POST("", r.createMember)
-		h.GET("", r.getMembers)
-		h.GET("raw", r.getMembersRaw)
-		h.PUT("/:uuid", r.updateMember)
-		h.DELETE("/:uuid", r.deleteMember)
+		gmemberspub.POST("register", r.memberRegister)
+	}
+
+	gmemberspvt := rg.Group("members")
+	gmemberspvt.Use(middlewares.JWTAuthMiddleware(cfg, consttypes.UR_MEMBER))
+	{
+		gcart := gmemberspvt.Group("carts")
+		{
+			gcart.POST("", r.memberCreateCart)
+		}
 	}
 }
 
-func (r *memberroutes) createMember(ctx *gin.Context) {
+func (r *memberroutes) memberRegister(ctx *gin.Context) {
 	var (
-		function = "create member"
-		entity   = "member"
+		function = "member register"
 		req      requests.CreateMember
+		err      error
 	)
 
-	err := ctx.ShouldBindJSON(&req)
-	if err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
 			function,
@@ -78,7 +90,7 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 		}
 	}
 
-	resmemb, err := r.smember.Create(req)
+	_, err = r.smember.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utresponse.GeneralDuplicate(
@@ -96,85 +108,42 @@ func (r *memberroutes) createMember(ctx *gin.Context) {
 		return
 	}
 
+	resuser, thead, err := r.sauth.Signin(*req.ToSignin(), ctx)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	resauth := thead.ToAuthResponse(*resuser)
 	utresponse.GeneralSuccessCreate(
-		entity,
+		"member",
 		ctx,
-		resmemb,
+		resauth,
 	)
 }
 
-func (r *memberroutes) getMembers(ctx *gin.Context) {
+func (r *memberroutes) memberCreateCart(ctx *gin.Context) {
 	var (
-		entity  = "members"
-		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
+		function = "create cart"
+		entity   = "cart"
+		req      *requests.CreateCart
+		err      error
 	)
 
-	members, err := r.smember.FindAll(reqpage)
+	userres, err := uttoken.GetUser(ctx)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			utresponse.GeneralNotFound(
-				entity,
-				ctx,
-				err,
-			)
-			return
-		}
-
-		utresponse.GeneralInternalServerError(
-			entity,
+		utresponse.GeneralUnauthorized(
 			ctx,
 			err,
 		)
 		return
 	}
 
-	utresponse.GeneralSuccessFetch(
-		entity,
-		ctx,
-		members,
-	)
-}
-
-func (r *memberroutes) getMembersRaw(ctx *gin.Context) {
-	var (
-		entity = "members"
-	)
-
-	resmemb, err := r.smember.Read()
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			utresponse.GeneralNotFound(
-				entity,
-				ctx,
-				err,
-			)
-			return
-		}
-
-		utresponse.GeneralInternalServerError(
-			entity,
-			ctx,
-			err,
-		)
-		return
-	}
-
-	utresponse.GeneralSuccessFetch(
-		entity,
-		ctx,
-		resmemb,
-	)
-}
-
-func (r *memberroutes) updateMember(ctx *gin.Context) {
-	var (
-		function = "update member"
-		entity   = "member"
-		req      requests.UpdateMember
-	)
-
-	err := ctx.ShouldBind(&req)
-	if err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
 			function,
@@ -185,9 +154,27 @@ func (r *memberroutes) updateMember(ctx *gin.Context) {
 		return
 	}
 
-	uuid, err := uuid.Parse(ctx.Param("uuid"))
+	roleres, err := r.suser.GetRoleDataByUserID(userres.ID)
 	if err != nil {
-		utresponse.GeneralInputRequiredError(
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	if roleres == nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			consttypes.ErrUserInvalidRole,
+		)
+		return
+	}
+
+	rescart, err := r.scart.Create(*req, *roleres)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
 			function,
 			ctx,
 			err,
@@ -195,90 +182,9 @@ func (r *memberroutes) updateMember(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.smember.FindByID(uuid)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			utresponse.GeneralNotFound(
-				entity,
-				ctx,
-				err,
-			)
-			return
-		}
-
-		utresponse.GeneralInternalServerError(
-			entity,
-			ctx,
-			err,
-		)
-		return
-	}
-
-	resmemb, err := r.smember.Update(uuid, req)
-	if err != nil {
-		utresponse.GeneralFailedUpdate(
-			entity,
-			ctx,
-			err,
-		)
-		return
-	}
-
-	utresponse.GeneralSuccessUpdate(
+	utresponse.GeneralSuccessCreate(
 		entity,
 		ctx,
-		resmemb,
-	)
-}
-
-func (r *memberroutes) deleteMember(ctx *gin.Context) {
-	var (
-		function = "delete member"
-		entity   = "member"
-	)
-
-	uuid, err := uuid.Parse(ctx.Param("uuid"))
-	if err != nil {
-		utresponse.GeneralInputRequiredError(
-			function,
-			ctx,
-			err,
-		)
-		return
-	}
-
-	_, err = r.smember.FindByID(uuid)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			utresponse.GeneralNotFound(
-				entity,
-				ctx,
-				err,
-			)
-			return
-		}
-
-		utresponse.GeneralInternalServerError(
-			entity,
-			ctx,
-			err,
-		)
-		return
-	}
-
-	err = r.smember.Delete(uuid)
-	if err != nil {
-		utresponse.GeneralInternalServerError(
-			function,
-			ctx,
-			err,
-		)
-		return
-	}
-
-	utresponse.GeneralSuccessDelete(
-		entity,
-		ctx,
-		nil,
+		rescart,
 	)
 }

@@ -55,7 +55,10 @@ func (s *PartnerService) Create(req requests.CreatePartner) (*responses.Partner,
 		return nil, err
 	}
 
-	pres := partner.ToResponse()
+	pres, err := partner.ToResponse()
+	if err != nil {
+		return nil, err
+	}
 
 	return pres, nil
 }
@@ -90,7 +93,10 @@ func (s *PartnerService) Update(id uuid.UUID, req requests.UpdatePartner) (*resp
 		return nil, err
 	}
 
-	pres := partner.ToResponse()
+	pres, err := partner.ToResponse()
+	if err != nil {
+		return nil, err
+	}
 
 	return pres, nil
 }
@@ -123,7 +129,10 @@ func (s *PartnerService) FindByID(id uuid.UUID) (*responses.Partner, error) {
 		return nil, err
 	}
 
-	pres := partner.ToResponse()
+	pres, err := partner.ToResponse()
+	if err != nil {
+		return nil, err
+	}
 
 	return pres, nil
 }

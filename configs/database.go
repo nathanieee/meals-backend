@@ -144,9 +144,11 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 		&models.User{},
 		&models.UserImage{},
 		&models.Address{},
+
 		&models.Admin{},
 		&models.Allergy{},
 		&models.Caregiver{},
+		&models.Patron{},
 		&models.Donation{},
 		&models.Illness{},
 		&models.Image{},
@@ -159,7 +161,6 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 		&models.MemberIllness{},
 		&models.Organization{},
 		&models.Partner{},
-		&models.Patron{},
 		&models.Rating{},
 		&models.Cart{},
 	)

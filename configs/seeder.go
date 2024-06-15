@@ -752,22 +752,20 @@ func SeedCartData(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.Cart{}) && db.Migrator().HasTable(&models.Member{}) && db.Migrator().HasTable(&models.Caregiver{}) {
 		if err := db.First(&models.Cart{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			var (
-				member    models.Member
-				caregiver models.Caregiver
-				meal      models.Meal
+				member models.Member
+				meal   models.Meal
 			)
 
 			db.First(&member)
-			db.First(&caregiver)
 			db.First(&meal)
 
 			carts := []*models.Cart{
 				{
-					MealID:        meal.ID,
-					Meal:          meal,
-					ReferenceID:   member.ID,
-					ReferenceType: consttypes.UR_MEMBER,
-					Quantity:      1,
+					MealID:   meal.ID,
+					Meal:     meal,
+					MemberID: member.ID,
+					Member:   member,
+					Quantity: 1,
 				},
 			}
 

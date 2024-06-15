@@ -20,13 +20,13 @@ type (
 	}
 )
 
-func (p *Partner) ToResponse() *responses.Partner {
+func (p *Partner) ToResponse() (*responses.Partner, error) {
 	pres := responses.Partner{}
 
 	if err := copier.CopyWithOption(&pres, &p, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.Error(err)
-		return nil
+		return nil, err
 	}
 
-	return &pres
+	return &pres, nil
 }

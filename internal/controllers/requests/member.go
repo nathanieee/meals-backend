@@ -99,3 +99,10 @@ func (req *UpdateMember) ToModel(
 
 	return &member, nil
 }
+
+func (req *CreateMember) ToSignin() *Signin {
+	return &Signin{
+		Email:    req.User.Email,
+		Password: req.User.Password,
+	}
+}

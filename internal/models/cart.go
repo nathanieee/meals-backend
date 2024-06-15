@@ -3,7 +3,6 @@ package models
 import (
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models/base"
-	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/google/uuid"
@@ -17,15 +16,15 @@ type (
 		MealID uuid.UUID `json:"meal_id" gorm:"required"`
 		Meal   Meal      `json:"meal"`
 
-		ReferenceID   uuid.UUID           `json:"reference_id" gorm:"required;<-:create"`
-		ReferenceType consttypes.UserRole `json:"reference_type" gorm:"required; oneof='Member' 'Caregiver';type:user_role_enum;<-:create"`
-		Quantity      uint                `json:"quantity" gorm:"required"`
+		MemberID uuid.UUID `json:"member_id" gorm:"required"`
+		Member   Member    `json:"member"`
+
+		Quantity uint `json:"quantity" gorm:"required"`
 	}
 )
 
 func (c *Cart) ToResponse(
 	member *responses.Member,
-	caregiver *responses.Caregiver,
 ) (*responses.Cart, error) {
 	var (
 		cres responses.Cart
@@ -37,7 +36,6 @@ func (c *Cart) ToResponse(
 	}
 
 	cres.Member = member
-	cres.Caregiver = caregiver
 
 	return &cres, nil
 }

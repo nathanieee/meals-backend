@@ -49,3 +49,10 @@ func (req *UpdatePartner) ToModel(
 
 	return &partner, nil
 }
+
+func (req *CreatePartner) ToSignin() *Signin {
+	return &Signin{
+		Email:    req.User.Email,
+		Password: req.User.Password,
+	}
+}

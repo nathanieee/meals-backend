@@ -47,14 +47,13 @@ func Paginate(
 	db *gorm.DB,
 ) func(db *gorm.DB) *gorm.DB {
 	var (
-		totdata  int64
-		totpages = int(math.Ceil(float64(totdata) / float64(pagination.Limit)))
+		totdata int64
 	)
 
 	db.Count(&totdata)
 
 	pagination.TotalDatas = totdata
-	pagination.TotalPages = totpages
+	pagination.TotalPages = int(math.Ceil(float64(totdata) / float64(pagination.Limit)))
 
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Offset(getOffset(pagination)).Limit(getLimit(pagination)).Order(getSort(pagination))

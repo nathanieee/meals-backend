@@ -11,7 +11,7 @@ type (
 	Donation struct {
 		base.Model
 
-		PatronID uuid.UUID `json:"-" gorn:"required"`
+		PatronID uuid.UUID `json:"-" gorm:"required"`
 
 		Value  float64                   `json:"value" gorm:"required"`
 		Status consttypes.DonationStatus `json:"status" gorm:"required; type:donation_status_enum"`

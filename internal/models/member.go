@@ -5,7 +5,6 @@ import (
 	"project-skbackend/internal/models/base"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/customs/ctdatatype"
-	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -24,9 +23,9 @@ type (
 		OrganizationID *uuid.UUID    `json:"organization_id,omitempty" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4" default:"null"`
 		Organization   *Organization `json:"organization,omitempty"`
 
-		Illnesses []*MemberIllness `json:"illnesses,omitempty"`
+		Illnesses []*MemberIllness `json:"illnesses,omitempty" gorm:"foreignkey:MemberID; references:id"`
 
-		Allergies []*MemberAllergy `json:"allergies,omitempty"`
+		Allergies []*MemberAllergy `json:"allergies,omitempty" gorm:"foreignkey:MemberID; references:id"`
 
 		Height      float64             `json:"height" gorm:"required" example:"100"`
 		Weight      float64             `json:"weight" gorm:"required" example:"150"`
@@ -39,26 +38,27 @@ type (
 
 	MemberIllness struct {
 		base.Model
-		MemberID  uuid.UUID `json:"member_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		MemberID uuid.UUID `json:"member_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+
 		IllnessID uuid.UUID `json:"illness_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
 		Illness   Illness   `json:"illness"`
 	}
 
 	MemberAllergy struct {
 		base.Model
-		MemberID  uuid.UUID `json:"member_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		MemberID uuid.UUID `json:"member_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+
 		AllergyID uuid.UUID `json:"allergy_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
 		Allergy   Allergy   `json:"allergy"`
 	}
 )
 
-func (m *Member) ToResponse() *responses.Member {
+func (m *Member) ToResponse() (*responses.Member, error) {
 	mres := responses.Member{}
 
 	if err := copier.CopyWithOption(&mres, &m, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.Error(err)
-		return nil
+		return nil, err
 	}
 
-	return &mres
+	return &mres, nil
 }

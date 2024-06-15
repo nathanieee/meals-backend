@@ -2,7 +2,6 @@ package requests
 
 import (
 	"project-skbackend/internal/models"
-	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/google/uuid"
@@ -11,21 +10,17 @@ import (
 
 type (
 	CreateCart struct {
-		MealID        uuid.UUID           `json:"meal_id" form:"meal_id" binding:"required"`
-		ReferenceID   uuid.UUID           `json:"-"`
-		ReferenceType consttypes.UserRole `json:"-"`
-		Quantity      uint                `json:"quantity" form:"quantity" binding:"required"`
+		MealID   uuid.UUID `json:"meal_id" form:"meal_id" binding:"required"`
+		Quantity uint      `json:"quantity" form:"quantity" binding:"required"`
 	}
 
 	UpdateCart struct {
-		MealID        uuid.UUID           `json:"meal_id" form:"meal_id" binding:"required"`
-		ReferenceID   uuid.UUID           `json:"reference_id" form:"reference_id" binding:"required"`
-		ReferenceType consttypes.UserRole `json:"reference_type" form:"reference_type" binding:"required"`
-		Quantity      uint                `json:"quantity" form:"quantity" binding:"required"`
+		MealID   uuid.UUID `json:"meal_id" form:"meal_id" binding:"required"`
+		Quantity uint      `json:"quantity" form:"quantity" binding:"required"`
 	}
 )
 
-func (req *CreateCart) ToModel() (*models.Cart, error) {
+func (req *CreateCart) ToModel(member models.Member) (*models.Cart, error) {
 	var (
 		cart models.Cart
 	)
@@ -34,6 +29,9 @@ func (req *CreateCart) ToModel() (*models.Cart, error) {
 		utlogger.Error(err)
 		return nil, err
 	}
+
+	cart.MemberID = member.ID
+	cart.Member = member
 
 	return &cart, nil
 }
@@ -47,14 +45,4 @@ func (req *UpdateCart) ToModel(
 	}
 
 	return &cart, nil
-}
-
-func (req *CreateCart) New(
-	rid uuid.UUID,
-	rt consttypes.UserRole,
-) (*CreateCart, error) {
-	req.ReferenceID = rid
-	req.ReferenceType = rt
-
-	return req, nil
 }

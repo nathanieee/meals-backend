@@ -19,8 +19,7 @@ var (
 	SELECTED_FIELDS = `
 		id, 
 		meal_id,
-		reference_id,
-		reference_type,
+		member_id,
 		quantity,
 		created_at,
 		updated_at
@@ -35,16 +34,13 @@ type (
 	ICartRepository interface {
 		Create(c models.Cart) (*models.Cart, error)
 		Read() ([]*models.Cart, error)
-		ReadWithReference(rid uuid.UUID, rtype consttypes.UserRole) ([]*models.Cart, error)
 		Update(c models.Cart) (*models.Cart, error)
 		Delete(c models.Cart) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		FindByID(id uuid.UUID) (*models.Cart, error)
 		FindByMemberID(mid uuid.UUID) ([]*models.Cart, error)
-		FindByCaregiverID(cgid uuid.UUID) ([]*models.Cart, error)
 		FindByMealID(mid uuid.UUID) ([]*models.Cart, error)
-		GetCartReferenceObject(cart models.Cart) (*responses.Member, *responses.Caregiver, error)
-		GetCartByMealIDAndReference(mid uuid.UUID, rid uuid.UUID, rtype consttypes.UserRole) (*models.Cart, error)
+		FindByMealIDAndMemberID(membid uuid.UUID, mealid uuid.UUID) (*models.Cart, error)
 	}
 )
 
@@ -59,7 +55,14 @@ func (r *CartRepository) preload() *gorm.DB {
 		Preload("Meal.Illnesses.Illness").
 		Preload("Meal.Allergies.Allergy").
 		Preload("Meal.Partner.User.Address").
-		Preload("Meal.Partner.User.Image.Image")
+		Preload("Meal.Partner.User.Image.Image").
+		Preload("Member.User.Image.Image").
+		Preload("Member.User.Address").
+		Preload("Member.Caregiver.User.Image.Image").
+		Preload("Member.Caregiver.User.Address").
+		Preload("Member.Organization").
+		Preload("Member.Allergies.Allergy").
+		Preload("Member.Illnesses.Illness")
 }
 
 func (r *CartRepository) Create(c models.Cart) (*models.Cart, error) {
@@ -89,25 +92,6 @@ func (r *CartRepository) Read() ([]*models.Cart, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Find(&c).Error
-
-	if err != nil {
-		utlogger.Error(err)
-		return nil, err
-	}
-
-	return c, nil
-}
-
-func (r *CartRepository) ReadWithReference(rid uuid.UUID, rtype consttypes.UserRole) ([]*models.Cart, error) {
-	var (
-		c []*models.Cart
-	)
-
-	err := r.
-		preload().
-		Select(SELECTED_FIELDS).
-		Where(&models.Cart{ReferenceID: rid, ReferenceType: rtype}).
 		Find(&c).Error
 
 	if err != nil {
@@ -182,21 +166,6 @@ func (r *CartRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 	// * copy the data from model to response
 	copier.CopyWithOption(&cres, &c, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
-	for _, cart := range c {
-		for _, cartres := range cres {
-			if cart.ID == cartres.ID {
-				mres, cgres, err := r.GetCartReferenceObject(cart)
-				if err != nil {
-					utlogger.Error(err)
-					return nil, err
-				}
-
-				cartres.Member = mres
-				cartres.Caregiver = cgres
-			}
-		}
-	}
-
 	p.Data = cres
 	return &p, nil
 }
@@ -228,26 +197,7 @@ func (r *CartRepository) FindByMemberID(mid uuid.UUID) ([]*models.Cart, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Cart{ReferenceID: mid, ReferenceType: consttypes.UR_MEMBER}).
-		Find(&c).Error
-
-	if err != nil {
-		utlogger.Error(err)
-		return nil, err
-	}
-
-	return c, nil
-}
-
-func (r *CartRepository) FindByCaregiverID(cid uuid.UUID) ([]*models.Cart, error) {
-	var (
-		c []*models.Cart
-	)
-
-	err := r.
-		preload().
-		Select(SELECTED_FIELDS).
-		Where(&models.Cart{ReferenceID: cid, ReferenceType: consttypes.UR_CAREGIVER}).
+		Where(&models.Cart{MemberID: mid}).
 		Find(&c).Error
 
 	if err != nil {
@@ -277,61 +227,15 @@ func (r *CartRepository) FindByMealID(mid uuid.UUID) ([]*models.Cart, error) {
 	return c, nil
 }
 
-func (r *CartRepository) GetCartReferenceObject(cart models.Cart) (*responses.Member, *responses.Caregiver, error) {
-	var (
-		cg    models.Caregiver
-		m     models.Member
-		cgres *responses.Caregiver
-		mres  *responses.Member
-	)
-
-	switch cart.ReferenceType {
-	case consttypes.UR_CAREGIVER:
-		err := r.db.
-			Preload(clause.Associations).
-			Preload("User.Image.Image").
-			Preload("User.Address").
-			First(&cg, cart.ReferenceID).Error
-
-		if err != nil {
-			utlogger.Error(err)
-			return nil, nil, err
-		}
-
-		cgres = cg.ToResponse()
-	case consttypes.UR_MEMBER:
-		err := r.db.
-			Preload(clause.Associations).
-			Preload("User.Image.Image").
-			Preload("User.Address").
-			Preload("Caregiver.User.Image.Image").
-			Preload("Caregiver.User.Address").
-			Preload("Organization").
-			Preload("Allergies.Allergy").
-			Preload("Illnesses.Illness").
-			First(&m, cart.ReferenceID).Error
-
-		if err != nil {
-			utlogger.Error(err)
-			return nil, nil, err
-		}
-
-		mres = m.ToResponse()
-	default:
-		return nil, nil, consttypes.ErrInvalidReference
-	}
-
-	return mres, cgres, nil
-}
-
-func (r *CartRepository) GetCartByMealIDAndReference(mid uuid.UUID, rid uuid.UUID, rtype consttypes.UserRole) (*models.Cart, error) {
+func (r *CartRepository) FindByMealIDAndMemberID(membid uuid.UUID, mealid uuid.UUID) (*models.Cart, error) {
 	var (
 		c *models.Cart
 	)
 
-	err := r.db.
+	err := r.
+		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Cart{MealID: mid, ReferenceID: rid, ReferenceType: rtype}).
+		Where(&models.Cart{MemberID: membid, MealID: mealid}).
 		First(&c).Error
 
 	if err != nil {

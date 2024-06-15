@@ -27,6 +27,15 @@ var (
 	ErrTokenInvalidFormat         = fmt.Errorf("token format is invalid")
 	ErrTokenCannotDecodePublicKey = fmt.Errorf("cannot decode token public key")
 
+	// illnesses
+	ErrIllnessNotFound = fmt.Errorf("illness not found")
+
+	// allergies
+	ErrAllergiesNotFound = fmt.Errorf("allergies not found")
+
+	// organizations
+	ErrOrganizationNotFound = fmt.Errorf("organization not found")
+
 	// user
 	ErrUserNotFound         = fmt.Errorf("user not found")
 	ErrIncorrectPassword    = fmt.Errorf("incorrect password")
@@ -42,4 +51,5 @@ var (
 	// email
 	ErrCannotChangeEmail = fmt.Errorf("cannot change existing email")
 	ErrTooQuickSendEmail = fmt.Errorf("an email was sent just under %v minutes ago", resetPasswordCooldown)
+	ErrDuplicateEmail    = fmt.Errorf("email address already exists")
 )

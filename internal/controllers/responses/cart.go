@@ -10,8 +10,6 @@ type (
 
 		Member *Member `json:"member,omitempty"`
 
-		Caregiver *Caregiver `json:"caregiver,omitempty"`
-
 		Quantity uint `json:"quantity"`
 	}
 )
