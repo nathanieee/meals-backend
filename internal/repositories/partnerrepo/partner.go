@@ -37,9 +37,9 @@ type (
 		Update(p models.Partner) (*models.Partner, error)
 		Delete(p models.Partner) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(pid uuid.UUID) (*models.Partner, error)
-		FindByEmail(email string) (*models.Partner, error)
-		FindByUserID(uid uuid.UUID) (*models.Partner, error)
+		GetByID(pid uuid.UUID) (*models.Partner, error)
+		GetByEmail(email string) (*models.Partner, error)
+		GetByUserID(uid uuid.UUID) (*models.Partner, error)
 	}
 )
 
@@ -63,7 +63,7 @@ func (r *PartnerRepository) Create(p models.Partner) (*models.Partner, error) {
 		return nil, err
 	}
 
-	pnew, err := r.FindByID(p.ID)
+	pnew, err := r.GetByID(p.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -100,7 +100,7 @@ func (r *PartnerRepository) Update(p models.Partner) (*models.Partner, error) {
 		return nil, err
 	}
 
-	pnew, err := r.FindByID(p.ID)
+	pnew, err := r.GetByID(p.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -166,7 +166,7 @@ func (r *PartnerRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 	return &p, nil
 }
 
-func (r *PartnerRepository) FindByID(pid uuid.UUID) (*models.Partner, error) {
+func (r *PartnerRepository) GetByID(pid uuid.UUID) (*models.Partner, error) {
 	var (
 		p *models.Partner
 	)
@@ -185,7 +185,7 @@ func (r *PartnerRepository) FindByID(pid uuid.UUID) (*models.Partner, error) {
 	return p, nil
 }
 
-func (r *PartnerRepository) FindByEmail(email string) (*models.Partner, error) {
+func (r *PartnerRepository) GetByEmail(email string) (*models.Partner, error) {
 	var (
 		p *models.Partner
 	)
@@ -193,7 +193,19 @@ func (r *PartnerRepository) FindByEmail(email string) (*models.Partner, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Partner{User: models.User{Email: email}}).
+		Where(`
+			partners.ID IN (
+				SELECT 
+					id 
+				FROM 
+					users
+				WHERE
+					email = ?
+					AND deleted_at IS NULL
+				GROUP BY 
+					id
+			)
+		`, email).
 		First(&p).Error
 
 	if err != nil {
@@ -204,7 +216,7 @@ func (r *PartnerRepository) FindByEmail(email string) (*models.Partner, error) {
 	return p, nil
 }
 
-func (r *PartnerRepository) FindByUserID(uid uuid.UUID) (*models.Partner, error) {
+func (r *PartnerRepository) GetByUserID(uid uuid.UUID) (*models.Partner, error) {
 	var (
 		p *models.Partner
 	)
@@ -212,7 +224,19 @@ func (r *PartnerRepository) FindByUserID(uid uuid.UUID) (*models.Partner, error)
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Partner{User: models.User{Model: base.Model{ID: uid}}}).
+		Where(`
+			partners.ID IN (
+				SELECT 
+					id 
+				FROM 
+					users
+				WHERE
+					id = ?
+					AND deleted_at IS NULL
+				GROUP BY 
+					id
+			)
+		`, uid).
 		First(&p).Error
 
 	if err != nil {

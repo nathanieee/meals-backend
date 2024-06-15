@@ -40,8 +40,8 @@ type (
 		Update(u models.User) (*models.User, error)
 		Delete(u models.User) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*models.User, error)
-		FindByEmail(email string) (*models.User, error)
+		GetByID(id uuid.UUID) (*models.User, error)
+		GetByEmail(email string) (*models.User, error)
 		FirstOrCreate(u models.User) (*models.User, error)
 	}
 )
@@ -66,7 +66,7 @@ func (r *UserRepository) Create(u models.User) (*models.User, error) {
 		return nil, err
 	}
 
-	unew, err := r.FindByID(u.ID)
+	unew, err := r.GetByID(u.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -103,7 +103,7 @@ func (r *UserRepository) Update(u models.User) (*models.User, error) {
 		return nil, err
 	}
 
-	unew, err := r.FindByID(u.ID)
+	unew, err := r.GetByID(u.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -169,7 +169,7 @@ func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 	return &p, nil
 }
 
-func (r *UserRepository) FindByID(id uuid.UUID) (*models.User, error) {
+func (r *UserRepository) GetByID(id uuid.UUID) (*models.User, error) {
 	var (
 		u *models.User
 	)
@@ -188,7 +188,7 @@ func (r *UserRepository) FindByID(id uuid.UUID) (*models.User, error) {
 	return u, nil
 }
 
-func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
+func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
 	var (
 		u *models.User
 	)

@@ -21,7 +21,7 @@ RUN apk update \
 # Install tools and dependencies
 RUN go install github.com/air-verse/air@latest \
   && go install github.com/go-delve/delve/cmd/dlv@latest \
-  && go install github.com/vektra/mockery/v2@latest
+  && go install github.com/vektra/mockery/v3@latest
 
 # Expose ports
 EXPOSE ${HTTP_PORT}

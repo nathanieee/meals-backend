@@ -149,7 +149,7 @@ func (r *userroutes) getCurrentUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := r.suser.FindByID(loggedInUser.ID)
+	user, err := r.suser.GetByID(loggedInUser.ID)
 	if err != nil {
 		utresponse.ErrorResponse(ctx, http.StatusNotFound, utresponse.ErrorRes{
 			Status:  consttypes.RST_ERROR,

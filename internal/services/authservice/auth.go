@@ -64,7 +64,7 @@ func NewAuthService(
 }
 
 func (s *AuthService) Signin(req requests.Signin, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
-	user, err := s.ruser.FindByEmail(req.Email)
+	user, err := s.ruser.GetByEmail(req.Email)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -88,7 +88,7 @@ func (s *AuthService) Signin(req requests.Signin, ctx *gin.Context) (*responses.
 }
 
 func (s *AuthService) ForgotPassword(req requests.ForgotPassword) error {
-	user, err := s.ruser.FindByEmail(req.Email)
+	user, err := s.ruser.GetByEmail(req.Email)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func (s *AuthService) ForgotPassword(req requests.ForgotPassword) error {
 }
 
 func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
-	user, err := s.ruser.FindByEmail(req.Email)
+	user, err := s.ruser.GetByEmail(req.Email)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return err
 	}
@@ -173,7 +173,7 @@ func (s *AuthService) RefreshAuthToken(trefresh string, ctx *gin.Context) (*resp
 		return nil, nil, err
 	}
 
-	user, err := s.ruser.FindByID(tparsed.User.ID)
+	user, err := s.ruser.GetByID(tparsed.User.ID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil, fmt.Errorf("the user with id %s does not exist", tparsed.User.ID)
@@ -313,7 +313,7 @@ func (s *AuthService) SendVerificationEmail(id uuid.UUID) error {
 		return err
 	}
 
-	user, err := s.ruser.FindByID(id)
+	user, err := s.ruser.GetByID(id)
 	if err != nil {
 		return err
 	}
@@ -356,7 +356,7 @@ func (s *AuthService) SendVerificationEmail(id uuid.UUID) error {
 }
 
 func (s *AuthService) VerifyToken(req requests.VerifyToken, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
-	user, err := s.ruser.FindByEmail(req.Email)
+	user, err := s.ruser.GetByEmail(req.Email)
 	if err != nil {
 		return nil, nil, err
 	}

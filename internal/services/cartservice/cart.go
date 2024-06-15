@@ -28,7 +28,7 @@ type (
 		Update(cid uuid.UUID, req requests.UpdateCart) (*responses.Cart, error)
 		Delete(id uuid.UUID) error
 
-		FindByID(id uuid.UUID) (*responses.Cart, error)
+		GetByID(id uuid.UUID) (*responses.Cart, error)
 	}
 )
 
@@ -56,12 +56,12 @@ func (s *CartService) Create(req requests.CreateCart, roleres responses.BaseRole
 	}
 
 	if rtype == consttypes.UR_CAREGIVER {
-		m, err = s.rmemb.FindByCaregiverID(rid)
+		m, err = s.rmemb.GetByCaregiverID(rid)
 		if err != nil {
 			return nil, err
 		}
 	} else if rtype == consttypes.UR_MEMBER {
-		m, err = s.rmemb.FindByID(rid)
+		m, err = s.rmemb.GetByID(rid)
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +74,7 @@ func (s *CartService) Create(req requests.CreateCart, roleres responses.BaseRole
 		return nil, err
 	}
 
-	memb, err := s.rmemb.FindByID(cart.MemberID)
+	memb, err := s.rmemb.GetByID(cart.MemberID)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (s *CartService) Create(req requests.CreateCart, roleres responses.BaseRole
 	}
 
 	// Try to get existing cart by meal ID and reference
-	existingcart, err := s.rcart.FindByMealIDAndMemberID(cart.MemberID, cart.MealID)
+	existingcart, err := s.rcart.GetByMealIDAndMemberID(cart.MemberID, cart.MealID)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		utlogger.Error(err)
 		return nil, err
@@ -131,7 +131,7 @@ func (s *CartService) Read() ([]*responses.Cart, error) {
 	}
 
 	for _, cart := range carts {
-		memb, err := s.rmemb.FindByID(cart.MemberID)
+		memb, err := s.rmemb.GetByID(cart.MemberID)
 		if err != nil {
 			return nil, err
 		}
@@ -154,7 +154,7 @@ func (s *CartService) Read() ([]*responses.Cart, error) {
 }
 
 func (s *CartService) Update(cid uuid.UUID, req requests.UpdateCart) (*responses.Cart, error) {
-	cart, err := s.rcart.FindByID(cid)
+	cart, err := s.rcart.GetByID(cid)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -175,7 +175,7 @@ func (s *CartService) Update(cid uuid.UUID, req requests.UpdateCart) (*responses
 		return nil, err
 	}
 
-	memb, err := s.rmemb.FindByID(cart.MemberID)
+	memb, err := s.rmemb.GetByID(cart.MemberID)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +195,7 @@ func (s *CartService) Update(cid uuid.UUID, req requests.UpdateCart) (*responses
 }
 
 func (s *CartService) Delete(id uuid.UUID) error {
-	cart, err := s.rcart.FindByID(id)
+	cart, err := s.rcart.GetByID(id)
 	if err != nil {
 		utlogger.Error(err)
 		return err
@@ -210,13 +210,13 @@ func (s *CartService) Delete(id uuid.UUID) error {
 	return nil
 }
 
-func (s *CartService) FindByID(id uuid.UUID) (*responses.Cart, error) {
-	cart, err := s.rcart.FindByID(id)
+func (s *CartService) GetByID(id uuid.UUID) (*responses.Cart, error) {
+	cart, err := s.rcart.GetByID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	memb, err := s.rmemb.FindByID(cart.MemberID)
+	memb, err := s.rmemb.GetByID(cart.MemberID)
 	if err != nil {
 		return nil, err
 	}

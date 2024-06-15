@@ -22,7 +22,7 @@ type (
 		Update(id uuid.UUID, req requests.UpdatePatron) (*responses.Patron, error)
 		Delete(id uuid.UUID) error
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*responses.Patron, error)
+		GetByID(id uuid.UUID) (*responses.Patron, error)
 	}
 )
 
@@ -68,7 +68,7 @@ func (s *PatronService) Read() ([]*models.Patron, error) {
 }
 
 func (s *PatronService) Update(id uuid.UUID, req requests.UpdatePatron) (*responses.Patron, error) {
-	patron, err := s.rpatr.FindByID(id)
+	patron, err := s.rpatr.GetByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (s *PatronService) Update(id uuid.UUID, req requests.UpdatePatron) (*respon
 }
 
 func (s *PatronService) Delete(id uuid.UUID) error {
-	patron, err := s.rpatr.FindByID(id)
+	patron, err := s.rpatr.GetByID(id)
 	if err != nil {
 		return err
 	}
@@ -119,8 +119,8 @@ func (s *PatronService) FindAll(preq utpagination.Pagination) (*utpagination.Pag
 	return patrons, nil
 }
 
-func (s *PatronService) FindByID(id uuid.UUID) (*responses.Patron, error) {
-	patron, err := s.rpatr.FindByID(id)
+func (s *PatronService) GetByID(id uuid.UUID) (*responses.Patron, error) {
+	patron, err := s.rpatr.GetByID(id)
 	if err != nil {
 		return nil, err
 	}

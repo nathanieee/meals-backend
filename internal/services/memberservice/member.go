@@ -35,8 +35,8 @@ type (
 		Update(id uuid.UUID, req requests.UpdateMember) (*responses.Member, error)
 		Delete(id uuid.UUID) error
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*responses.Member, error)
-		FindByCaregiverID(cgid uuid.UUID) (*responses.Member, error)
+		GetByID(id uuid.UUID) (*responses.Member, error)
+		GetByCaregiverID(cgid uuid.UUID) (*responses.Member, error)
 	}
 )
 
@@ -82,7 +82,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 
 	// * check the organization id and assign it to the object.
 	if req.OrganizationID != nil {
-		organization, err = s.rorg.FindByID(*req.OrganizationID)
+		organization, err = s.rorg.GetByID(*req.OrganizationID)
 		if err != nil {
 			return nil, consttypes.ErrOrganizationNotFound
 		}
@@ -90,7 +90,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
-		illness, err := s.rill.FindByID(*ill)
+		illness, err := s.rill.GetByID(*ill)
 		if err != nil {
 			return nil, consttypes.ErrIllnessNotFound
 		}
@@ -102,7 +102,7 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 
 	// * find allergy object and append to the array.
 	for _, all := range req.AllergyID {
-		allergy, err := s.rall.FindByID(*all)
+		allergy, err := s.rall.GetByID(*all)
 		if err != nil {
 			return nil, consttypes.ErrAllergiesNotFound
 		}
@@ -158,7 +158,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		err          error
 	)
 
-	member, err := s.rmemb.FindByID(id)
+	member, err := s.rmemb.GetByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 				return nil, err
 			}
 
-			caregiver, err = s.rcare.FindByID(*member.CaregiverID)
+			caregiver, err = s.rcare.GetByID(*member.CaregiverID)
 			if err != nil {
 				return nil, err
 			}
@@ -193,7 +193,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 
 	// * check the organization id and assign it to the object.
 	if req.OrganizationID != nil {
-		organization, err = s.rorg.FindByID(*req.OrganizationID)
+		organization, err = s.rorg.GetByID(*req.OrganizationID)
 		if err != nil {
 			return nil, err
 		}
@@ -215,7 +215,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		if found {
 			continue
 		} else {
-			illness, err := s.rill.FindByID(*ill)
+			illness, err := s.rill.GetByID(*ill)
 			if err != nil {
 				return nil, err
 			}
@@ -242,7 +242,7 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		if found {
 			continue
 		} else {
-			allergy, err := s.rall.FindByID(*all)
+			allergy, err := s.rall.GetByID(*all)
 			if err != nil {
 				return nil, err
 			}
@@ -294,8 +294,8 @@ func (s *MemberService) FindAll(preq utpagination.Pagination) (*utpagination.Pag
 	return members, nil
 }
 
-func (s *MemberService) FindByID(id uuid.UUID) (*responses.Member, error) {
-	member, err := s.rmemb.FindByID(id)
+func (s *MemberService) GetByID(id uuid.UUID) (*responses.Member, error) {
+	member, err := s.rmemb.GetByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -308,8 +308,8 @@ func (s *MemberService) FindByID(id uuid.UUID) (*responses.Member, error) {
 	return mres, nil
 }
 
-func (s *MemberService) FindByCaregiverID(cgid uuid.UUID) (*responses.Member, error) {
-	member, err := s.rmemb.FindByCaregiverID(cgid)
+func (s *MemberService) GetByCaregiverID(cgid uuid.UUID) (*responses.Member, error) {
+	member, err := s.rmemb.GetByCaregiverID(cgid)
 	if err != nil {
 		return nil, err
 	}

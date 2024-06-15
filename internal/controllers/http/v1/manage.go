@@ -219,7 +219,7 @@ func (r *manageroutes) updateMeal(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.smeal.FindByID(uuid)
+	_, err = r.smeal.GetByID(uuid)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			utresponse.GeneralNotFound(
@@ -271,7 +271,7 @@ func (r *manageroutes) deleteMeal(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.smeal.FindByID(uuid)
+	_, err = r.smeal.GetByID(uuid)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			utresponse.GeneralNotFound(
@@ -466,7 +466,7 @@ func (r *manageroutes) updateMember(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.smember.FindByID(uuid)
+	_, err = r.smember.GetByID(uuid)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			utresponse.GeneralNotFound(
@@ -518,7 +518,7 @@ func (r *manageroutes) deleteMember(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.smember.FindByID(uuid)
+	_, err = r.smember.GetByID(uuid)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			utresponse.GeneralNotFound(
@@ -714,7 +714,7 @@ func (r *manageroutes) updatePartner(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.spartner.FindByID(uuid)
+	_, err = r.spartner.GetByID(uuid)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			utresponse.GeneralNotFound(
@@ -766,7 +766,7 @@ func (r *manageroutes) deletePartner(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.spartner.FindByID(uuid)
+	_, err = r.spartner.GetByID(uuid)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			utresponse.GeneralNotFound(
@@ -961,7 +961,7 @@ func (r *manageroutes) updatePatron(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.spatron.FindByID(uuid)
+	_, err = r.spatron.GetByID(uuid)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			utresponse.GeneralNotFound(
@@ -1013,7 +1013,7 @@ func (r *manageroutes) deletePatron(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.spatron.FindByID(uuid)
+	_, err = r.spatron.GetByID(uuid)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			utresponse.GeneralNotFound(

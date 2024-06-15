@@ -38,7 +38,7 @@ type (
 		Update(al models.Allergy) (*models.Allergy, error)
 		Delete(al models.Allergy) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*models.Allergy, error)
+		GetByID(id uuid.UUID) (*models.Allergy, error)
 	}
 )
 
@@ -60,7 +60,7 @@ func (r *AllergyRepository) Create(al models.Allergy) (*models.Allergy, error) {
 		return nil, err
 	}
 
-	alnew, err := r.FindByID(al.ID)
+	alnew, err := r.GetByID(al.ID)
 	if err != nil {
 		utlogger.Error(err)
 		return nil, err
@@ -96,7 +96,7 @@ func (r *AllergyRepository) Update(al models.Allergy) (*models.Allergy, error) {
 		return nil, err
 	}
 
-	alnew, err := r.FindByID(al.ID)
+	alnew, err := r.GetByID(al.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -163,7 +163,7 @@ func (r *AllergyRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 	return &p, nil
 }
 
-func (r *AllergyRepository) FindByID(id uuid.UUID) (*models.Allergy, error) {
+func (r *AllergyRepository) GetByID(id uuid.UUID) (*models.Allergy, error) {
 	var (
 		al *models.Allergy
 	)

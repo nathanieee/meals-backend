@@ -40,9 +40,9 @@ type (
 		Update(a models.Admin) (*models.Admin, error)
 		Delete(a models.Admin) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*models.Admin, error)
-		FindByEmail(email string) (*models.Admin, error)
-		FindByUserID(uid uuid.UUID) (*models.Admin, error)
+		GetByID(id uuid.UUID) (*models.Admin, error)
+		GetByEmail(email string) (*models.Admin, error)
+		GetByUserID(uid uuid.UUID) (*models.Admin, error)
 	}
 )
 
@@ -66,7 +66,7 @@ func (r *AdminRepository) Create(a models.Admin) (*models.Admin, error) {
 		return nil, err
 	}
 
-	anew, err := r.FindByEmail(a.User.Email)
+	anew, err := r.GetByID(a.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -103,7 +103,7 @@ func (r *AdminRepository) Update(a models.Admin) (*models.Admin, error) {
 		return nil, err
 	}
 
-	anew, err := r.FindByEmail(a.User.Email)
+	anew, err := r.GetByID(a.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -170,7 +170,7 @@ func (r *AdminRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagi
 	return &p, nil
 }
 
-func (r *AdminRepository) FindByID(id uuid.UUID) (*models.Admin, error) {
+func (r *AdminRepository) GetByID(id uuid.UUID) (*models.Admin, error) {
 	var (
 		a *models.Admin
 	)
@@ -189,7 +189,7 @@ func (r *AdminRepository) FindByID(id uuid.UUID) (*models.Admin, error) {
 	return a, nil
 }
 
-func (r *AdminRepository) FindByEmail(email string) (*models.Admin, error) {
+func (r *AdminRepository) GetByEmail(email string) (*models.Admin, error) {
 	var (
 		a *models.Admin
 	)
@@ -197,7 +197,19 @@ func (r *AdminRepository) FindByEmail(email string) (*models.Admin, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Admin{User: models.User{Email: email}}).
+		Where(`
+			admins.ID IN (
+				SELECT 
+					id 
+				FROM 
+					users
+				WHERE
+					email = ?
+					AND deleted_at IS NULL
+				GROUP BY 
+					id
+			)
+		`, email).
 		First(&a).Error
 
 	if err != nil {
@@ -208,7 +220,7 @@ func (r *AdminRepository) FindByEmail(email string) (*models.Admin, error) {
 	return a, nil
 }
 
-func (r *AdminRepository) FindByUserID(uid uuid.UUID) (*models.Admin, error) {
+func (r *AdminRepository) GetByUserID(uid uuid.UUID) (*models.Admin, error) {
 	var (
 		a *models.Admin
 	)
@@ -216,7 +228,19 @@ func (r *AdminRepository) FindByUserID(uid uuid.UUID) (*models.Admin, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Admin{User: models.User{Model: base.Model{ID: uid}}}).
+		Where(`
+			admins.ID IN (
+				SELECT 
+					id 
+				FROM 
+					users
+				WHERE
+					id = ?
+					AND deleted_at IS NULL
+				GROUP BY 
+					id
+			)
+		`, uid).
 		First(&a).Error
 
 	if err != nil {

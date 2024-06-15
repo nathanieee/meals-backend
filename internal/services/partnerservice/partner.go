@@ -22,7 +22,7 @@ type (
 		Update(id uuid.UUID, req requests.UpdatePartner) (*responses.Partner, error)
 		Delete(id uuid.UUID) error
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*responses.Partner, error)
+		GetByID(id uuid.UUID) (*responses.Partner, error)
 	}
 )
 
@@ -68,7 +68,7 @@ func (s *PartnerService) Read() ([]*models.Partner, error) {
 }
 
 func (s *PartnerService) Update(id uuid.UUID, req requests.UpdatePartner) (*responses.Partner, error) {
-	partner, err := s.rpart.FindByID(id)
+	partner, err := s.rpart.GetByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (s *PartnerService) Update(id uuid.UUID, req requests.UpdatePartner) (*resp
 }
 
 func (s *PartnerService) Delete(id uuid.UUID) error {
-	partner, err := s.rpart.FindByID(id)
+	partner, err := s.rpart.GetByID(id)
 	if err != nil {
 		return err
 	}
@@ -114,8 +114,8 @@ func (s *PartnerService) FindAll(preq utpagination.Pagination) (*utpagination.Pa
 	return partners, nil
 }
 
-func (s *PartnerService) FindByID(id uuid.UUID) (*responses.Partner, error) {
-	partner, err := s.rpart.FindByID(id)
+func (s *PartnerService) GetByID(id uuid.UUID) (*responses.Partner, error) {
+	partner, err := s.rpart.GetByID(id)
 	if err != nil {
 		return nil, err
 	}

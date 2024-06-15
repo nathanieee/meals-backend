@@ -39,8 +39,8 @@ type (
 		Update(m models.Meal) (*models.Meal, error)
 		Delete(m models.Meal) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*models.Meal, error)
-		FindByPartnerID(pid uuid.UUID) (*models.Meal, error)
+		GetByID(id uuid.UUID) (*models.Meal, error)
+		FindByPartnerID(pid uuid.UUID) ([]models.Meal, error)
 	}
 )
 
@@ -67,7 +67,7 @@ func (r *MealRepository) Create(m models.Meal) (*models.Meal, error) {
 		return nil, err
 	}
 
-	mnew, err := r.FindByID(m.ID)
+	mnew, err := r.GetByID(m.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -104,7 +104,7 @@ func (r *MealRepository) Update(m models.Meal) (*models.Meal, error) {
 		return nil, err
 	}
 
-	mnew, err := r.FindByID(m.ID)
+	mnew, err := r.GetByID(m.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -176,7 +176,7 @@ func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 	return &p, nil
 }
 
-func (r *MealRepository) FindByID(id uuid.UUID) (*models.Meal, error) {
+func (r *MealRepository) GetByID(id uuid.UUID) (*models.Meal, error) {
 	var (
 		m *models.Meal
 	)
@@ -195,16 +195,16 @@ func (r *MealRepository) FindByID(id uuid.UUID) (*models.Meal, error) {
 	return m, nil
 }
 
-func (r *MealRepository) FindByPartnerID(pid uuid.UUID) (*models.Meal, error) {
+func (r *MealRepository) FindByPartnerID(pid uuid.UUID) ([]models.Meal, error) {
 	var (
-		m *models.Meal
+		m []models.Meal
 	)
 
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
 		Where(&models.Meal{PartnerID: pid}).
-		First(&m).Error
+		Find(&m).Error
 
 	if err != nil {
 		utlogger.Error(err)

@@ -38,8 +38,8 @@ type (
 		Update(p models.Patron) (*models.Patron, error)
 		Delete(p models.Patron) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*models.Patron, error)
-		FindByUserID(id uuid.UUID) (*models.Patron, error)
+		GetByID(id uuid.UUID) (*models.Patron, error)
+		GetByUserID(id uuid.UUID) (*models.Patron, error)
 	}
 )
 
@@ -64,7 +64,7 @@ func (r *PatronRepository) Create(p models.Patron) (*models.Patron, error) {
 		return nil, err
 	}
 
-	pnew, err := r.FindByID(p.ID)
+	pnew, err := r.GetByID(p.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -101,7 +101,7 @@ func (r *PatronRepository) Update(p models.Patron) (*models.Patron, error) {
 		return nil, err
 	}
 
-	pnew, err := r.FindByID(p.ID)
+	pnew, err := r.GetByID(p.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -167,7 +167,7 @@ func (r *PatronRepository) FindAll(p utpagination.Pagination) (*utpagination.Pag
 	return &p, nil
 }
 
-func (r *PatronRepository) FindByID(id uuid.UUID) (*models.Patron, error) {
+func (r *PatronRepository) GetByID(id uuid.UUID) (*models.Patron, error) {
 	var (
 		p *models.Patron
 	)
@@ -186,7 +186,7 @@ func (r *PatronRepository) FindByID(id uuid.UUID) (*models.Patron, error) {
 	return p, nil
 }
 
-func (r *PatronRepository) FindByUserID(id uuid.UUID) (*models.Patron, error) {
+func (r *PatronRepository) GetByUserID(id uuid.UUID) (*models.Patron, error) {
 	var (
 		p *models.Patron
 	)
@@ -194,7 +194,19 @@ func (r *PatronRepository) FindByUserID(id uuid.UUID) (*models.Patron, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Patron{User: models.User{Model: base.Model{ID: id}}}).
+		Where(`
+			partners.ID IN (
+				SELECT 
+					id 
+				FROM 
+					users
+				WHERE
+					id = ?
+					AND deleted_at IS NULL
+				GROUP BY 
+					id
+			)
+		`, id).
 		First(&p).Error
 
 	if err != nil {

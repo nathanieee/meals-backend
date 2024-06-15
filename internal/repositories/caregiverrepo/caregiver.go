@@ -40,9 +40,9 @@ type (
 		Update(cg models.Caregiver) (*models.Caregiver, error)
 		Delete(cg models.Caregiver) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*models.Caregiver, error)
-		FindByEmail(email string) (*models.Caregiver, error)
-		FindByUserID(uid uuid.UUID) (*models.Caregiver, error)
+		GetByID(id uuid.UUID) (*models.Caregiver, error)
+		GetByEmail(email string) (*models.Caregiver, error)
+		GetByUserID(uid uuid.UUID) (*models.Caregiver, error)
 	}
 )
 
@@ -66,7 +66,7 @@ func (r *CaregiverRepository) Create(cg models.Caregiver) (*models.Caregiver, er
 		return nil, err
 	}
 
-	cgnew, err := r.FindByID(cg.ID)
+	cgnew, err := r.GetByID(cg.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -163,7 +163,7 @@ func (r *CaregiverRepository) FindAll(p utpagination.Pagination) (*utpagination.
 	return &p, nil
 }
 
-func (r *CaregiverRepository) FindByID(id uuid.UUID) (*models.Caregiver, error) {
+func (r *CaregiverRepository) GetByID(id uuid.UUID) (*models.Caregiver, error) {
 	var (
 		cg *models.Caregiver
 	)
@@ -182,7 +182,7 @@ func (r *CaregiverRepository) FindByID(id uuid.UUID) (*models.Caregiver, error) 
 	return cg, nil
 }
 
-func (r *CaregiverRepository) FindByEmail(email string) (*models.Caregiver, error) {
+func (r *CaregiverRepository) GetByEmail(email string) (*models.Caregiver, error) {
 	var (
 		cg *models.Caregiver
 	)
@@ -190,7 +190,19 @@ func (r *CaregiverRepository) FindByEmail(email string) (*models.Caregiver, erro
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Caregiver{User: models.User{Email: email}}).
+		Where(`
+			caregivers.ID IN (
+				SELECT 
+					id 
+				FROM 
+					users
+				WHERE
+					email = ?
+					AND deleted_at IS NULL
+				GROUP BY 
+					id
+			)
+		`, email).
 		First(&cg).Error
 
 	if err != nil {
@@ -201,7 +213,7 @@ func (r *CaregiverRepository) FindByEmail(email string) (*models.Caregiver, erro
 	return cg, nil
 }
 
-func (r *CaregiverRepository) FindByUserID(uid uuid.UUID) (*models.Caregiver, error) {
+func (r *CaregiverRepository) GetByUserID(uid uuid.UUID) (*models.Caregiver, error) {
 	var (
 		cg *models.Caregiver
 	)
@@ -209,7 +221,19 @@ func (r *CaregiverRepository) FindByUserID(uid uuid.UUID) (*models.Caregiver, er
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Caregiver{User: models.User{Model: base.Model{ID: uid}}}).
+		Where(`
+			caregivers.ID IN (
+				SELECT 
+					id 
+				FROM 
+					users
+				WHERE
+					id = ?
+					AND deleted_at IS NULL
+				GROUP BY 
+					id
+			)
+		`, uid).
 		First(&cg).Error
 
 	if err != nil {

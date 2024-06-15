@@ -31,7 +31,7 @@ type (
 
 	IUserService interface {
 		Create(req requests.CreateUser) (*responses.User, error)
-		FindByID(uid uuid.UUID) (*responses.User, error)
+		GetByID(uid uuid.UUID) (*responses.User, error)
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		Delete(uid uuid.UUID) error
 		Update(req requests.UpdateUser, uid uuid.UUID) (*responses.User, error)
@@ -84,8 +84,8 @@ func (s *UserService) Create(req requests.CreateUser) (*responses.User, error) {
 	return ures, err
 }
 
-func (s *UserService) FindByID(uid uuid.UUID) (*responses.User, error) {
-	u, err := s.ruser.FindByID(uid)
+func (s *UserService) GetByID(uid uuid.UUID) (*responses.User, error) {
+	u, err := s.ruser.GetByID(uid)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (s *UserService) Update(
 	req requests.UpdateUser,
 	uid uuid.UUID,
 ) (*responses.User, error) {
-	u, err := s.ruser.FindByID(uid)
+	u, err := s.ruser.GetByID(uid)
 	if err != nil {
 		return nil, err
 	}
@@ -153,14 +153,14 @@ func (s *UserService) GetUserName(uid uuid.UUID) (string, string, error) {
 		lastname  string = ""
 	)
 
-	user, err := s.ruser.FindByID(uid)
+	user, err := s.ruser.GetByID(uid)
 	if err != nil {
 		return "", "", err
 	}
 
 	switch user.Role {
 	case consttypes.UR_ADMIN:
-		a, err := s.radmn.FindByUserID(uid)
+		a, err := s.radmn.GetByUserID(uid)
 		if err != nil {
 			return "", "", err
 		}
@@ -168,7 +168,7 @@ func (s *UserService) GetUserName(uid uuid.UUID) (string, string, error) {
 		firstname = a.FirstName
 		lastname = a.LastName
 	case consttypes.UR_CAREGIVER:
-		c, err := s.rcare.FindByUserID(uid)
+		c, err := s.rcare.GetByUserID(uid)
 		if err != nil {
 			return "", "", err
 		}
@@ -176,7 +176,7 @@ func (s *UserService) GetUserName(uid uuid.UUID) (string, string, error) {
 		firstname = c.FirstName
 		lastname = c.LastName
 	case consttypes.UR_MEMBER:
-		m, err := s.rmemb.FindByUserID(uid)
+		m, err := s.rmemb.GetByUserID(uid)
 		if err != nil {
 			return "", "", err
 		}
@@ -184,14 +184,14 @@ func (s *UserService) GetUserName(uid uuid.UUID) (string, string, error) {
 		firstname = m.FirstName
 		lastname = m.LastName
 	case consttypes.UR_ORGANIZATION:
-		o, err := s.rorga.FindByUserID(uid)
+		o, err := s.rorga.GetByUserID(uid)
 		if err != nil {
 			return "", "", err
 		}
 
 		firstname = o.Name
 	case consttypes.UR_PARTNER:
-		p, err := s.rpart.FindByUserID(uid)
+		p, err := s.rpart.GetByUserID(uid)
 		if err != nil {
 			return "", "", err
 		}
@@ -199,7 +199,7 @@ func (s *UserService) GetUserName(uid uuid.UUID) (string, string, error) {
 		firstname = p.Name
 	case consttypes.UR_PATRON:
 		// TODO - change this into patron repo, not partner
-		p, err := s.rpart.FindByUserID(uid)
+		p, err := s.rpart.GetByUserID(uid)
 		if err != nil {
 			return "", "", err
 		}
@@ -217,42 +217,42 @@ func (s *UserService) GetRoleDataByUserID(uid uuid.UUID) (*responses.BaseRole, e
 		data any
 	)
 
-	user, err := s.ruser.FindByID(uid)
+	user, err := s.ruser.GetByID(uid)
 	if err != nil {
 		return nil, err
 	}
 
 	switch user.Role {
 	case consttypes.UR_ADMIN:
-		a, err := s.radmn.FindByUserID(uid)
+		a, err := s.radmn.GetByUserID(uid)
 		if err != nil {
 			return nil, err
 		}
 
 		data = a
 	case consttypes.UR_CAREGIVER:
-		c, err := s.rcare.FindByUserID(uid)
+		c, err := s.rcare.GetByUserID(uid)
 		if err != nil {
 			return nil, err
 		}
 
 		data = c
 	case consttypes.UR_MEMBER:
-		m, err := s.rmemb.FindByUserID(uid)
+		m, err := s.rmemb.GetByUserID(uid)
 		if err != nil {
 			return nil, err
 		}
 
 		data = m
 	case consttypes.UR_ORGANIZATION:
-		o, err := s.rorga.FindByUserID(uid)
+		o, err := s.rorga.GetByUserID(uid)
 		if err != nil {
 			return nil, err
 		}
 
 		data = o
 	case consttypes.UR_PARTNER:
-		p, err := s.rpart.FindByUserID(uid)
+		p, err := s.rpart.GetByUserID(uid)
 		if err != nil {
 			return nil, err
 		}
@@ -260,7 +260,7 @@ func (s *UserService) GetRoleDataByUserID(uid uuid.UUID) (*responses.BaseRole, e
 		data = p
 	case consttypes.UR_PATRON:
 		// TODO - change this into patron repo, not partner
-		p, err := s.rpart.FindByUserID(uid)
+		p, err := s.rpart.GetByUserID(uid)
 		if err != nil {
 			return nil, err
 		}

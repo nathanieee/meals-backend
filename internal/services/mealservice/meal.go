@@ -28,7 +28,7 @@ type (
 		Update(id uuid.UUID, req requests.UpdateMeal) (*responses.Meal, error)
 		Delete(id uuid.UUID) error
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*responses.Meal, error)
+		GetByID(id uuid.UUID) (*responses.Meal, error)
 	}
 )
 
@@ -57,7 +57,7 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
-		illness, err := s.rill.FindByID(*ill)
+		illness, err := s.rill.GetByID(*ill)
 		if err != nil {
 			return nil, err
 		}
@@ -69,7 +69,7 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 
 	// * find allergy object and append to the array.
 	for _, all := range req.AllergyID {
-		allergy, err := s.rall.FindByID(*all)
+		allergy, err := s.rall.GetByID(*all)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +79,7 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 		allergies = append(allergies, mallergy)
 	}
 
-	partner, err := s.rpart.FindByID(req.PartnerID)
+	partner, err := s.rpart.GetByID(req.PartnerID)
 	if err != nil {
 		return nil, err
 	}
@@ -116,14 +116,14 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 		partner   *models.Partner
 	)
 
-	meal, err := s.rmeal.FindByID(id)
+	meal, err := s.rmeal.GetByID(id)
 	if err != nil {
 		return nil, err
 	}
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
-		illness, err := s.rill.FindByID(*ill)
+		illness, err := s.rill.GetByID(*ill)
 		if err != nil {
 			return nil, err
 		}
@@ -135,7 +135,7 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 
 	// * find allergy object and append to the array.
 	for _, all := range req.AllergyID {
-		allergy, err := s.rall.FindByID(*all)
+		allergy, err := s.rall.GetByID(*all)
 		if err != nil {
 			return nil, err
 		}
@@ -145,7 +145,7 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 		allergies = append(allergies, mallergy)
 	}
 
-	partner, err = s.rpart.FindByID(req.PartnerID)
+	partner, err = s.rpart.GetByID(req.PartnerID)
 	if err != nil {
 		return nil, err
 	}
@@ -187,8 +187,8 @@ func (s *MealService) FindAll(preq utpagination.Pagination) (*utpagination.Pagin
 	return meals, nil
 }
 
-func (s *MealService) FindByID(id uuid.UUID) (*responses.Meal, error) {
-	meal, err := s.rmeal.FindByID(id)
+func (s *MealService) GetByID(id uuid.UUID) (*responses.Meal, error) {
+	meal, err := s.rmeal.GetByID(id)
 	if err != nil {
 		return nil, err
 	}

@@ -22,7 +22,7 @@ type (
 		Update(id uuid.UUID, req requests.UpdateOrganization) (*responses.Organization, error)
 		Delete(id uuid.UUID) error
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*responses.Organization, error)
+		GetByID(id uuid.UUID) (*responses.Organization, error)
 	}
 )
 
@@ -68,7 +68,7 @@ func (s *OrganizationService) Read() ([]*models.Organization, error) {
 }
 
 func (s *OrganizationService) Update(id uuid.UUID, req requests.UpdateOrganization) (*responses.Organization, error) {
-	org, err := s.rorg.FindByID(id)
+	org, err := s.rorg.GetByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (s *OrganizationService) Update(id uuid.UUID, req requests.UpdateOrganizati
 }
 
 func (s *OrganizationService) Delete(id uuid.UUID) error {
-	org, err := s.rorg.FindByID(id)
+	org, err := s.rorg.GetByID(id)
 	if err != nil {
 		return err
 	}
@@ -114,8 +114,8 @@ func (s *OrganizationService) FindAll(preq utpagination.Pagination) (*utpaginati
 	return orgs, nil
 }
 
-func (s *OrganizationService) FindByID(id uuid.UUID) (*responses.Organization, error) {
-	org, err := s.rorg.FindByID(id)
+func (s *OrganizationService) GetByID(id uuid.UUID) (*responses.Organization, error) {
+	org, err := s.rorg.GetByID(id)
 	if err != nil {
 		return nil, err
 	}

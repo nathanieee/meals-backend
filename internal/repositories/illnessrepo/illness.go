@@ -37,7 +37,7 @@ type (
 		Update(ill models.Illness) (*models.Illness, error)
 		Delete(ill models.Illness) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*models.Illness, error)
+		GetByID(id uuid.UUID) (*models.Illness, error)
 	}
 )
 
@@ -59,7 +59,7 @@ func (r *IllnessRepository) Create(ill models.Illness) (*models.Illness, error) 
 		return nil, err
 	}
 
-	illnew, err := r.FindByID(ill.ID)
+	illnew, err := r.GetByID(ill.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -96,7 +96,7 @@ func (r *IllnessRepository) Update(ill models.Illness) (*models.Illness, error) 
 		return nil, err
 	}
 
-	illnew, err := r.FindByID(ill.ID)
+	illnew, err := r.GetByID(ill.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -163,7 +163,7 @@ func (r *IllnessRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 	return &p, nil
 }
 
-func (r *IllnessRepository) FindByID(id uuid.UUID) (*models.Illness, error) {
+func (r *IllnessRepository) GetByID(id uuid.UUID) (*models.Illness, error) {
 	var (
 		ill *models.Illness
 	)

@@ -38,9 +38,9 @@ type (
 		Update(o models.Organization) (*models.Organization, error)
 		Delete(o models.Organization) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*models.Organization, error)
-		FindByEmail(email string) (*models.Organization, error)
-		FindByUserID(uid uuid.UUID) (*models.Organization, error)
+		GetByID(id uuid.UUID) (*models.Organization, error)
+		GetByEmail(email string) (*models.Organization, error)
+		GetByUserID(uid uuid.UUID) (*models.Organization, error)
 	}
 )
 
@@ -64,7 +64,7 @@ func (r *OrganizationRepository) Create(o models.Organization) (*models.Organiza
 		return nil, err
 	}
 
-	onew, err := r.FindByID(o.ID)
+	onew, err := r.GetByID(o.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -101,7 +101,7 @@ func (r *OrganizationRepository) Update(o models.Organization) (*models.Organiza
 		return nil, err
 	}
 
-	onew, err := r.FindByID(o.ID)
+	onew, err := r.GetByID(o.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -167,7 +167,7 @@ func (r *OrganizationRepository) FindAll(p utpagination.Pagination) (*utpaginati
 	return &p, result.Error
 }
 
-func (r *OrganizationRepository) FindByID(id uuid.UUID) (*models.Organization, error) {
+func (r *OrganizationRepository) GetByID(id uuid.UUID) (*models.Organization, error) {
 	var (
 		o *models.Organization
 	)
@@ -186,7 +186,7 @@ func (r *OrganizationRepository) FindByID(id uuid.UUID) (*models.Organization, e
 	return o, nil
 }
 
-func (r *OrganizationRepository) FindByEmail(email string) (*models.Organization, error) {
+func (r *OrganizationRepository) GetByEmail(email string) (*models.Organization, error) {
 	var (
 		o *models.Organization
 	)
@@ -194,7 +194,19 @@ func (r *OrganizationRepository) FindByEmail(email string) (*models.Organization
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Organization{User: models.User{Email: email}}).
+		Where(`
+			organizations.ID IN (
+				SELECT 
+					id 
+				FROM 
+					users
+				WHERE
+					email = ?
+					AND deleted_at IS NULL
+				GROUP BY 
+					id
+			)
+		`, email).
 		First(&o).Error
 
 	if err != nil {
@@ -205,7 +217,7 @@ func (r *OrganizationRepository) FindByEmail(email string) (*models.Organization
 	return o, nil
 }
 
-func (r *OrganizationRepository) FindByUserID(uid uuid.UUID) (*models.Organization, error) {
+func (r *OrganizationRepository) GetByUserID(uid uuid.UUID) (*models.Organization, error) {
 	var (
 		o *models.Organization
 	)
@@ -213,7 +225,19 @@ func (r *OrganizationRepository) FindByUserID(uid uuid.UUID) (*models.Organizati
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(&models.Organization{User: models.User{Model: base.Model{ID: uid}}}).
+		Where(`
+			organizations.ID IN (
+				SELECT 
+					id 
+				FROM 
+					users
+				WHERE
+					id = ?
+					AND deleted_at IS NULL
+				GROUP BY 
+					id
+			)
+		`, uid).
 		First(&o).Error
 
 	if err != nil {

@@ -37,10 +37,10 @@ type (
 		Update(c models.Cart) (*models.Cart, error)
 		Delete(c models.Cart) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
-		FindByID(id uuid.UUID) (*models.Cart, error)
+		GetByID(id uuid.UUID) (*models.Cart, error)
 		FindByMemberID(mid uuid.UUID) ([]*models.Cart, error)
 		FindByMealID(mid uuid.UUID) ([]*models.Cart, error)
-		FindByMealIDAndMemberID(membid uuid.UUID, mealid uuid.UUID) (*models.Cart, error)
+		GetByMealIDAndMemberID(membid uuid.UUID, mealid uuid.UUID) (*models.Cart, error)
 	}
 )
 
@@ -74,7 +74,7 @@ func (r *CartRepository) Create(c models.Cart) (*models.Cart, error) {
 		return nil, err
 	}
 
-	cnew, err := r.FindByID(c.ID)
+	cnew, err := r.GetByID(c.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -112,7 +112,7 @@ func (r *CartRepository) Update(c models.Cart) (*models.Cart, error) {
 		return nil, err
 	}
 
-	cnew, err := r.FindByID(c.ID)
+	cnew, err := r.GetByID(c.ID)
 
 	if err != nil {
 		utlogger.Error(err)
@@ -170,7 +170,7 @@ func (r *CartRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 	return &p, nil
 }
 
-func (r *CartRepository) FindByID(id uuid.UUID) (*models.Cart, error) {
+func (r *CartRepository) GetByID(id uuid.UUID) (*models.Cart, error) {
 	var (
 		c *models.Cart
 	)
@@ -227,7 +227,7 @@ func (r *CartRepository) FindByMealID(mid uuid.UUID) ([]*models.Cart, error) {
 	return c, nil
 }
 
-func (r *CartRepository) FindByMealIDAndMemberID(membid uuid.UUID, mealid uuid.UUID) (*models.Cart, error) {
+func (r *CartRepository) GetByMealIDAndMemberID(membid uuid.UUID, mealid uuid.UUID) (*models.Cart, error) {
 	var (
 		c *models.Cart
 	)
