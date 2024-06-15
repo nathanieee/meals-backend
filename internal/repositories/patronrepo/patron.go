@@ -51,7 +51,7 @@ func (r *PatronRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
 		Preload("User.Address").
-		Preload("User.UserImage.Image").
+		Preload("User.Image.Image").
 		Preload("Donations")
 }
 

@@ -4,7 +4,6 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
-	"project-skbackend/internal/models/base"
 	"project-skbackend/internal/repositories/partnerrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utpagination"
@@ -47,10 +46,6 @@ func (s *PartnerService) Create(req requests.CreatePartner) (*responses.Partner,
 	}
 
 	partner, err = s.rpart.Create(*partner)
-	if err != nil {
-		return nil, err
-	}
-
 	if err != nil {
 		return nil, err
 	}
@@ -102,16 +97,12 @@ func (s *PartnerService) Update(id uuid.UUID, req requests.UpdatePartner) (*resp
 }
 
 func (s *PartnerService) Delete(id uuid.UUID) error {
-	partner := models.Partner{
-		Model: base.Model{ID: id},
-	}
-
-	err := s.rpart.Delete(partner)
+	partner, err := s.rpart.FindByID(id)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return s.rpart.Delete(*partner)
 }
 
 func (s *PartnerService) FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error) {

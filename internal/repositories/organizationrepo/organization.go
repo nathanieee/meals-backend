@@ -57,7 +57,7 @@ func (r *OrganizationRepository) preload() *gorm.DB {
 
 func (r *OrganizationRepository) Create(o models.Organization) (*models.Organization, error) {
 	err := r.db.
-		Create(o).Error
+		Create(&o).Error
 
 	if err != nil {
 		utlogger.Error(err)

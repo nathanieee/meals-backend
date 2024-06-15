@@ -20,6 +20,7 @@ import (
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/internal/services/mealservice"
 	"project-skbackend/internal/services/memberservice"
+	"project-skbackend/internal/services/organizationservice"
 	"project-skbackend/internal/services/partnerservice"
 	"project-skbackend/internal/services/patronservice"
 	"project-skbackend/internal/services/producerservice"
@@ -31,15 +32,16 @@ import (
 )
 
 type DependencyInjection struct {
-	UserService     *userservice.UserService
-	AuthService     *authservice.AuthService
-	MailService     *mailservice.MailService
-	MemberService   *memberservice.MemberService
-	PartnerService  *partnerservice.PartnerService
-	MealService     *mealservice.MealService
-	CartService     *cartservice.CartService
-	ConsumerService *consumerservice.ConsumerService
-	PatronService   *patronservice.PatronService
+	UserService         *userservice.UserService
+	AuthService         *authservice.AuthService
+	MailService         *mailservice.MailService
+	MemberService       *memberservice.MemberService
+	PartnerService      *partnerservice.PartnerService
+	MealService         *mealservice.MealService
+	CartService         *cartservice.CartService
+	ConsumerService     *consumerservice.ConsumerService
+	PatronService       *patronservice.PatronService
+	OrganizationService *organizationservice.OrganizationService
 }
 
 func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, rdb *redis.Client, ctx context.Context) *DependencyInjection {
@@ -72,16 +74,18 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	scart := cartservice.NewCartService(rcart, rcare, rmemb)
 	scons := consumerservice.NewConsumerService(ch, cfg, smail)
 	spatr := patronservice.NewPatronService(rpatron)
+	sorga := organizationservice.NewOrganizationService(rorg)
 
 	return &DependencyInjection{
-		UserService:     suser,
-		AuthService:     sauth,
-		MailService:     smail,
-		MemberService:   smemb,
-		PartnerService:  spart,
-		MealService:     smeal,
-		CartService:     scart,
-		ConsumerService: scons,
-		PatronService:   spatr,
+		UserService:         suser,
+		AuthService:         sauth,
+		MailService:         smail,
+		MemberService:       smemb,
+		PartnerService:      spart,
+		MealService:         smeal,
+		CartService:         scart,
+		ConsumerService:     scons,
+		PatronService:       spatr,
+		OrganizationService: sorga,
 	}
 }

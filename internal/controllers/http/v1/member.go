@@ -60,6 +60,7 @@ func newMemberRoutes(
 func (r *memberroutes) memberRegister(ctx *gin.Context) {
 	var (
 		function = "member register"
+		entity   = "member"
 		req      requests.CreateMember
 		err      error
 	)
@@ -120,7 +121,7 @@ func (r *memberroutes) memberRegister(ctx *gin.Context) {
 
 	resauth := thead.ToAuthResponse(*resuser)
 	utresponse.GeneralSuccessCreate(
-		"member",
+		entity,
 		ctx,
 		resauth,
 	)

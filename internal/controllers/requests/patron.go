@@ -52,3 +52,10 @@ func (req *UpdatePatron) ToModel(
 
 	return &patron, nil
 }
+
+func (req *CreatePatron) ToSignin() *Signin {
+	return &Signin{
+		Email:    req.User.Email,
+		Password: req.User.Password,
+	}
+}
