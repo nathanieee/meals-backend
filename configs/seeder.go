@@ -126,6 +126,18 @@ func SeedOrganizationTypeEnum(db *gorm.DB) error {
 	)
 }
 
+func SeedOrderStatusEnum(db *gorm.DB) error {
+	return createEnum(db,
+		"order_status_enum",
+		consttypes.OS_PENDING.String(),
+		consttypes.OS_PREPARING.String(),
+		consttypes.OS_PREPARED.String(),
+		consttypes.OS_DELIVERING.String(),
+		consttypes.OS_DELIVERED.String(),
+		consttypes.OS_CANCELED.String(),
+	)
+}
+
 func SeedAdminCredentials(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Admin{}) {
 		if err := db.First(&models.Admin{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {

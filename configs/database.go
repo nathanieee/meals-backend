@@ -53,6 +53,7 @@ func (db DB) AutoSeedEnum(gdb *gorm.DB) error {
 		SeedPatronTypeEnum,
 		SeedOrganizationTypeEnum,
 		SeedUserRoleEnum,
+		SeedOrderStatusEnum,
 	}
 
 	var (
@@ -163,5 +164,7 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 		&models.Partner{},
 		&models.Rating{},
 		&models.Cart{},
+		&models.Order{},
+		&models.OrderHistory{},
 	)
 }
