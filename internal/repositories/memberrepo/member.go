@@ -239,19 +239,7 @@ func (r *MemberRepository) GetByUserID(uid uuid.UUID) (*models.Member, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(`
-			members.ID IN (
-				SELECT 
-					id 
-				FROM 
-					users
-				WHERE
-					id = ?
-					AND deleted_at IS NULL
-				GROUP BY 
-					id
-			)
-		`, uid).
+		Where(&models.Member{UserID: uid}, uid).
 		First(&m).Error
 
 	if err != nil {

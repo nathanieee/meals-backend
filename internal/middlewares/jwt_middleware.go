@@ -61,7 +61,7 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedlevel ...consttypes.UserRole)
 			return
 		}
 
-		if !slices.Contains(allowedlevel, tparsed.User.Role) || (consttypes.DateNow.Unix() >= tparsed.Expires.Unix()) {
+		if !slices.Contains(allowedlevel, tparsed.User.Role) || (consttypes.TimeNow().Unix() >= tparsed.Expires.Unix()) {
 			utresponse.GeneralUnauthorized(
 				ctx,
 				consttypes.ErrUnauthorized,

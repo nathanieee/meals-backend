@@ -50,14 +50,14 @@ func (s *ImageService) Upload(fileheader *multipart.FileHeader, imgtype consttyp
 
 	// * create directory if it does not exist
 	if err := os.MkdirAll(uppath, os.ModePerm); err != nil {
-		return err
+		return consttypes.ErrFailedToCreateDirectory
 	}
 
 	// * set the file name and destination
 	filename = fmt.Sprintf("%s_%s", imgtype, filename)
 	destination := filepath.Join(uppath, filename)
 	if err := ctx.SaveUploadedFile(fileheader, destination); err != nil {
-		return err
+		return consttypes.ErrFailedToUploadFile
 	}
 
 	return nil

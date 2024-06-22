@@ -228,19 +228,7 @@ func (r *AdminRepository) GetByUserID(uid uuid.UUID) (*models.Admin, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(`
-			admins.ID IN (
-				SELECT 
-					id 
-				FROM 
-					users
-				WHERE
-					id = ?
-					AND deleted_at IS NULL
-				GROUP BY 
-					id
-			)
-		`, uid).
+		Where(&models.Admin{UserID: uid}, uid).
 		First(&a).Error
 
 	if err != nil {

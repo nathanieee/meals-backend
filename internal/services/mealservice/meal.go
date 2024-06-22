@@ -9,6 +9,7 @@ import (
 	"project-skbackend/internal/repositories/illnessrepo"
 	"project-skbackend/internal/repositories/mealrepo"
 	"project-skbackend/internal/repositories/partnerrepo"
+	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
@@ -59,7 +60,7 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 	for _, ill := range req.IllnessID {
 		illness, err := s.rill.GetByID(*ill)
 		if err != nil {
-			return nil, err
+			return nil, consttypes.ErrIllnessNotFound
 		}
 
 		millness := illness.ToMealIllness()
@@ -71,7 +72,7 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 	for _, all := range req.AllergyID {
 		allergy, err := s.rall.GetByID(*all)
 		if err != nil {
-			return nil, err
+			return nil, consttypes.ErrAllergiesNotFound
 		}
 
 		mallergy := allergy.ToMealAllergy()
@@ -81,20 +82,23 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 
 	partner, err := s.rpart.GetByID(req.PartnerID)
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrPartnerNotFound
 	}
 
 	meal, err := req.ToModel(images, illnesses, allergies, *partner)
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrConvertFailed
 	}
 
 	meal, err = s.rmeal.Create(*meal)
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrFailedToCreateMeal
 	}
 
-	meres := meal.ToResponse()
+	meres, err := meal.ToResponse()
+	if err != nil {
+		return nil, consttypes.ErrConvertFailed
+	}
 
 	return meres, nil
 }
@@ -102,7 +106,7 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 func (s *MealService) Read() ([]*models.Meal, error) {
 	meals, err := s.rmeal.Read()
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrFailedToReadMeals
 	}
 
 	return meals, nil
@@ -118,14 +122,14 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 
 	meal, err := s.rmeal.GetByID(id)
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrMealsNotFound
 	}
 
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
 		illness, err := s.rill.GetByID(*ill)
 		if err != nil {
-			return nil, err
+			return nil, consttypes.ErrIllnessNotFound
 		}
 
 		millness := illness.ToMealIllness()
@@ -137,7 +141,7 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 	for _, all := range req.AllergyID {
 		allergy, err := s.rall.GetByID(*all)
 		if err != nil {
-			return nil, err
+			return nil, consttypes.ErrAllergiesNotFound
 		}
 
 		mallergy := allergy.ToMealAllergy()
@@ -147,20 +151,24 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 
 	partner, err = s.rpart.GetByID(req.PartnerID)
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrPartnerNotFound
 	}
 
+	// TODO: handle the uploading of meal image
 	meal, err = req.ToModel(*meal, images, illnesses, allergies, *partner)
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrConvertFailed
 	}
 
 	meal, err = s.rmeal.Update(*meal)
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrFailedToUpdateMeal
 	}
 
-	mres := meal.ToResponse()
+	mres, err := meal.ToResponse()
+	if err != nil {
+		return nil, consttypes.ErrConvertFailed
+	}
 
 	return mres, nil
 }
@@ -172,7 +180,7 @@ func (s *MealService) Delete(id uuid.UUID) error {
 
 	err := s.rmeal.Delete(meal)
 	if err != nil {
-		return err
+		return consttypes.ErrFailedToDeleteMeal
 	}
 
 	return nil
@@ -181,7 +189,7 @@ func (s *MealService) Delete(id uuid.UUID) error {
 func (s *MealService) FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error) {
 	meals, err := s.rmeal.FindAll(preq)
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrFailedToFindAllMeals
 	}
 
 	return meals, nil
@@ -193,7 +201,10 @@ func (s *MealService) GetByID(id uuid.UUID) (*responses.Meal, error) {
 		return nil, err
 	}
 
-	meres := meal.ToResponse()
+	mres, err := meal.ToResponse()
+	if err != nil {
+		return nil, consttypes.ErrConvertFailed
+	}
 
-	return meres, nil
+	return mres, nil
 }

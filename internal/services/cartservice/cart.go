@@ -58,12 +58,12 @@ func (s *CartService) Create(req requests.CreateCart, roleres responses.BaseRole
 	if rtype == consttypes.UR_CAREGIVER {
 		m, err = s.rmemb.GetByCaregiverID(rid)
 		if err != nil {
-			return nil, err
+			return nil, consttypes.ErrMemberNotFound
 		}
 	} else if rtype == consttypes.UR_MEMBER {
 		m, err = s.rmemb.GetByID(rid)
 		if err != nil {
-			return nil, err
+			return nil, consttypes.ErrMemberNotFound
 		}
 	}
 
@@ -71,24 +71,18 @@ func (s *CartService) Create(req requests.CreateCart, roleres responses.BaseRole
 	cart, err := req.ToModel(*m)
 	if err != nil {
 		utlogger.Error(err)
-		return nil, err
+		return nil, consttypes.ErrConvertFailed
 	}
 
-	memb, err := s.rmemb.GetByID(cart.MemberID)
+	membres, err := m.ToResponse()
 	if err != nil {
-		return nil, err
-	}
-
-	membres, err := memb.ToResponse()
-	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrConvertFailed
 	}
 
 	// Try to get existing cart by meal ID and reference
 	existingcart, err := s.rcart.GetByMealIDAndMemberID(cart.MemberID, cart.MealID)
 	if err != nil && err != gorm.ErrRecordNotFound {
-		utlogger.Error(err)
-		return nil, err
+		return nil, consttypes.ErrGettingCart
 	}
 
 	// If an existing cart is found, update its quantity
@@ -97,23 +91,20 @@ func (s *CartService) Create(req requests.CreateCart, roleres responses.BaseRole
 
 		cart, err = s.rcart.Update(*existingcart)
 		if err != nil {
-			utlogger.Error(err)
-			return nil, err
+			return nil, consttypes.ErrFailedToUpdateCart
 		}
 	} else {
 		// Create a new cart
 		cart, err = s.rcart.Create(*cart)
 		if err != nil {
-			utlogger.Error(err)
-			return nil, err
+			return nil, consttypes.ErrFailedToCreateCart
 		}
 	}
 
 	// Convert cart to response
 	cartres, err := cart.ToResponse(membres)
 	if err != nil {
-		utlogger.Error(err)
-		return nil, err
+		return nil, consttypes.ErrConvertFailed
 	}
 
 	return cartres, nil
@@ -126,25 +117,23 @@ func (s *CartService) Read() ([]*responses.Cart, error) {
 
 	carts, err := s.rcart.Read()
 	if err != nil {
-		utlogger.Error(err)
-		return nil, err
+		return nil, consttypes.ErrFailedToReadCart
 	}
 
 	for _, cart := range carts {
 		memb, err := s.rmemb.GetByID(cart.MemberID)
 		if err != nil {
-			return nil, err
+			return nil, consttypes.ErrCartNotFound
 		}
 
 		membres, err := memb.ToResponse()
 		if err != nil {
-			return nil, err
+			return nil, consttypes.ErrConvertFailed
 		}
 
 		cartres, err := cart.ToResponse(membres)
 		if err != nil {
-			utlogger.Error(err)
-			return nil, err
+			return nil, consttypes.ErrConvertFailed
 		}
 
 		cartreses = append(cartreses, cartres)
@@ -155,40 +144,35 @@ func (s *CartService) Read() ([]*responses.Cart, error) {
 
 func (s *CartService) Update(cid uuid.UUID, req requests.UpdateCart) (*responses.Cart, error) {
 	cart, err := s.rcart.GetByID(cid)
-
 	if err != nil {
-		utlogger.Error(err)
-		return nil, err
+		return nil, consttypes.ErrCartNotFound
 	}
 
 	cart, err = req.ToModel(*cart)
 	if err != nil {
-		utlogger.Error(err)
-		return nil, err
+		return nil, consttypes.ErrConvertFailed
 	}
 
 	cart.Quantity = cart.Quantity + req.Quantity
 
 	cart, err = s.rcart.Update(*cart)
 	if err != nil {
-		utlogger.Error(err)
-		return nil, err
+		return nil, consttypes.ErrFailedToUpdateCart
 	}
 
 	memb, err := s.rmemb.GetByID(cart.MemberID)
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrMemberNotFound
 	}
 
 	membres, err := memb.ToResponse()
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrConvertFailed
 	}
 
 	cartres, err := cart.ToResponse(membres)
 	if err != nil {
-		utlogger.Error(err)
-		return nil, err
+		return nil, consttypes.ErrConvertFailed
 	}
 
 	return cartres, nil
@@ -197,14 +181,12 @@ func (s *CartService) Update(cid uuid.UUID, req requests.UpdateCart) (*responses
 func (s *CartService) Delete(id uuid.UUID) error {
 	cart, err := s.rcart.GetByID(id)
 	if err != nil {
-		utlogger.Error(err)
-		return err
+		return consttypes.ErrCartNotFound
 	}
 
 	err = s.rcart.Delete(*cart)
 	if err != nil {
-		utlogger.Error(err)
-		return err
+		return consttypes.ErrFailedToDeleteCart
 	}
 
 	return nil
@@ -213,23 +195,22 @@ func (s *CartService) Delete(id uuid.UUID) error {
 func (s *CartService) GetByID(id uuid.UUID) (*responses.Cart, error) {
 	cart, err := s.rcart.GetByID(id)
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrCartNotFound
 	}
 
 	memb, err := s.rmemb.GetByID(cart.MemberID)
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrMemberNotFound
 	}
 
 	membres, err := memb.ToResponse()
 	if err != nil {
-		return nil, err
+		return nil, consttypes.ErrConvertFailed
 	}
 
 	cartres, err := cart.ToResponse(membres)
 	if err != nil {
-		utlogger.Error(err)
-		return nil, err
+		return nil, consttypes.ErrConvertFailed
 	}
 
 	return cartres, nil

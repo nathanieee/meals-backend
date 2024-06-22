@@ -21,7 +21,6 @@ var (
 		created_at,
 		updated_at,
 		member_id,
-		meal_id,
 		status
 	`
 )
@@ -56,16 +55,22 @@ func (r *OrderRepository) preload() *gorm.DB {
 		Preload("Member.Caregiver.User.Address").
 		Preload("Member.Organization").
 		Preload("Member.Allergies.Allergy").
-		Preload("Member.Illnesses.Illnes").
-		Preload("Meal.Images.Image").
-		Preload("Meal.Illnesses.Illness").
-		Preload("Meal.Allergies.Allergy").
-		Preload("Meal.Partner.User.Address").
-		Preload("Meal.Partner.User.Image.Imag")
+		Preload("Member.Illnesses.Illness").
+		Preload("Meals.Meal").
+		Preload("History.User.Image.Image").
+		Preload("History.User.Address")
+}
+
+func (r *OrderRepository) omit() *gorm.DB {
+	return r.db.Omit(
+		"Member",
+		"Meals.Meal",
+	)
 }
 
 func (r *OrderRepository) Create(o models.Order) (*models.Order, error) {
-	err := r.db.
+	err := r.
+		omit().
 		Create(&o).Error
 
 	if err != nil {
@@ -80,7 +85,7 @@ func (r *OrderRepository) Create(o models.Order) (*models.Order, error) {
 		return nil, err
 	}
 
-	return onew, err
+	return onew, nil
 }
 
 func (r *OrderRepository) Read() ([]*models.Order, error) {

@@ -10,6 +10,7 @@ import (
 	"project-skbackend/internal/repositories/illnessrepo"
 	"project-skbackend/internal/repositories/mealrepo"
 	"project-skbackend/internal/repositories/memberrepo"
+	"project-skbackend/internal/repositories/orderrepo"
 	"project-skbackend/internal/repositories/organizationrepo"
 	"project-skbackend/internal/repositories/partnerrepo"
 	"project-skbackend/internal/repositories/patronrepo"
@@ -20,6 +21,7 @@ import (
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/internal/services/mealservice"
 	"project-skbackend/internal/services/memberservice"
+	"project-skbackend/internal/services/orderservice"
 	"project-skbackend/internal/services/organizationservice"
 	"project-skbackend/internal/services/partnerservice"
 	"project-skbackend/internal/services/patronservice"
@@ -42,6 +44,7 @@ type DependencyInjection struct {
 	ConsumerService     *consumerservice.ConsumerService
 	PatronService       *patronservice.PatronService
 	OrganizationService *organizationservice.OrganizationService
+	OrderService        *orderservice.OrderService
 }
 
 func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, rdb *redis.Client, ctx context.Context) *DependencyInjection {
@@ -62,6 +65,7 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	rcart := cartrepo.NewCartRepository(db)
 	radmin := adminrepo.NewAdminRepository(db)
 	rpatron := patronrepo.NewPatronRepository(db)
+	rorder := orderrepo.NewOrderRepository(db)
 
 	/* --------------------------------- service -------------------------------- */
 	sprod := producerservice.NewProducerService(ch, cfg, ctx)
@@ -75,6 +79,7 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	scons := consumerservice.NewConsumerService(ch, cfg, smail)
 	spatr := patronservice.NewPatronService(rpatron)
 	sorga := organizationservice.NewOrganizationService(rorg)
+	sordr := orderservice.NewOrderService(rorder, rmeal, rmemb, ruser, rcare)
 
 	return &DependencyInjection{
 		UserService:         suser,
@@ -87,5 +92,6 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 		ConsumerService:     scons,
 		PatronService:       spatr,
 		OrganizationService: sorga,
+		OrderService:        sordr,
 	}
 }

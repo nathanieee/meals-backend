@@ -225,19 +225,7 @@ func (r *OrganizationRepository) GetByUserID(uid uuid.UUID) (*models.Organizatio
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(`
-			organizations.ID IN (
-				SELECT 
-					id 
-				FROM 
-					users
-				WHERE
-					id = ?
-					AND deleted_at IS NULL
-				GROUP BY 
-					id
-			)
-		`, uid).
+		Where(&models.Organization{UserID: uid}, uid).
 		First(&o).Error
 
 	if err != nil {

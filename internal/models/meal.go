@@ -54,13 +54,13 @@ type (
 	}
 )
 
-func (m *Meal) ToResponse() *responses.Meal {
+func (m *Meal) ToResponse() (*responses.Meal, error) {
 	mres := responses.Meal{}
 
 	if err := copier.CopyWithOption(&mres, &m, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.Error(err)
-		return nil
+		return nil, err
 	}
 
-	return &mres
+	return &mres, nil
 }

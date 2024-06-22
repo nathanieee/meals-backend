@@ -8,6 +8,7 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/producerservice"
+	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/uttemplate"
 
@@ -54,13 +55,14 @@ func NewMailService(
 func parseTemplate(templateFileName string, data any) (string, error) {
 	t, err := template.ParseFiles(templateFileName)
 	if err != nil {
-		return "", err
+		utlogger.Error(err)
+		return "", consttypes.ErrFailedToParseFile
 	}
 
 	buf := new(bytes.Buffer)
 	if err = t.Execute(buf, data); err != nil {
 		utlogger.Error(err)
-		return "", err
+		return "", consttypes.ErrFailedToWriteFile
 	}
 
 	return buf.String(), nil
@@ -75,7 +77,7 @@ func (s *MailService) SendEmail(
 	templates, err := uttemplate.ParseTemplateDir("templates", req.Template)
 	if err != nil {
 		utlogger.Error(err)
-		return err
+		return consttypes.ErrFailedToParseFile
 	}
 
 	templates = templates.Lookup(req.Template)
@@ -83,7 +85,7 @@ func (s *MailService) SendEmail(
 	err = templates.Execute(&body, &req.Data)
 	if err != nil {
 		utlogger.Error(err)
-		return err
+		return consttypes.ErrFailedToWriteFile
 	}
 
 	m := gomail.NewMessage()
@@ -99,8 +101,8 @@ func (s *MailService) SendEmail(
 	// d := gomail.NewDialer(MAIL_HOST, MAIL_PORT, MAIL_FROM, MAIL_PASS)
 	// d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-	// err = d.DialAndSend(m)
-	// if err != nil {
+	//
+	// if err := d.DialAndSend(m); err != nil {
 	// 	return err
 	// }
 
@@ -119,9 +121,8 @@ func (s *MailService) SendResetPasswordEmail(req requests.SendEmailResetPassword
 		},
 	}
 
-	err := s.sprod.PublishEmail(sereq)
-	if err != nil {
-		return err
+	if err := s.sprod.PublishEmail(sereq); err != nil {
+		return consttypes.ErrFailedToPublishMessage
 	}
 
 	return nil
@@ -139,9 +140,8 @@ func (s *MailService) SendVerifyEmail(req requests.SendEmailVerification) error 
 		},
 	}
 
-	err := s.sprod.PublishEmail(sereq)
-	if err != nil {
-		return err
+	if err := s.sprod.PublishEmail(sereq); err != nil {
+		return consttypes.ErrFailedToPublishMessage
 	}
 
 	return nil

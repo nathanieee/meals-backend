@@ -65,7 +65,7 @@ func GenerateToken(
 	timeunit,
 	privatekey string,
 ) (*Token, error) {
-	exptime := consttypes.DateNow.Add(getDuration(lifespan, timeunit))
+	exptime := consttypes.TimeNow().Add(getDuration(lifespan, timeunit))
 	tuuid := uuid.New()
 
 	claims := TokenClaims{

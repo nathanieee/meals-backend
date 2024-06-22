@@ -224,19 +224,7 @@ func (r *PartnerRepository) GetByUserID(uid uuid.UUID) (*models.Partner, error) 
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(`
-			partners.ID IN (
-				SELECT 
-					id 
-				FROM 
-					users
-				WHERE
-					id = ?
-					AND deleted_at IS NULL
-				GROUP BY 
-					id
-			)
-		`, uid).
+		Where(&models.Partner{UserID: uid}, uid).
 		First(&p).Error
 
 	if err != nil {

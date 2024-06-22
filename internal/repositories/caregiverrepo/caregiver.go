@@ -221,19 +221,7 @@ func (r *CaregiverRepository) GetByUserID(uid uuid.UUID) (*models.Caregiver, err
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(`
-			caregivers.ID IN (
-				SELECT 
-					id 
-				FROM 
-					users
-				WHERE
-					id = ?
-					AND deleted_at IS NULL
-				GROUP BY 
-					id
-			)
-		`, uid).
+		Where(&models.Caregiver{UserID: uid}, uid).
 		First(&cg).Error
 
 	if err != nil {

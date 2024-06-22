@@ -1,5 +1,9 @@
 package consttypes
 
+import (
+	"fmt"
+)
+
 type (
 	MealStatus     string
 	DonationStatus string
@@ -14,12 +18,10 @@ const (
 	DS_ACCEPTED DonationStatus = "Accepted"
 	DS_REJECTED DonationStatus = "Rejected"
 
-	OS_PENDING    OrderStatus = "Pending"
-	OS_PREPARING  OrderStatus = "Preparing"
-	OS_PREPARED   OrderStatus = "Prepared"
-	OS_DELIVERING OrderStatus = "Delivering"
-	OS_DELIVERED  OrderStatus = "Delivered"
-	OS_CANCELED   OrderStatus = "Canceled"
+	OS_PROCESSED OrderStatus = "processed"
+	OS_PREPARED  OrderStatus = "prepared"
+	OS_DELIVERED OrderStatus = "delivered"
+	OS_CANCELED  OrderStatus = "canceled"
 )
 
 func (enum MealStatus) String() string {
@@ -32,4 +34,8 @@ func (enum DonationStatus) String() string {
 
 func (enum OrderStatus) String() string {
 	return string(enum)
+}
+
+func NewOrderHistoryDescription(status OrderStatus, by string) string {
+	return fmt.Sprintf("Order is %s by %s.", status, by)
 }

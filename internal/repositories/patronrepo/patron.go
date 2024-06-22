@@ -194,19 +194,7 @@ func (r *PatronRepository) GetByUserID(id uuid.UUID) (*models.Patron, error) {
 	err := r.
 		preload().
 		Select(SELECTED_FIELDS).
-		Where(`
-			partners.ID IN (
-				SELECT 
-					id 
-				FROM 
-					users
-				WHERE
-					id = ?
-					AND deleted_at IS NULL
-				GROUP BY 
-					id
-			)
-		`, id).
+		Where(&models.Patron{UserID: id}, id).
 		First(&p).Error
 
 	if err != nil {

@@ -129,10 +129,8 @@ func SeedOrganizationTypeEnum(db *gorm.DB) error {
 func SeedOrderStatusEnum(db *gorm.DB) error {
 	return createEnum(db,
 		"order_status_enum",
-		consttypes.OS_PENDING.String(),
-		consttypes.OS_PREPARING.String(),
+		consttypes.OS_PROCESSED.String(),
 		consttypes.OS_PREPARED.String(),
-		consttypes.OS_DELIVERING.String(),
 		consttypes.OS_DELIVERED.String(),
 		consttypes.OS_CANCELED.String(),
 	)
@@ -151,7 +149,7 @@ func SeedAdminCredentials(db *gorm.DB) error {
 					FirstName:   os.Getenv("ADMIN_FIRSTNAME"),
 					LastName:    os.Getenv("ADMIN_LASTNAME"),
 					Gender:      consttypes.G_MALE,
-					DateOfBirth: ctdatatype.CDT_DATE{Time: consttypes.DateNow},
+					DateOfBirth: ctdatatype.CDT_DATE{Time: consttypes.TimeNow()},
 				},
 			}
 
@@ -179,7 +177,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 					FirstName:   "John",
 					LastName:    "Doe",
 					Gender:      consttypes.G_MALE,
-					DateOfBirth: ctdatatype.CDT_DATE{Time: consttypes.DateNow},
+					DateOfBirth: ctdatatype.CDT_DATE{Time: consttypes.TimeNow()},
 					Caregiver: &models.Caregiver{
 						User: models.User{
 							Email:    "caregiver@test.com",
@@ -189,7 +187,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 						FirstName:   "Care",
 						LastName:    "Giver",
 						Gender:      consttypes.G_FEMALE,
-						DateOfBirth: ctdatatype.CDT_DATE{Time: consttypes.DateNow},
+						DateOfBirth: ctdatatype.CDT_DATE{Time: consttypes.TimeNow()},
 					},
 				},
 			}

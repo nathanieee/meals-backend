@@ -166,5 +166,6 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 		&models.Cart{},
 		&models.Order{},
 		&models.OrderHistory{},
+		&models.OrderMeal{},
 	)
 }

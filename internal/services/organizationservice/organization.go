@@ -3,12 +3,13 @@ package organizationservice
 import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
-	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/organizationrepo"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
 
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 )
 
 type (
@@ -18,7 +19,7 @@ type (
 
 	IOrganizationService interface {
 		Create(req requests.CreateOrganization) (*responses.Organization, error)
-		Read() ([]*models.Organization, error)
+		Read() ([]*responses.Organization, error)
 		Update(id uuid.UUID, req requests.UpdateOrganization) (*responses.Organization, error)
 		Delete(id uuid.UUID) error
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
@@ -58,13 +59,22 @@ func (s *OrganizationService) Create(req requests.CreateOrganization) (*response
 	return orgres, nil
 }
 
-func (s *OrganizationService) Read() ([]*models.Organization, error) {
-	organizations, err := s.rorg.Read()
+func (s *OrganizationService) Read() ([]*responses.Organization, error) {
+	var (
+		orgreses []*responses.Organization
+	)
+
+	org, err := s.rorg.Read()
 	if err != nil {
 		return nil, err
 	}
 
-	return organizations, nil
+	if err := copier.CopyWithOption(&orgreses, &org, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return orgreses, nil
 }
 
 func (s *OrganizationService) Update(id uuid.UUID, req requests.UpdateOrganization) (*responses.Organization, error) {
