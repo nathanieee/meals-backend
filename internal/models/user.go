@@ -47,8 +47,7 @@ func (u *User) ToResponse() (*responses.User, error) {
 		ures responses.User
 	)
 
-	err := copier.CopyWithOption(&ures, &u, copier.Option{IgnoreEmpty: true, DeepCopy: true})
-	if err != nil {
+	if err := copier.CopyWithOption(&ures, &u, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.Error(err)
 		return nil, err
 	}
@@ -62,8 +61,7 @@ func (u *User) ToAuth(token *uttoken.TokenHeader) *responses.Auth {
 		Expires: token.AccessTokenExpires,
 	}
 
-	err := copier.CopyWithOption(&aures, &u, copier.Option{IgnoreEmpty: true, DeepCopy: true})
-	if err != nil {
+	if err := copier.CopyWithOption(&aures, &u, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.Error(err)
 	}
 

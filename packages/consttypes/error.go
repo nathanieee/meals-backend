@@ -16,6 +16,7 @@ var (
 	ErrConvertFailed          = fmt.Errorf("data type conversion failed")
 	ErrInvalidReference       = fmt.Errorf("invalid reference")
 	ErrUnauthorized           = fmt.Errorf("you are unauthorized to access this resource")
+	ErrAccountIsNotVerified   = fmt.Errorf("your account is not verified yet")
 	ErrInvalidEmailOrPassword = fmt.Errorf("invalid email or password")
 	ErrFailedToGetUserName    = fmt.Errorf("failed to get user's name")
 

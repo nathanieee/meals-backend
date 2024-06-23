@@ -24,6 +24,7 @@ var (
 		role,
 		reset_password_token,
 		reset_password_sent_at,
+		confirmed_at,
 		created_at,
 		updated_at
 	`
@@ -195,7 +196,6 @@ func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
 
 	err := r.
 		preload().
-		Debug().
 		Select(SELECTED_FIELDS).
 		Where(&models.User{Email: email}).
 		First(&u).Error

@@ -142,9 +142,10 @@ func SeedAdminCredentials(db *gorm.DB) error {
 			admins := []*models.Admin{
 				{
 					User: models.User{
-						Email:    os.Getenv("ADMIN_EMAIL"),
-						Password: getGlobalHashedPassword(os.Getenv("ADMIN_PASSWORD")),
-						Role:     consttypes.UR_ADMIN,
+						ConfirmedAt: consttypes.TimeNow(),
+						Email:       os.Getenv("ADMIN_EMAIL"),
+						Password:    getGlobalHashedPassword(os.Getenv("ADMIN_PASSWORD")),
+						Role:        consttypes.UR_ADMIN,
 					},
 					FirstName:   os.Getenv("ADMIN_FIRSTNAME"),
 					LastName:    os.Getenv("ADMIN_LASTNAME"),
@@ -153,7 +154,7 @@ func SeedAdminCredentials(db *gorm.DB) error {
 				},
 			}
 
-			err := db.Create(admins).Error
+			err := db.Create(&admins).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err
@@ -170,9 +171,10 @@ func SeedMemberCredentials(db *gorm.DB) error {
 			members := []*models.Member{
 				{
 					User: models.User{
-						Email:    "member@test.com",
-						Password: getGlobalHashedPassword("password"),
-						Role:     consttypes.UR_MEMBER,
+						ConfirmedAt: consttypes.TimeNow(),
+						Email:       "member@test.com",
+						Password:    getGlobalHashedPassword("password"),
+						Role:        consttypes.UR_MEMBER,
 					},
 					FirstName:   "John",
 					LastName:    "Doe",
@@ -180,9 +182,10 @@ func SeedMemberCredentials(db *gorm.DB) error {
 					DateOfBirth: ctdatatype.CDT_DATE{Time: consttypes.TimeNow()},
 					Caregiver: &models.Caregiver{
 						User: models.User{
-							Email:    "caregiver@test.com",
-							Password: getGlobalHashedPassword("password"),
-							Role:     consttypes.UR_CAREGIVER,
+							ConfirmedAt: consttypes.TimeNow(),
+							Email:       "caregiver@test.com",
+							Password:    getGlobalHashedPassword("password"),
+							Role:        consttypes.UR_CAREGIVER,
 						},
 						FirstName:   "Care",
 						LastName:    "Giver",
@@ -192,7 +195,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 				},
 			}
 
-			err = db.Create(members).Error
+			err = db.Create(&members).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err
@@ -209,16 +212,17 @@ func SeedOrganizationCredentials(db *gorm.DB) error {
 			organizations := []*models.Organization{
 				{
 					User: models.User{
-						Email:    "organization@test.com",
-						Password: getGlobalHashedPassword("password"),
-						Role:     consttypes.UR_ORGANIZATION,
+						ConfirmedAt: consttypes.TimeNow(),
+						Email:       "organization@test.com",
+						Password:    getGlobalHashedPassword("password"),
+						Role:        consttypes.UR_ORGANIZATION,
 					},
 					Type: consttypes.OT_NURSINGHOME,
 					Name: "Nursing Home",
 				},
 			}
 
-			err := db.Create(organizations).Error
+			err := db.Create(&organizations).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err
@@ -235,15 +239,16 @@ func SeedPartnerCredentials(db *gorm.DB) error {
 			partners := []*models.Partner{
 				{
 					User: models.User{
-						Email:    "partner@test.com",
-						Password: getGlobalHashedPassword("password"),
-						Role:     consttypes.UR_PARTNER,
+						ConfirmedAt: consttypes.TimeNow(),
+						Email:       "partner@test.com",
+						Password:    getGlobalHashedPassword("password"),
+						Role:        consttypes.UR_PARTNER,
 					},
 					Name: "Partner",
 				},
 			}
 
-			err = db.Create(partners).Error
+			err = db.Create(&partners).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err
@@ -287,7 +292,7 @@ func SeedMealData(db *gorm.DB) error {
 				},
 			}
 
-			err = db.Create(meals).Error
+			err = db.Create(&meals).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err
@@ -529,7 +534,7 @@ func SeedAllergyData(db *gorm.DB) error {
 				},
 			}
 
-			err := db.Create(allergies).Error
+			err := db.Create(&allergies).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err
@@ -747,7 +752,7 @@ func SeedIllnessData(db *gorm.DB) error {
 				},
 			}
 
-			err := db.Create(illnesses).Error
+			err := db.Create(&illnesses).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err
@@ -779,7 +784,7 @@ func SeedCartData(db *gorm.DB) error {
 				},
 			}
 
-			err = db.Create(carts).Error
+			err = db.Create(&carts).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err

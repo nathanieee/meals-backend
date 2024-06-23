@@ -71,10 +71,10 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedlevel ...consttypes.UserRole)
 		}
 
 		if !utrequest.CheckWhitelistUrl(ctx.Request.URL.Path) {
-			if !tparsed.User.ConfirmedAt.IsZero() && !strings.Contains(ctx.Request.URL.Path, "verify") {
+			if tparsed.User.ConfirmedAt.IsZero() && !strings.Contains(ctx.Request.URL.Path, "verify") {
 				utresponse.GeneralUnauthorized(
 					ctx,
-					err,
+					consttypes.ErrAccountIsNotVerified,
 				)
 				ctx.Abort()
 				return
