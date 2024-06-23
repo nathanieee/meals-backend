@@ -191,7 +191,7 @@ func (r *CaregiverRepository) GetByEmail(email string) (*models.Caregiver, error
 		preload().
 		Select(SELECTED_FIELDS).
 		Where(`
-			caregivers.ID IN (
+			caregivers.user_id IN (
 				SELECT 
 					id 
 				FROM 

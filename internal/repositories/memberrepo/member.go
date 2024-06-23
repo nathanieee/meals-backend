@@ -209,7 +209,7 @@ func (r *MemberRepository) GetByEmail(email string) (*models.Member, error) {
 		preload().
 		Select(SELECTED_FIELDS).
 		Where(`
-			members.ID IN (
+			members.user_id IN (
 				SELECT 
 					id 
 				FROM 

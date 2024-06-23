@@ -195,7 +195,7 @@ func (r *OrganizationRepository) GetByEmail(email string) (*models.Organization,
 		preload().
 		Select(SELECTED_FIELDS).
 		Where(`
-			organizations.ID IN (
+			organizations.user_id IN (
 				SELECT 
 					id 
 				FROM 

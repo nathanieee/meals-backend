@@ -93,7 +93,7 @@ func (s *AuthService) ForgotPassword(req requests.ForgotPassword) error {
 
 	err = s.SendResetPasswordEmail(*user)
 	if err != nil {
-		return consttypes.ErrFailedToSendEmail
+		return err
 	}
 
 	return nil
@@ -110,7 +110,7 @@ func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
 	}
 
 	if !consttypes.TimeNow().Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.ResetPassword.Cooldown))) {
-		return consttypes.ErrTooQuickSendEmail
+		return consttypes.ErrTokenExpired
 	}
 
 	user, err = req.ToUserModel(*user)

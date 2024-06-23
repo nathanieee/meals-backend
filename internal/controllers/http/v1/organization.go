@@ -100,6 +100,16 @@ func (r *organizationroutes) organizationRegister(ctx *gin.Context) {
 		return
 	}
 
+	err = r.sauth.SendVerificationEmail(resuser.ID)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
 	resauth := thead.ToAuthResponse(*resuser)
 	utresponse.GeneralSuccessCreate(
 		entity,

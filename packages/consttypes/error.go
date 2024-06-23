@@ -3,16 +3,34 @@ package consttypes
 import (
 	"fmt"
 	"os"
+	"project-skbackend/packages/utils/utlogger"
+	"strconv"
 )
 
+func GetResetPasswordCooldown() int {
+	rpc := os.Getenv("API_RESET_PASSWORD_COOLDOWN")
+	if rpc == "" {
+		// * default value of reset password cooldown
+		return 5
+	}
+
+	rpcint, err := strconv.Atoi(rpc)
+	if err != nil {
+		utlogger.Error(err)
+		return 5
+	}
+
+	return rpcint
+}
+
 var (
-	// variable
+	// variables
 	resetPasswordCooldown = os.Getenv("API_RESET_PASSWORD_COOLDOWN")
 
 	// queues
 	ErrFailedToPublishMessage = fmt.Errorf("failed to publish message")
 
-	// general
+	// generals
 	ErrConvertFailed          = fmt.Errorf("data type conversion failed")
 	ErrInvalidReference       = fmt.Errorf("invalid reference")
 	ErrUnauthorized           = fmt.Errorf("you are unauthorized to access this resource")
@@ -20,12 +38,12 @@ var (
 	ErrInvalidEmailOrPassword = fmt.Errorf("invalid email or password")
 	ErrFailedToGetUserName    = fmt.Errorf("failed to get user's name")
 
-	// field
+	// fields
 	ErrFieldIsEmpty             = fmt.Errorf("field should not be empty")
 	ErrFieldInvalidFormat       = fmt.Errorf("field format is invalid")
 	ErrFieldInvalidEmailAddress = fmt.Errorf("invalid email address format")
 
-	// token
+	// tokens
 	ErrTokenExpired               = fmt.Errorf("token is expired")
 	ErrTokenUnverifiable          = fmt.Errorf("token is unverifiable")
 	ErrTokenMismatch              = fmt.Errorf("token is mismatch")
@@ -82,7 +100,7 @@ var (
 	// organizations
 	ErrOrganizationNotFound = fmt.Errorf("organization not found")
 
-	// user
+	// users
 	ErrUserNotFound         = fmt.Errorf("user not found")
 	ErrIncorrectPassword    = fmt.Errorf("incorrect password")
 	ErrUserIDNotFound       = fmt.Errorf("user ID is not found")
@@ -92,7 +110,7 @@ var (
 	ErrUserInvalidRole      = fmt.Errorf("invalid user role")
 	ErrFailedToUpdateUser   = fmt.Errorf("failed to update user")
 
-	// file
+	// files
 	ErrInvalidFileType         = fmt.Errorf("invalid file type")
 	ErrFailedToUploadFile      = fmt.Errorf("failed to upload file")
 	ErrFailedToCreateDirectory = fmt.Errorf("failed to create directory")
@@ -105,7 +123,7 @@ var (
 
 	// email
 	ErrCannotChangeEmail = fmt.Errorf("cannot change existing email")
-	ErrTooQuickSendEmail = fmt.Errorf("an email was sent just under %v minutes ago", resetPasswordCooldown)
+	ErrTooQuickSendEmail = fmt.Errorf("an email was sent just under %v minutes ago", GetResetPasswordCooldown())
 	ErrDuplicateEmail    = fmt.Errorf("email address already exists")
 	ErrFailedToSendEmail = fmt.Errorf("failed to send email")
 )

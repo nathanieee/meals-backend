@@ -34,3 +34,11 @@ type (
 		Token string `validate:"required"`
 	}
 )
+
+func NewVerifyEmailRequest(name, email, token string) *SendEmailVerification {
+	return &SendEmailVerification{
+		Name:  name,
+		Email: email,
+		Token: token,
+	}
+}

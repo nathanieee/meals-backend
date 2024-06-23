@@ -194,7 +194,7 @@ func (r *PartnerRepository) GetByEmail(email string) (*models.Partner, error) {
 		preload().
 		Select(SELECTED_FIELDS).
 		Where(`
-			partners.ID IN (
+			partners.user_id IN (
 				SELECT 
 					id 
 				FROM 

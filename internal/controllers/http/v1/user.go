@@ -94,10 +94,11 @@ func (r *userroutes) createUser(ctx *gin.Context) {
 		return
 	}
 
-	utresponse.SuccessResponse(ctx, http.StatusOK, utresponse.SuccessRes{
-		Message: "Success Creating new user",
-		Data:    ures,
-	})
+	utresponse.GeneralSuccessCreate(
+		"create user",
+		ctx,
+		ures,
+	)
 }
 
 func (r *userroutes) getUser(ctx *gin.Context) {

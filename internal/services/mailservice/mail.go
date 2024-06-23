@@ -2,6 +2,7 @@ package mailservice
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"html/template"
 	"project-skbackend/configs"
@@ -74,7 +75,7 @@ func (s *MailService) SendEmail(
 		body bytes.Buffer
 	)
 
-	templates, err := uttemplate.ParseTemplateDir("templates", req.Template)
+	templates, err := uttemplate.ParseTemplateDir(MAIL_TEMDIR, req.Template)
 	if err != nil {
 		utlogger.Error(err)
 		return consttypes.ErrFailedToParseFile
@@ -92,19 +93,18 @@ func (s *MailService) SendEmail(
 
 	m.SetHeaders(map[string][]string{
 		"From":    {s.cfg.Mail.From},
-		"To":      {req.Email},
+		"To":      {"jonathanvnc@gmail.com"},
 		"Subject": {req.Subject},
 	})
 	m.SetBody("text/html", body.String())
 
 	// TODO - need to enable this
-	// d := gomail.NewDialer(MAIL_HOST, MAIL_PORT, MAIL_FROM, MAIL_PASS)
-	// d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	d := gomail.NewDialer(MAIL_HOST, MAIL_PORT, MAIL_FROM, MAIL_PASS)
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-	//
-	// if err := d.DialAndSend(m); err != nil {
-	// 	return err
-	// }
+	if err := d.DialAndSend(m); err != nil {
+		return err
+	}
 
 	return nil
 }

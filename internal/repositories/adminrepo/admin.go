@@ -198,7 +198,7 @@ func (r *AdminRepository) GetByEmail(email string) (*models.Admin, error) {
 		preload().
 		Select(SELECTED_FIELDS).
 		Where(`
-			admins.ID IN (
+			admins.user_id IN (
 				SELECT 
 					id 
 				FROM 

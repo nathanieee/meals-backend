@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"project-skbackend/internal/models"
+	"project-skbackend/internal/models/base"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/customs/ctdatatype"
 
@@ -12,7 +13,13 @@ import (
 	"project-skbackend/packages/utils/utstring"
 	"strings"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
+)
+
+var (
+	uuidstr = "123e4567-e89b-12d3-a456-426614174000"
+	id, _   = uuid.Parse(uuidstr)
 )
 
 func getGlobalHashedPassword(password string) string {
@@ -141,6 +148,7 @@ func SeedAdminCredentials(db *gorm.DB) error {
 		if err := db.First(&models.Admin{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			admins := []*models.Admin{
 				{
+					Model: base.Model{ID: id},
 					User: models.User{
 						ConfirmedAt: consttypes.TimeNow(),
 						Email:       os.Getenv("ADMIN_EMAIL"),
@@ -170,6 +178,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 		if err := db.First(&models.Member{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			members := []*models.Member{
 				{
+					Model: base.Model{ID: id},
 					User: models.User{
 						ConfirmedAt: consttypes.TimeNow(),
 						Email:       "member@test.com",
@@ -181,6 +190,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 					Gender:      consttypes.G_MALE,
 					DateOfBirth: ctdatatype.CDT_DATE{Time: consttypes.TimeNow()},
 					Caregiver: &models.Caregiver{
+						Model: base.Model{ID: id},
 						User: models.User{
 							ConfirmedAt: consttypes.TimeNow(),
 							Email:       "caregiver@test.com",
@@ -211,6 +221,7 @@ func SeedOrganizationCredentials(db *gorm.DB) error {
 		if err := db.First(&models.Organization{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			organizations := []*models.Organization{
 				{
+					Model: base.Model{ID: id},
 					User: models.User{
 						ConfirmedAt: consttypes.TimeNow(),
 						Email:       "organization@test.com",
@@ -238,6 +249,7 @@ func SeedPartnerCredentials(db *gorm.DB) error {
 		if err := db.First(&models.Partner{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			partners := []*models.Partner{
 				{
+					Model: base.Model{ID: id},
 					User: models.User{
 						ConfirmedAt: consttypes.TimeNow(),
 						Email:       "partner@test.com",
@@ -274,6 +286,7 @@ func SeedMealData(db *gorm.DB) error {
 
 			meals := []*models.Meal{
 				{
+					Model: base.Model{ID: id},
 					Illnesses: []*models.MealIllness{
 						{
 							Illness: illness,
@@ -310,6 +323,7 @@ func SeedAllergyData(db *gorm.DB) error {
 			allergies := []*models.Allergy{
 				// ! start of food allergen
 				{
+					Model:       base.Model{ID: id},
 					Name:        "Milk",
 					Description: "A milk allergy, also known as a dairy allergy, is an adverse immune system response to one or more proteins found in cow's milk. It is different from lactose intolerance, which is a non-immune digestive disorder where the body has difficulty digesting lactose, a sugar found in milk. A milk allergy is an immune system disorder and can be more severe.",
 					Allergens:   consttypes.A_FOOD,
@@ -551,6 +565,7 @@ func SeedIllnessData(db *gorm.DB) error {
 		if err := db.First(&models.Illness{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			illnesses := []*models.Illness{
 				{
+					Model:       base.Model{ID: id},
 					Name:        "Covid",
 					Description: "Coronavirus disease (COVID-19) is an infectious disease caused by the SARS-CoV-2 virus.",
 				},
@@ -776,6 +791,7 @@ func SeedCartData(db *gorm.DB) error {
 
 			carts := []*models.Cart{
 				{
+					Model:    base.Model{ID: id},
 					MealID:   meal.ID,
 					Meal:     meal,
 					MemberID: member.ID,

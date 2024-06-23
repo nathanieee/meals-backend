@@ -50,6 +50,28 @@ func (req *CreateCaregiver) ToModel() (*models.Caregiver, error) {
 	return &caregiver, nil
 }
 
+func (req *CreateCaregiver) FromMemberAddition() (*models.Caregiver, error) {
+	var (
+		caregiver models.Caregiver
+	)
+
+	user, err := req.User.ToModel(consttypes.UR_CAREGIVER)
+	user.ConfirmedAt = consttypes.TimeNow()
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	if err := copier.CopyWithOption(&caregiver, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	caregiver.User = *user
+
+	return &caregiver, nil
+}
+
 func (req *UpdateCaregiver) ToCreateCaregiver() (*CreateCaregiver, error) {
 	var (
 		create CreateCaregiver
