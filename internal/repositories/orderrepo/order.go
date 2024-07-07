@@ -299,7 +299,7 @@ func (r *OrderRepository) UpdateAutomaticallyCancelled() error {
 
 	err = r.db.
 		Where("status IN ?", trigger).
-		Where("DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:00') <= ?", buffertime).
+		Where("TO_CHAR(created_at, '%Y-%m-%d %H:%i:00') <= ?", buffertime).
 		Find(&orders).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -351,7 +351,7 @@ func (r *OrderRepository) UpdateAutomaticallyPickedUp() error {
 
 	err = r.db.
 		Where("status IN ?", trigger).
-		Where("DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:00') <= ?", buffertime).
+		Where("TO_CHAR(created_at, '%Y-%m-%d %H:%i:00') <= ?", buffertime).
 		Find(&orders).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -403,7 +403,7 @@ func (r *OrderRepository) UpdateAutomaticallyOutForDelivery() error {
 
 	err = r.db.
 		Where("status IN ?", trigger).
-		Where("DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:00') <= ?", buffertime).
+		Where("TO_CHAR(created_at, '%Y-%m-%d %H:%i:00') <= ?", buffertime).
 		Find(&orders).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -455,7 +455,7 @@ func (r *OrderRepository) UpdateAutomaticallyDelivered() error {
 
 	err = r.db.
 		Where("status IN ?", trigger).
-		Where("DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:00') <= ?", buffertime).
+		Where("TO_CHAR(created_at, '%Y-%m-%d %H:%i:00') <= ?", buffertime).
 		Find(&orders).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {

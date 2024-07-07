@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"project-skbackend/configs"
 	"project-skbackend/internal/repositories/orderrepo"
-	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"time"
 
@@ -33,16 +32,22 @@ func NewCronService(
 }
 
 func (s *CronService) Init() (gocron.Scheduler, error) {
+	// * get time location from env
+	tz, err := time.LoadLocation(s.cfg.API.Timezone)
+	if err != nil {
+		return nil, err
+	}
+
 	// * define a new scheduler instance
 	gsch, err := gocron.NewScheduler(
-		gocron.WithLocation(consttypes.TimeNow().Location()),
+		gocron.WithLocation(tz),
 	)
 
 	if err != nil {
 		return nil, err
 	}
 
-	// * add a 10 minutely job
+	// * add a order job
 	s.orderSchedule(gsch)
 
 	// * start the scheduler
@@ -58,30 +63,22 @@ func (s *CronService) orderSchedule(gsch gocron.Scheduler) {
 
 	err := s.scheduleOrderCancelled(gsch)
 	if err != nil {
-		if err != nil {
-			errs = append(errs, err)
-		}
+		errs = append(errs, err)
 	}
 
 	err = s.scheduleOrderPickedUp(gsch)
 	if err != nil {
-		if err != nil {
-			errs = append(errs, err)
-		}
+		errs = append(errs, err)
 	}
 
 	err = s.scheduleOrderOutForDelivery(gsch)
 	if err != nil {
-		if err != nil {
-			errs = append(errs, err)
-		}
+		errs = append(errs, err)
 	}
 
 	err = s.scheduleOrderDelivered(gsch)
 	if err != nil {
-		if err != nil {
-			errs = append(errs, err)
-		}
+		errs = append(errs, err)
 	}
 
 	if len(errs) != 0 {
