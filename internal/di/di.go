@@ -19,6 +19,7 @@ import (
 	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/consumerservice"
 	"project-skbackend/internal/services/cronservice"
+	"project-skbackend/internal/services/illnessservice"
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/internal/services/mealservice"
 	"project-skbackend/internal/services/memberservice"
@@ -47,6 +48,7 @@ type DependencyInjection struct {
 	OrganizationService *organizationservice.OrganizationService
 	OrderService        *orderservice.OrderService
 	CronService         *cronservice.CronService
+	IllnessService      *illnessservice.IllnessService
 }
 
 func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, rdb *redis.Client, ctx context.Context) *DependencyInjection {
@@ -83,6 +85,7 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	sorga := organizationservice.NewOrganizationService(rorg)
 	sordr := orderservice.NewOrderService(*cfg, rorder, rmeal, rmemb, ruser, rcare)
 	scron := cronservice.NewCronService(cfg, rorder)
+	silln := illnessservice.NewIllnessService(rill)
 
 	return &DependencyInjection{
 		UserService:         suser,
@@ -97,6 +100,7 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 		OrganizationService: sorga,
 		OrderService:        sordr,
 		CronService:         scron,
+		IllnessService:      silln,
 	}
 }
 

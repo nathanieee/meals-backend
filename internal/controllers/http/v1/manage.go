@@ -4,6 +4,7 @@ import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
+	"project-skbackend/internal/services/illnessservice"
 	"project-skbackend/internal/services/mealservice"
 	"project-skbackend/internal/services/memberservice"
 	"project-skbackend/internal/services/partnerservice"
@@ -25,6 +26,7 @@ type (
 		smember  memberservice.IMemberService
 		spartner partnerservice.IPartnerService
 		spatron  patronservice.IPatronService
+		sillness illnessservice.IIllnessService
 	}
 )
 
@@ -35,6 +37,7 @@ func newManageRoutes(
 	smember memberservice.IMemberService,
 	spartner partnerservice.IPartnerService,
 	spatron patronservice.IPatronService,
+	sillness illnessservice.IIllnessService,
 ) {
 	r := &manageroutes{
 		cfg:      cfg,
@@ -42,6 +45,7 @@ func newManageRoutes(
 		smember:  smember,
 		spartner: spartner,
 		spatron:  spatron,
+		sillness: sillness,
 	}
 
 	gmanage := rg.Group("manages")
@@ -84,6 +88,15 @@ func newManageRoutes(
 			gpatron.GET("raw", r.getPatronsRaw)
 			gpatron.PUT("/:pid", r.updatePatron)
 			gpatron.DELETE("/:pid", r.deletePatron)
+		}
+
+		gillness := gmanage.Group("illnesses")
+		{
+			gillness.POST("", r.createIllness)
+			gillness.GET("", r.getIllnesses)
+			gillness.GET("raw", r.getIllnessesRaw)
+			gillness.PUT("/:iid", r.updateIllness)
+			gillness.DELETE("/:iid", r.deleteIllness)
 		}
 	}
 }
@@ -1051,4 +1064,228 @@ func (r *manageroutes) deletePatron(ctx *gin.Context) {
 
 /* -------------------------------------------------------------------------- */
 /*                        end of patrons routing group                        */
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+/*                       start of illness routing group                       */
+/* -------------------------------------------------------------------------- */
+
+func (r *manageroutes) createIllness(ctx *gin.Context) {
+	var (
+		function = "create illness"
+		entity   = "illness"
+		req      requests.CreateIllness
+	)
+
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	resillness, err := r.sillness.Create(req)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessCreate(
+		entity,
+		ctx,
+		resillness,
+	)
+}
+
+func (r *manageroutes) getIllnesses(ctx *gin.Context) {
+	var (
+		entity  = "illnesses"
+		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
+	)
+
+	illnesses, err := r.sillness.FindAll(reqpage)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		illnesses,
+	)
+}
+
+func (r *manageroutes) getIllnessesRaw(ctx *gin.Context) {
+	var (
+		entity = "illnesses"
+	)
+
+	illnesses, err := r.sillness.Read()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		illnesses,
+	)
+}
+
+func (r *manageroutes) updateIllness(ctx *gin.Context) {
+	var (
+		function = "update illness"
+		entity   = "illness"
+		req      requests.UpdateIllness
+	)
+
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	uuid, err := uuid.Parse(ctx.Param("iid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	_, err = r.sillness.GetByID(uuid)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	resillness, err := r.sillness.Update(uuid, req)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessUpdate(
+		entity,
+		ctx,
+		resillness,
+	)
+}
+
+func (r *manageroutes) deleteIllness(ctx *gin.Context) {
+	var (
+		function = "delete illness"
+		entity   = "illness"
+	)
+
+	uuid, err := uuid.Parse(ctx.Param("iid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	_, err = r.sillness.GetByID(uuid)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.sillness.Delete(uuid)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessDelete(
+		entity,
+		ctx,
+		nil,
+	)
+}
+
+/* -------------------------------------------------------------------------- */
+/*                        end of illness routing group                        */
 /* -------------------------------------------------------------------------- */
