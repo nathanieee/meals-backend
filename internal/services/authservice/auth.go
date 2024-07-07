@@ -109,7 +109,7 @@ func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
 		return consttypes.ErrTokenMismatch
 	}
 
-	if !consttypes.TimeNow().Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.ResetPassword.Cooldown))) {
+	if !consttypes.TimeNow().Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.APIResetPassword.Cooldown))) {
 		return consttypes.ErrTokenExpired
 	}
 
@@ -132,7 +132,7 @@ func (s *AuthService) SendResetPasswordEmail(user models.User) error {
 		return consttypes.ErrFailedToGenerateToken
 	}
 
-	if consttypes.TimeNow().Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.ResetPassword.Cooldown))) {
+	if consttypes.TimeNow().Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.APIResetPassword.Cooldown))) {
 		return consttypes.ErrTooQuickSendEmail
 	}
 
@@ -166,7 +166,7 @@ func (s *AuthService) SendResetPasswordEmail(user models.User) error {
 
 func (s *AuthService) RefreshAuthToken(trefresh string, ctx *gin.Context) (*responses.User, *uttoken.TokenHeader, error) {
 	now := consttypes.TimeNow()
-	tparsed, err := uttoken.ParseToken(trefresh, s.cfg.JWT.RefreshToken.PublicKey)
+	tparsed, err := uttoken.ParseToken(trefresh, s.cfg.JWT.JWTRefreshToken.PublicKey)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -188,9 +188,9 @@ func (s *AuthService) RefreshAuthToken(trefresh string, ctx *gin.Context) (*resp
 	taccess, err := uttoken.
 		GenerateToken(
 			userres,
-			s.cfg.JWT.AccessToken.Life,
+			s.cfg.JWT.JWTAccessToken.Life,
 			s.cfg.JWT.TimeUnit,
-			s.cfg.JWT.AccessToken.PrivateKey,
+			s.cfg.JWT.JWTAccessToken.PrivateKey,
 		)
 
 	if err != nil {
@@ -241,9 +241,9 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 	trefresh, err := uttoken.
 		GenerateToken(
 			userres,
-			s.cfg.JWT.RefreshToken.Life,
+			s.cfg.JWT.JWTRefreshToken.Life,
 			s.cfg.JWT.TimeUnit,
-			s.cfg.JWT.RefreshToken.PrivateKey,
+			s.cfg.JWT.JWTRefreshToken.PrivateKey,
 		)
 
 	if err != nil {
@@ -253,9 +253,9 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 	taccess, err := uttoken.
 		GenerateToken(
 			userres,
-			s.cfg.JWT.AccessToken.Life,
+			s.cfg.JWT.JWTAccessToken.Life,
 			s.cfg.JWT.TimeUnit,
-			s.cfg.JWT.AccessToken.PrivateKey,
+			s.cfg.JWT.JWTAccessToken.PrivateKey,
 		)
 
 	if err != nil {

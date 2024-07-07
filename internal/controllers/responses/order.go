@@ -23,6 +23,8 @@ type (
 
 		Meal Meal `json:"meal"`
 
+		Partner Partner `json:"partner"`
+
 		Quantity uint `json:"quantity" gorm:"required" example:"2"`
 	}
 

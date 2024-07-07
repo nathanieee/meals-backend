@@ -41,10 +41,10 @@ func (s *ProducerService) PublishEmail(message requests.SendEmail) error {
 
 	err = s.ch.PublishWithContext(
 		s.ctx,
-		s.cfg.Queue.Mail.ExchangeName, // exchange
-		s.cfg.Queue.Mail.BindingKey,   // routing key
-		false,                         // mandatory
-		false,                         // immediate
+		s.cfg.Queue.QueueMail.ExchangeName, // exchange
+		s.cfg.Queue.QueueMail.BindingKey,   // routing key
+		false,                              // mandatory
+		false,                              // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        jsonData,

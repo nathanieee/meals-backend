@@ -20,7 +20,6 @@ type (
 )
 
 func newPatronRoutes(
-
 	rg *gin.RouterGroup,
 	cfg *configs.Config,
 	sauth authservice.IAuthService,

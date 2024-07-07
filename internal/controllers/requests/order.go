@@ -38,12 +38,12 @@ func (req *CreateOrder) ToModel(
 	order.MemberID = member.ID
 	order.Member = member
 	order.Meals = meals
-	order.Status = consttypes.OS_PROCESSED
+	order.Status = consttypes.OS_PLACED
 	order.History = append(order.History, models.OrderHistory{
 		UserID:      userorder.ID,
 		User:        userorder,
-		Status:      consttypes.OS_PROCESSED,
-		Description: consttypes.NewOrderHistoryDescription(consttypes.OS_PROCESSED, userorder.Email),
+		Status:      consttypes.OS_PLACED,
+		Description: consttypes.NewOrderHistoryDescription(consttypes.OS_PLACED, userorder.Email),
 	})
 
 	return &order, nil
@@ -61,6 +61,8 @@ func (req *CreateOrderMeal) ToModel(meal models.Meal) (*models.OrderMeal, error)
 
 	omeal.MealID = meal.ID
 	omeal.Meal = meal
+	omeal.PartnerID = meal.PartnerID
+	omeal.Partner = meal.Partner
 
 	return &omeal, nil
 }

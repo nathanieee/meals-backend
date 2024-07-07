@@ -27,9 +27,9 @@ type (
 func NewImageService(cfg *configs.Config) *ImageService {
 	return &ImageService{
 		cfg: cfg,
-		ibd: cfg.Image.BaseDir,
-		ipd: cfg.Image.BaseDir + cfg.Image.ProfileDir,
-		imd: cfg.Image.BaseDir + cfg.Image.MealDir,
+		ibd: cfg.FileImage.BaseDir,
+		ipd: cfg.FileImage.BaseDir + cfg.FileImage.ProfileDir,
+		imd: cfg.FileImage.BaseDir + cfg.FileImage.MealDir,
 	}
 }
 

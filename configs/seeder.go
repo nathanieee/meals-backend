@@ -136,10 +136,15 @@ func SeedOrganizationTypeEnum(db *gorm.DB) error {
 func SeedOrderStatusEnum(db *gorm.DB) error {
 	return createEnum(db,
 		"order_status_enum",
-		consttypes.OS_PROCESSED.String(),
+		consttypes.OS_PLACED.String(),
+		consttypes.OS_CONFIRMED.String(),
+		consttypes.OS_BEING_PREPARED.String(),
 		consttypes.OS_PREPARED.String(),
+		consttypes.OS_PICKED_UP.String(),
+		consttypes.OS_OUT_FOR_DELIVERY.String(),
 		consttypes.OS_DELIVERED.String(),
-		consttypes.OS_CANCELED.String(),
+		consttypes.OS_COMPLETED.String(),
+		consttypes.OS_CANCELLED.String(),
 	)
 }
 

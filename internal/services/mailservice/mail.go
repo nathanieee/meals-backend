@@ -16,22 +16,18 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-var (
-	cfg = configs.GetInstance()
-
-	MAIL_NAME   = cfg.Mail.Name
-	MAIL_FROM   = cfg.Mail.From
-	MAIL_PASS   = cfg.Mail.Password
-	MAIL_HOST   = cfg.Mail.SMTPHost
-	MAIL_PORT   = cfg.Mail.SMTPPort
-	MAIL_TEMDIR = cfg.Mail.TemplateDir
-)
-
 type (
 	MailService struct {
 		cfg   *configs.Config
 		ruser userrepo.IUserRepository
 		sprod producerservice.IProducerService
+
+		mailname   string
+		mailfrom   string
+		mailpass   string
+		mailhost   string
+		mailport   int
+		mailtemdir string
 	}
 
 	IMailService interface {
@@ -50,6 +46,13 @@ func NewMailService(
 		cfg:   cfg,
 		ruser: ruser,
 		sprod: sprod,
+
+		mailname:   cfg.Mail.Name,
+		mailfrom:   cfg.Mail.From,
+		mailpass:   cfg.Mail.Password,
+		mailhost:   cfg.Mail.SMTPHost,
+		mailport:   cfg.Mail.SMTPPort,
+		mailtemdir: cfg.Mail.TemplateDir,
 	}
 }
 
@@ -75,7 +78,7 @@ func (s *MailService) SendEmail(
 		body bytes.Buffer
 	)
 
-	templates, err := uttemplate.ParseTemplateDir(MAIL_TEMDIR, req.Template)
+	templates, err := uttemplate.ParseTemplateDir(s.mailtemdir, req.Template)
 	if err != nil {
 		utlogger.Error(err)
 		return consttypes.ErrFailedToParseFile
@@ -99,7 +102,7 @@ func (s *MailService) SendEmail(
 	m.SetBody("text/html", body.String())
 
 	// TODO - need to enable this
-	d := gomail.NewDialer(MAIL_HOST, MAIL_PORT, MAIL_FROM, MAIL_PASS)
+	d := gomail.NewDialer(s.mailhost, s.mailport, s.mailfrom, s.mailpass)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 	if err := d.DialAndSend(m); err != nil {

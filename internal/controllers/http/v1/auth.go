@@ -309,7 +309,7 @@ func (r *authroutes) signout(ctx *gin.Context) {
 		return
 	}
 
-	taccessparsed, err := uttoken.ParseToken(taccess, r.cfg.JWT.AccessToken.PublicKey)
+	taccessparsed, err := uttoken.ParseToken(taccess, r.cfg.JWT.JWTAccessToken.PublicKey)
 	if err != nil {
 		utresponse.GeneralUnauthorized(
 			ctx,
@@ -318,7 +318,7 @@ func (r *authroutes) signout(ctx *gin.Context) {
 		return
 	}
 
-	trefreshparsed, err := uttoken.ParseToken(trefresh, r.cfg.JWT.RefreshToken.PublicKey)
+	trefreshparsed, err := uttoken.ParseToken(trefresh, r.cfg.JWT.JWTRefreshToken.PublicKey)
 	if err != nil {
 		utresponse.GeneralUnauthorized(
 			ctx,

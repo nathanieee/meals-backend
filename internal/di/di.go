@@ -18,6 +18,7 @@ import (
 	"project-skbackend/internal/services/authservice"
 	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/consumerservice"
+	"project-skbackend/internal/services/cronservice"
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/internal/services/mealservice"
 	"project-skbackend/internal/services/memberservice"
@@ -45,6 +46,7 @@ type DependencyInjection struct {
 	PatronService       *patronservice.PatronService
 	OrganizationService *organizationservice.OrganizationService
 	OrderService        *orderservice.OrderService
+	CronService         *cronservice.CronService
 }
 
 func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, rdb *redis.Client, ctx context.Context) *DependencyInjection {
@@ -65,7 +67,7 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	rcart := cartrepo.NewCartRepository(db)
 	radmin := adminrepo.NewAdminRepository(db)
 	rpatron := patronrepo.NewPatronRepository(db)
-	rorder := orderrepo.NewOrderRepository(db)
+	rorder := orderrepo.NewOrderRepository(db, *cfg)
 
 	/* --------------------------------- service -------------------------------- */
 	sprod := producerservice.NewProducerService(ch, cfg, ctx)
@@ -79,7 +81,8 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	scons := consumerservice.NewConsumerService(ch, cfg, smail)
 	spatr := patronservice.NewPatronService(rpatron)
 	sorga := organizationservice.NewOrganizationService(rorg)
-	sordr := orderservice.NewOrderService(rorder, rmeal, rmemb, ruser, rcare)
+	sordr := orderservice.NewOrderService(*cfg, rorder, rmeal, rmemb, ruser, rcare)
+	scron := cronservice.NewCronService(cfg, rorder)
 
 	return &DependencyInjection{
 		UserService:         suser,
@@ -93,5 +96,14 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 		PatronService:       spatr,
 		OrganizationService: sorga,
 		OrderService:        sordr,
+		CronService:         scron,
 	}
+}
+
+func (di *DependencyInjection) InitServices() {
+	// * setup consumer service
+	di.ConsumerService.ConsumeTask()
+
+	// * init cron service
+	di.CronService.Init()
 }

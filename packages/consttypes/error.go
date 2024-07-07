@@ -23,10 +23,11 @@ func GetResetPasswordCooldown() int {
 	return rpcint
 }
 
-var (
-	// variables
-	resetPasswordCooldown = os.Getenv("API_RESET_PASSWORD_COOLDOWN")
+func ErrDailyMaxOrderReached(maxord uint) error {
+	return fmt.Errorf("daily max order of %v reached", maxord)
+}
 
+var (
 	// queues
 	ErrFailedToPublishMessage = fmt.Errorf("failed to publish message")
 

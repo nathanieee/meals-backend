@@ -2,7 +2,6 @@ package apps
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"project-skbackend/configs"
@@ -13,46 +12,33 @@ import (
 	"syscall"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 func Run(cfg *configs.Config) {
-	db, err := gorm.Open(postgres.Open(cfg.DB.GetDbConnectionUrl()), &gorm.Config{
-		Logger: logger.Default.LogMode(cfg.GetLogLevel()),
-	})
-
-	if err != nil {
-		utlogger.Error(err)
-	}
-
-	err = cfg.DB.DBSetup(db)
-	if err != nil {
-		utlogger.Error(err)
-	}
-
 	// * setup context
 	ctx := context.Background()
 
-	// * setup redis client
-	rdb := cfg.Redis.GetRedisClient()
+	// * init config
+	i := configs.NewInitConfig(ctx, *cfg)
+	i, err := i.InitConfig()
+	if err != nil {
+		utlogger.Fatal(err)
+	}
 
-	// * setup rabbit mq
-	ch, close := cfg.Queue.Init()
-	defer close()
-	cfg.Queue.SetupRabbitMQ(ch, cfg)
+	// * close the init after finished
+	defer i.Close()
 
-	di := di.NewDependencyInjection(db, ch, cfg, rdb, ctx)
+	// * setup new dependency injection
+	di := di.NewDependencyInjection(i.GormDB, i.Channel, cfg, i.RedisDB, ctx)
 
 	// * setup consumer
-	di.ConsumerService.ConsumeTask()
+	di.InitServices()
 
 	var forever chan struct{}
 
-	// HTTP Server
+	// * HTTP Server
 	handler := gin.New()
-	v1.NewRouter(handler, db, cfg, di, rdb)
+	v1.NewRouter(handler, i.GormDB, cfg, di, i.RedisDB)
 	server := servers.NewServer(handler, servers.Port(cfg.HTTP.Port))
 
 	interrupt := make(chan os.Signal, 1)
@@ -62,12 +48,12 @@ func Run(cfg *configs.Config) {
 	case s := <-interrupt:
 		utlogger.Info("app run: " + s.String())
 	case err := <-server.Notify():
-		utlogger.Error(fmt.Errorf("%w", err))
+		utlogger.Fatal(err)
 	}
 
 	err = server.Shutdown()
 	if err != nil {
-		utlogger.Error(fmt.Errorf("%w", err))
+		utlogger.Fatal(err)
 	}
 
 	<-forever

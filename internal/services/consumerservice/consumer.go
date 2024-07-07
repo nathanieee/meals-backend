@@ -41,7 +41,7 @@ func (s *ConsumerService) ConsumeTask() {
 
 func (s *ConsumerService) ConsumeMail() {
 	var (
-		qname = s.cfg.Queue.Mail.QueueName
+		qname = s.cfg.Queue.QueueMail.QueueName
 	)
 	// Listen to Queue
 	messages, err := s.ch.Consume(

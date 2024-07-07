@@ -51,7 +51,7 @@ func JWTAuthMiddleware(cfg *configs.Config, allowedlevel ...consttypes.UserRole)
 			return
 		}
 
-		tparsed, err := uttoken.ParseToken(textract, cfg.AccessToken.PublicKey)
+		tparsed, err := uttoken.ParseToken(textract, cfg.JWT.JWTAccessToken.PublicKey)
 		if err != nil {
 			utresponse.GeneralUnauthorized(
 				ctx,

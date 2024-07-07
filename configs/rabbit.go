@@ -10,10 +10,14 @@ import (
 func (rmq *Queue) Init() (*amqp.Channel, func()) {
 	url := fmt.Sprintf("amqp://%s:%s@%s:%s/", rmq.Username, rmq.Password, rmq.Host, rmq.Port)
 	conn, err := amqp.Dial(url)
-	utlogger.Fatal(err)
+	if err != nil {
+		utlogger.Fatal(err)
+	}
 
 	ch, err := conn.Channel()
-	utlogger.Fatal(err)
+	if err != nil {
+		utlogger.Fatal(err)
+	}
 
 	return ch, func() {
 		conn.Close()
@@ -21,15 +25,15 @@ func (rmq *Queue) Init() (*amqp.Channel, func()) {
 	}
 }
 
-func (rmq *Queue) SetupRabbitMQ(ch *amqp.Channel, cfg *Config) {
+func (rmq *Queue) SetupRabbitMQ(ch *amqp.Channel, cfg Config) {
 	rmq.SetupMailQueue(ch, cfg.Queue)
 }
 
 func (rmq *Queue) SetupMailQueue(ch *amqp.Channel, cfg Queue) {
-	xname := cfg.Mail.ExchangeName
-	xtype := cfg.Mail.ExchangeType
-	qname := cfg.Mail.QueueName
-	bkey := cfg.Mail.BindingKey
+	xname := cfg.QueueMail.ExchangeName
+	xtype := cfg.QueueMail.ExchangeType
+	qname := cfg.QueueMail.QueueName
+	bkey := cfg.QueueMail.BindingKey
 
 	// Declare Exchange
 	err := ch.ExchangeDeclare(

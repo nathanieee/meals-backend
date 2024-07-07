@@ -1,6 +1,7 @@
 package orderservice
 
 import (
+	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
@@ -24,6 +25,8 @@ type (
 		rmemb memberrepo.IMemberRepository
 		ruser userrepo.IUserRepository
 		rcare caregiverrepo.ICaregiverRepository
+
+		maxord uint
 	}
 
 	IOrderService interface {
@@ -36,6 +39,7 @@ type (
 )
 
 func NewOrderService(
+	cfg configs.Config,
 	rord orderrepo.IOrderRepository,
 	rmeal mealrepo.IMealRepository,
 	rmemb memberrepo.IMemberRepository,
@@ -48,6 +52,8 @@ func NewOrderService(
 		rmemb: rmemb,
 		ruser: ruser,
 		rcare: rcare,
+
+		maxord: cfg.OrderMax.Member,
 	}
 }
 
@@ -56,8 +62,10 @@ func (s *OrderService) Create(req requests.CreateOrder, useroderid uuid.UUID) (*
 		omeals []models.OrderMeal
 		member *models.Member
 		err    error
+		qty    uint
 	)
 
+	// TODO: get the total order for today of the member or caregiver
 	for _, omeal := range req.Meals {
 		meal, err := s.rmeal.GetByID(omeal.MealID)
 		if err != nil {
@@ -70,6 +78,11 @@ func (s *OrderService) Create(req requests.CreateOrder, useroderid uuid.UUID) (*
 		}
 
 		omeals = append(omeals, *omeal)
+		qty += omeal.Quantity
+	}
+
+	if qty >= s.maxord {
+		return nil, consttypes.ErrDailyMaxOrderReached(s.maxord)
 	}
 
 	userorder, err := s.ruser.GetByID(useroderid)
