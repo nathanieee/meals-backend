@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"project-skbackend/configs"
 	"project-skbackend/internal/repositories/orderrepo"
+	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"time"
 
@@ -89,11 +90,11 @@ func (s *CronService) orderSchedule(gsch gocron.Scheduler) {
 func (s *CronService) scheduleOrderCancelled(gsch gocron.Scheduler) error {
 	_, err := gsch.NewJob(
 		gocron.DurationJob(
-			time.Duration(s.cfg.AutomaticallyCancelled)*time.Minute,
+			time.Duration(1)*time.Minute,
 		),
 		gocron.NewTask(
 			func() error {
-				err := s.rodr.UpdateAutomaticallyCancelled()
+				err := s.rodr.UpdateAutomaticallyStatus(consttypes.OS_CANCELLED, s.cfg.OrderBuffer.AutomaticallyCancelled, []consttypes.OrderStatus{consttypes.OS_PLACED})
 				if err != nil {
 					utlogger.Error(err)
 					return err
@@ -117,11 +118,11 @@ func (s *CronService) scheduleOrderCancelled(gsch gocron.Scheduler) error {
 func (s *CronService) scheduleOrderPickedUp(gsch gocron.Scheduler) error {
 	_, err := gsch.NewJob(
 		gocron.DurationJob(
-			time.Duration(s.cfg.AutomaticallyBeingPickedUp)*time.Minute,
+			time.Duration(1)*time.Minute,
 		),
 		gocron.NewTask(
 			func() error {
-				err := s.rodr.UpdateAutomaticallyPickedUp()
+				err := s.rodr.UpdateAutomaticallyStatus(consttypes.OS_PICKED_UP, s.cfg.OrderBuffer.AutomaticallyBeingPickedUp, []consttypes.OrderStatus{consttypes.OS_PREPARED})
 				if err != nil {
 					utlogger.Error(err)
 					return err
@@ -145,11 +146,11 @@ func (s *CronService) scheduleOrderPickedUp(gsch gocron.Scheduler) error {
 func (s *CronService) scheduleOrderOutForDelivery(gsch gocron.Scheduler) error {
 	_, err := gsch.NewJob(
 		gocron.DurationJob(
-			time.Duration(s.cfg.AutomaticallyOutForDelivery)*time.Minute,
+			time.Duration(1)*time.Minute,
 		),
 		gocron.NewTask(
 			func() error {
-				err := s.rodr.UpdateAutomaticallyOutForDelivery()
+				err := s.rodr.UpdateAutomaticallyStatus(consttypes.OS_OUT_FOR_DELIVERY, s.cfg.OrderBuffer.AutomaticallyOutForDelivery, []consttypes.OrderStatus{consttypes.OS_PICKED_UP})
 				if err != nil {
 					utlogger.Error(err)
 					return err
@@ -173,11 +174,11 @@ func (s *CronService) scheduleOrderOutForDelivery(gsch gocron.Scheduler) error {
 func (s *CronService) scheduleOrderDelivered(gsch gocron.Scheduler) error {
 	_, err := gsch.NewJob(
 		gocron.DurationJob(
-			time.Duration(s.cfg.AutomaticallyDelivered)*time.Minute,
+			time.Duration(1)*time.Minute,
 		),
 		gocron.NewTask(
 			func() error {
-				err := s.rodr.UpdateAutomaticallyDelivered()
+				err := s.rodr.UpdateAutomaticallyStatus(consttypes.OS_DELIVERED, s.cfg.OrderBuffer.AutomaticallyDelivered, []consttypes.OrderStatus{consttypes.OS_OUT_FOR_DELIVERY})
 				if err != nil {
 					utlogger.Error(err)
 					return err

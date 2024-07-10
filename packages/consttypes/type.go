@@ -8,8 +8,9 @@ type (
 )
 
 const (
-	IT_PROFILE ImageType = "Profile"
-	IT_MEAL    ImageType = "Meal"
+	IT_PROFILE       ImageType = "Profile"
+	IT_MEAL          ImageType = "Meal"
+	IT_MEAL_CATEGORY ImageType = "Meal Category"
 
 	PT_ORGANIZATION PatronType = "Organization"
 	PT_PERSONAL     PatronType = "Personal"

@@ -29,11 +29,6 @@ func (db DB) DBSetup(gdb *gorm.DB) error {
 		return err
 	}
 
-	if err := db.AutoSeedCredentials(gdb); err != nil {
-		utlogger.Error(err)
-		return err
-	}
-
 	if err := db.AutoSeedData(gdb); err != nil {
 		utlogger.Error(err)
 		return err
@@ -76,6 +71,15 @@ func (db DB) AutoSeedEnum(gdb *gorm.DB) error {
 
 func (db DB) AutoSeedData(gdb *gorm.DB) error {
 	seedfuncs := []func(*gorm.DB) error{
+		// * dependent
+		SeedMealCategoryData,
+
+		/* ------------------------------- credentials ------------------------------ */
+		SeedAdminCredentials,
+		SeedOrganizationCredentials,
+		SeedPartnerCredentials,
+		SeedMemberCredentials,
+
 		/* ---------------------------------- data ---------------------------------- */
 		// * independent
 		SeedAllergyData,
@@ -99,33 +103,6 @@ func (db DB) AutoSeedData(gdb *gorm.DB) error {
 	if len(errs) > 0 {
 		utlogger.Error(errs...)
 		return errors.New("error seeding data")
-	}
-
-	return nil
-}
-
-func (db DB) AutoSeedCredentials(gdb *gorm.DB) error {
-	seedfuncs := []func(*gorm.DB) error{
-		/* ------------------------------- credentials ------------------------------ */
-		SeedAdminCredentials,
-		SeedOrganizationCredentials,
-		SeedPartnerCredentials,
-		SeedMemberCredentials,
-	}
-
-	var (
-		errs []error
-	)
-
-	for _, seedfunc := range seedfuncs {
-		if err := seedfunc(gdb); err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	if len(errs) > 0 {
-		utlogger.Error(errs...)
-		return errors.New("error seeding credentials")
 	}
 
 	return nil
@@ -157,6 +134,7 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 		&models.MealAllergy{},
 		&models.MealIllness{},
 		&models.MealImage{},
+		&models.MealCategory{},
 		&models.Member{},
 		&models.MemberAllergy{},
 		&models.MemberIllness{},

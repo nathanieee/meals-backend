@@ -47,12 +47,10 @@ type (
 		GetByID(id uuid.UUID) (*models.Order, error)
 		GetByMemberID(id uuid.UUID) ([]*models.Order, error)
 		GetByMealID(id uuid.UUID) ([]*models.Order, error)
+		GetMemberDailyOrder(id uuid.UUID) (uint, error)
 
 		// * this is used by cron service for automation
-		UpdateAutomaticallyCancelled() error
-		UpdateAutomaticallyPickedUp() error
-		UpdateAutomaticallyOutForDelivery() error
-		UpdateAutomaticallyDelivered() error
+		UpdateAutomaticallyStatus(status consttypes.OrderStatus, bufferminutes int, trigger []consttypes.OrderStatus) error
 	}
 )
 
@@ -278,28 +276,16 @@ func (r *OrderRepository) getAdmin() (*models.User, error) {
 	return &admin, nil
 }
 
-func (r *OrderRepository) UpdateAutomaticallyCancelled() error {
-	// * get the buffer time before automatically cancelling the order
-	var (
-		buffer     = time.Duration(r.oacb) * time.Minute
-		buffertime = consttypes.TimeNow().Add(-buffer).Format(consttypes.DATETIMEHOURMINUTESFORMAT)
-		orders     []models.Order
-		admin      *models.User
-		status     = consttypes.OS_CANCELLED
-		trigger    = []consttypes.OrderStatus{
-			consttypes.OS_PLACED,
-		}
-	)
+func (r *OrderRepository) UpdateAutomaticallyStatus(status consttypes.OrderStatus, bufferminutes int, trigger []consttypes.OrderStatus) error {
+	// * get the buffer time
+	buffer := time.Duration(bufferminutes) * time.Minute
+	buffertime := consttypes.TimeNow().Add(-buffer).Format(consttypes.DATETIMEHOURMINUTESFORMAT)
 
-	admin, err := r.getAdmin()
-	if err != nil {
-		utlogger.Error(err)
-		return err
-	}
-
-	err = r.db.
+	// * find orders that meet the condition
+	var orders []models.Order
+	err := r.db.
 		Where("status IN ?", trigger).
-		Where("TO_CHAR(created_at, '%Y-%m-%d %H:%i:00') <= ?", buffertime).
+		Where("TO_CHAR(updated_at, 'YYYY-MM-DD HH24:MI') = ?", buffertime).
 		Find(&orders).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -307,8 +293,16 @@ func (r *OrderRepository) UpdateAutomaticallyCancelled() error {
 		return err
 	}
 
+	// * get the admin user
+	admin, err := r.getAdmin()
+	if err != nil {
+		utlogger.Error(err)
+		return err
+	}
+
+	// * loop through orders and update them
 	for _, order := range orders {
-		// * append the history to be cancelled
+		// Append history
 		order.History = append(order.History, models.OrderHistory{
 			UserID:      admin.ID,
 			User:        *admin,
@@ -316,12 +310,9 @@ func (r *OrderRepository) UpdateAutomaticallyCancelled() error {
 			Description: consttypes.NewOrderHistoryDescription(status, admin.Email),
 		})
 
-		// * update the order main table
-		err := r.db.
-			Model(&order).
-			Update("status", status).Error
-
-		if err != nil && err != gorm.ErrRecordNotFound {
+		// * update the order status
+		err := r.db.Model(&order).Updates(models.Order{Status: status}).Error
+		if err != nil {
 			utlogger.Error(err)
 			return err
 		}
@@ -330,158 +321,28 @@ func (r *OrderRepository) UpdateAutomaticallyCancelled() error {
 	return nil
 }
 
-func (r *OrderRepository) UpdateAutomaticallyPickedUp() error {
-	// * get the buffer time before automatically pick up the order
+func (r *OrderRepository) GetMemberDailyOrder(id uuid.UUID) (uint, error) {
 	var (
-		buffer     = time.Duration(r.oabpu) * time.Minute
-		buffertime = consttypes.TimeNow().Add(-buffer).Format(consttypes.DATETIMEHOURMINUTESFORMAT)
-		orders     []models.Order
-		admin      *models.User
-		status     = consttypes.OS_PICKED_UP
-		trigger    = []consttypes.OrderStatus{
-			consttypes.OS_PREPARED,
-		}
+		orders []models.Order
+		qty    uint = 0
 	)
 
-	admin, err := r.getAdmin()
-	if err != nil {
-		utlogger.Error(err)
-		return err
-	}
-
-	err = r.db.
-		Where("status IN ?", trigger).
-		Where("TO_CHAR(created_at, '%Y-%m-%d %H:%i:00') <= ?", buffertime).
+	err := r.
+		preload().
+		Where("member_id = ?", id).
+		Where("DATE(created_at) = ?::DATE", consttypes.TimeNow().Format(consttypes.DATEFORMAT)).
 		Find(&orders).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
 		utlogger.Error(err)
-		return err
+		return 0, err
 	}
 
 	for _, order := range orders {
-		// * append the history to be picked up
-		order.History = append(order.History, models.OrderHistory{
-			UserID:      admin.ID,
-			User:        *admin,
-			Status:      status,
-			Description: consttypes.NewOrderHistoryDescription(status, admin.Email),
-		})
-
-		// * update the order main table
-		err := r.db.
-			Model(&order).
-			Update("status", status).Error
-
-		if err != nil && err != gorm.ErrRecordNotFound {
-			utlogger.Error(err)
-			return err
+		for _, meal := range order.Meals {
+			qty += meal.Quantity
 		}
 	}
 
-	return nil
-}
-
-func (r *OrderRepository) UpdateAutomaticallyOutForDelivery() error {
-	// * get the buffer time before automatically delivering the order
-	var (
-		buffer     = time.Duration(r.oabpu) * time.Minute
-		buffertime = consttypes.TimeNow().Add(-buffer).Format(consttypes.DATETIMEHOURMINUTESFORMAT)
-		orders     []models.Order
-		admin      *models.User
-		status     = consttypes.OS_OUT_FOR_DELIVERY
-		trigger    = []consttypes.OrderStatus{
-			consttypes.OS_PICKED_UP,
-		}
-	)
-
-	admin, err := r.getAdmin()
-	if err != nil {
-		utlogger.Error(err)
-		return err
-	}
-
-	err = r.db.
-		Where("status IN ?", trigger).
-		Where("TO_CHAR(created_at, '%Y-%m-%d %H:%i:00') <= ?", buffertime).
-		Find(&orders).Error
-
-	if err != nil && err != gorm.ErrRecordNotFound {
-		utlogger.Error(err)
-		return err
-	}
-
-	for _, order := range orders {
-		// * append the history to be delivered
-		order.History = append(order.History, models.OrderHistory{
-			UserID:      admin.ID,
-			User:        *admin,
-			Status:      status,
-			Description: consttypes.NewOrderHistoryDescription(status, admin.Email),
-		})
-
-		// * update the order main table
-		err := r.db.
-			Model(&order).
-			Update("status", status).Error
-
-		if err != nil && err != gorm.ErrRecordNotFound {
-			utlogger.Error(err)
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (r *OrderRepository) UpdateAutomaticallyDelivered() error {
-	// * get the buffer time before the order being automatically delivered
-	var (
-		buffer     = time.Duration(r.oabpu) * time.Minute
-		buffertime = consttypes.TimeNow().Add(-buffer).Format(consttypes.DATETIMEHOURMINUTESFORMAT)
-		orders     []models.Order
-		admin      *models.User
-		status     = consttypes.OS_DELIVERED
-		trigger    = []consttypes.OrderStatus{
-			consttypes.OS_OUT_FOR_DELIVERY,
-		}
-	)
-
-	admin, err := r.getAdmin()
-	if err != nil {
-		utlogger.Error(err)
-		return err
-	}
-
-	err = r.db.
-		Where("status IN ?", trigger).
-		Where("TO_CHAR(created_at, '%Y-%m-%d %H:%i:00') <= ?", buffertime).
-		Find(&orders).Error
-
-	if err != nil && err != gorm.ErrRecordNotFound {
-		utlogger.Error(err)
-		return err
-	}
-
-	for _, order := range orders {
-		// * append the history to be delivered
-		order.History = append(order.History, models.OrderHistory{
-			UserID:      admin.ID,
-			User:        *admin,
-			Status:      status,
-			Description: consttypes.NewOrderHistoryDescription(status, admin.Email),
-		})
-
-		// * update the order main table
-		err := r.db.
-			Model(&order).
-			Update("status", status).Error
-
-		if err != nil && err != gorm.ErrRecordNotFound {
-			utlogger.Error(err)
-			return err
-		}
-	}
-
-	return nil
+	return qty, nil
 }

@@ -115,6 +115,7 @@ func SeedImageTypeEnum(db *gorm.DB) error {
 		"image_type_enum",
 		consttypes.IT_PROFILE.String(),
 		consttypes.IT_MEAL.String(),
+		consttypes.IT_MEAL_CATEGORY.String(),
 	)
 }
 
@@ -159,6 +160,15 @@ func SeedAdminCredentials(db *gorm.DB) error {
 						Email:       os.Getenv("ADMIN_EMAIL"),
 						Password:    getGlobalHashedPassword(os.Getenv("ADMIN_PASSWORD")),
 						Role:        consttypes.UR_ADMIN,
+						Address: []*models.Address{
+							{
+								Name:      "Home Address",
+								Address:   "Oak Street",
+								Longitude: "-118.2437",
+								Latitude:  "34.0522",
+								Note:      "House with a red mailbox.",
+							},
+						},
 					},
 					FirstName:   os.Getenv("ADMIN_FIRSTNAME"),
 					LastName:    os.Getenv("ADMIN_LASTNAME"),
@@ -189,6 +199,15 @@ func SeedMemberCredentials(db *gorm.DB) error {
 						Email:       "member@test.com",
 						Password:    getGlobalHashedPassword("password"),
 						Role:        consttypes.UR_MEMBER,
+						Address: []*models.Address{
+							{
+								Name:      "Home Address",
+								Address:   "Maple Avenue",
+								Longitude: "-73.9876",
+								Latitude:  "40.7309",
+								Note:      "Apartment building with a blue door, buzz code 1234.",
+							},
+						},
 					},
 					FirstName:   "John",
 					LastName:    "Doe",
@@ -201,6 +220,15 @@ func SeedMemberCredentials(db *gorm.DB) error {
 							Email:       "caregiver@test.com",
 							Password:    getGlobalHashedPassword("password"),
 							Role:        consttypes.UR_CAREGIVER,
+							Address: []*models.Address{
+								{
+									Name:      "Home Address",
+									Address:   "Elm Avenue",
+									Longitude: "-87.6298",
+									Latitude:  "41.8781",
+									Note:      "Corner house with a white picket fence.",
+								},
+							},
 						},
 						FirstName:   "Care",
 						LastName:    "Giver",
@@ -232,6 +260,15 @@ func SeedOrganizationCredentials(db *gorm.DB) error {
 						Email:       "organization@test.com",
 						Password:    getGlobalHashedPassword("password"),
 						Role:        consttypes.UR_ORGANIZATION,
+						Address: []*models.Address{
+							{
+								Name:      "Address",
+								Address:   "Cedar Lane",
+								Longitude: "-0.1276",
+								Latitude:  "51.5074",
+								Note:      "First floor apartment, entrance at the back.",
+							},
+						},
 					},
 					Type: consttypes.OT_NURSINGHOME,
 					Name: "Nursing Home",
@@ -252,6 +289,9 @@ func SeedOrganizationCredentials(db *gorm.DB) error {
 func SeedPartnerCredentials(db *gorm.DB) error {
 	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Partner{}) {
 		if err := db.First(&models.Partner{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			var mealcategories []*models.MealCategory
+			db.Find(&mealcategories)
+
 			partners := []*models.Partner{
 				{
 					Model: base.Model{ID: id},
@@ -260,8 +300,18 @@ func SeedPartnerCredentials(db *gorm.DB) error {
 						Email:       "partner@test.com",
 						Password:    getGlobalHashedPassword("password"),
 						Role:        consttypes.UR_PARTNER,
+						Address: []*models.Address{
+							{
+								Name:      "Address",
+								Address:   "Pine Road",
+								Longitude: "2.3522",
+								Latitude:  "48.8566",
+								Note:      "Gated community, use code 5678 at the gate.",
+							},
+						},
 					},
-					Name: "Partner",
+					MealCategories: mealcategories,
+					Name:           "Partner",
 				},
 			}
 
@@ -773,6 +823,626 @@ func SeedIllnessData(db *gorm.DB) error {
 			}
 
 			err := db.Create(&illnesses).Error
+			if err != nil {
+				utlogger.Error(err)
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func SeedMealCategoryData(db *gorm.DB) error {
+	if db.Migrator().HasTable(&models.MealCategory{}) {
+		if err := db.First(&models.MealCategory{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			mealcat := []*models.MealCategory{
+				{
+					Name: "Chicken",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Rice",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Snack",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Fast Food",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Satay",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Korean",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Indonesian",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Breakfast",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Noodles",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Vegetarian",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Desserts",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Seafood",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Italian",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Mexican",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Japanese",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Chinese",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Indian",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Barbecue",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Pizza",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Burgers",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Salads",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Sandwiches",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Sushi",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Vegan",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Thai",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Middle Eastern",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Greek",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "French",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Spanish",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Tapas",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Brunch",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Soups",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Steakhouse",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Gluten-Free",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Healthy",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Comfort Food",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Bakery",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Coffee",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Ice Cream",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Smoothies",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Wings",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Pasta",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Dim Sum",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Wraps",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Hot Dogs",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Tacos",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Pancakes",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Crepes",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Donuts",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Boba Tea",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Ramen",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Pho",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Shawarma",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Kebabs",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Curry",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Poke",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "BBQ",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Subs",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Cheesesteaks",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Gyros",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Falafel",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Quesadillas",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Empanadas",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Churros",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Mozzarella Sticks",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Mac and Cheese",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Fried Rice",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Stir Fry",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Teriyaki",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Hot Pot",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Tapas",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Sashimi",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Tandoori",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Biryani",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Tortas",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
+				},
+				{
+					Name: "Tamales",
+				},
+			}
+
+			err := db.Create(&mealcat).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err

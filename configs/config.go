@@ -90,6 +90,7 @@ type (
 		Port     string `env:"DB_PORT" env-default:"5432"`
 		LogMode  bool   `env:"DB_LOG_MODE" env-default:"false"`
 		SslMode  string `env:"DB_SSL_MODE" env-default:"disable"`
+		Timezone string `env:"DB_TIMEZONE" env-default:"Asia/Makassar"`
 	}
 
 	Mail struct {

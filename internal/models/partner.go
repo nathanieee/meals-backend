@@ -17,6 +17,8 @@ type (
 		User   User      `json:"user"`
 
 		Name string `json:"name" gorm:"required" example:"McDonald's"`
+
+		MealCategories []*MealCategory `json:"meal_categories,omitempty" gorm:"many2many:partner_meal_category_composites;"`
 	}
 )
 

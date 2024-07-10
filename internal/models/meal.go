@@ -48,9 +48,20 @@ type (
 
 	MealAllergy struct {
 		base.Model
-		MealID    uuid.UUID `json:"meal_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+
+		MealID uuid.UUID `json:"meal_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+
 		AllergyID uuid.UUID `json:"allergy_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
 		Allergy   Allergy   `json:"allergy"`
+	}
+
+	MealCategory struct {
+		base.Model
+
+		Name string `json:"name" gorm:"required" example:"Rice"`
+
+		ImageID *uuid.UUID `json:"image_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		Image   *Image     `json:"image"`
 	}
 )
 

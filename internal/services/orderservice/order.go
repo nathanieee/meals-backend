@@ -65,7 +65,17 @@ func (s *OrderService) Create(req requests.CreateOrder, useroderid uuid.UUID) (*
 		qty    uint
 	)
 
-	// TODO: get the total order for today of the member or caregiver
+	userorder, err := s.ruser.GetByID(useroderid)
+	if err != nil {
+		return nil, err
+	}
+
+	member, err = s.getMemberByUserID(useroderid)
+	if err != nil {
+		return nil, err
+	}
+
+	// * get the meals and validate the quantity
 	for _, omeal := range req.Meals {
 		meal, err := s.rmeal.GetByID(omeal.MealID)
 		if err != nil {
@@ -81,33 +91,15 @@ func (s *OrderService) Create(req requests.CreateOrder, useroderid uuid.UUID) (*
 		qty += omeal.Quantity
 	}
 
+	dailyorder, err := s.rord.GetMemberDailyOrder(member.ID)
+	if err != nil {
+		return nil, consttypes.ErrFailedToGetDailyOrder
+	}
+
+	// * adding the daily order to the quantity variable
+	qty += dailyorder
 	if qty >= s.maxord {
 		return nil, consttypes.ErrDailyMaxOrderReached(s.maxord)
-	}
-
-	userorder, err := s.ruser.GetByID(useroderid)
-	if err != nil {
-		return nil, consttypes.ErrUserNotFound
-	}
-
-	switch userorder.Role {
-	case consttypes.UR_MEMBER:
-		member, err = s.rmemb.GetByUserID(useroderid)
-		if err != nil {
-			return nil, consttypes.ErrMemberNotFound
-		}
-	case consttypes.UR_CAREGIVER:
-		caregiver, err := s.rcare.GetByUserID(useroderid)
-		if err != nil {
-			return nil, consttypes.ErrCaregiverNotFound
-		}
-
-		member, err = s.rmemb.GetByCaregiverID(caregiver.ID)
-		if err != nil {
-			return nil, consttypes.ErrMemberNotFound
-		}
-	default:
-		return nil, consttypes.ErrUserNotFound
 	}
 
 	order, err := req.ToModel(*member, *userorder, omeals)
@@ -126,6 +118,41 @@ func (s *OrderService) Create(req requests.CreateOrder, useroderid uuid.UUID) (*
 	}
 
 	return ordres, nil
+}
+
+func (s *OrderService) getMemberByUserID(uid uuid.UUID) (*models.Member, error) {
+	var (
+		member *models.Member
+	)
+
+	// * get the user who is ordering
+	userorder, err := s.ruser.GetByID(uid)
+	if err != nil {
+		return nil, consttypes.ErrUserNotFound
+	}
+
+	// * get the member who is ordering
+	switch userorder.Role {
+	case consttypes.UR_MEMBER:
+		member, err = s.rmemb.GetByUserID(uid)
+		if err != nil {
+			return nil, consttypes.ErrMemberNotFound
+		}
+	case consttypes.UR_CAREGIVER:
+		caregiver, err := s.rcare.GetByUserID(uid)
+		if err != nil {
+			return nil, consttypes.ErrCaregiverNotFound
+		}
+
+		member, err = s.rmemb.GetByCaregiverID(caregiver.ID)
+		if err != nil {
+			return nil, consttypes.ErrMemberNotFound
+		}
+	default:
+		return nil, consttypes.ErrUserNotFound
+	}
+
+	return member, nil
 }
 
 func (s *OrderService) Read() ([]*responses.Order, error) {

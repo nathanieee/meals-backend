@@ -73,6 +73,9 @@ var (
 	ErrFailedToDeleteMember   = fmt.Errorf("failed to delete member")
 	ErrFailedToFindAllMembers = fmt.Errorf("failed to find all members")
 
+	// orders
+	ErrFailedToGetDailyOrder = fmt.Errorf("failed to get daily order")
+
 	// caregivers
 	ErrCaregiverNotFound = fmt.Errorf("caregiver not found")
 
