@@ -3,6 +3,7 @@ package di
 import (
 	"context"
 	"project-skbackend/configs"
+	"project-skbackend/external/services/distancematrixservice"
 	"project-skbackend/internal/repositories/adminrepo"
 	"project-skbackend/internal/repositories/allergyrepo"
 	"project-skbackend/internal/repositories/caregiverrepo"
@@ -19,6 +20,7 @@ import (
 	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/consumerservice"
 	"project-skbackend/internal/services/cronservice"
+	"project-skbackend/internal/services/geolocationservice"
 	"project-skbackend/internal/services/illnessservice"
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/internal/services/mealservice"
@@ -36,6 +38,7 @@ import (
 )
 
 type DependencyInjection struct {
+	// * internal services
 	UserService         *userservice.UserService
 	AuthService         *authservice.AuthService
 	MailService         *mailservice.MailService
@@ -49,6 +52,10 @@ type DependencyInjection struct {
 	OrderService        *orderservice.OrderService
 	CronService         *cronservice.CronService
 	IllnessService      *illnessservice.IllnessService
+	GeolocationService  *geolocationservice.GeolocationService
+
+	// * external services
+	DistanceMatrixService *distancematrixservice.DistanceMatrixService
 }
 
 func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, rdb *redis.Client, ctx context.Context) *DependencyInjection {
@@ -86,8 +93,11 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	sordr := orderservice.NewOrderService(*cfg, rorder, rmeal, rmemb, ruser, rcare)
 	scron := cronservice.NewCronService(cfg, rorder)
 	silln := illnessservice.NewIllnessService(rill)
+	sdsmx := distancematrixservice.NewDistanceMatrixService(cfg)
+	sglct := geolocationservice.NewGeolocationService(sdsmx)
 
 	return &DependencyInjection{
+		// * internal services
 		UserService:         suser,
 		AuthService:         sauth,
 		MailService:         smail,
@@ -101,6 +111,10 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 		OrderService:        sordr,
 		CronService:         scron,
 		IllnessService:      silln,
+		GeolocationService:  sglct,
+
+		// * external services
+		DistanceMatrixService: sdsmx,
 	}
 }
 

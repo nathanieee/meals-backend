@@ -29,6 +29,7 @@ type (
 		AWS
 		Localstack
 		Queue
+		DistanceMatrix
 	}
 
 	API struct {
@@ -165,6 +166,12 @@ type (
 		ExchangeName string `env:"MAIL_EXCHANGE_NAME"`
 		ExchangeType string `env:"MAIL_EXCHANGE_TYPE"`
 		BindingKey   string `env:"MAIL_BINDING_KEY"`
+	}
+
+	DistanceMatrix struct {
+		Timeout int    `env:"DISTANCE_MATRIX_TIMEOUT" env-default:"10"`
+		APIKey  string `env:"DISTANCE_MATRIX_API_KEY"`
+		BaseURL string `env:"DISTANCE_MATRIX_BASE_URL"`
 	}
 )
 

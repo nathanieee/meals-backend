@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
 	"project-skbackend/internal/services/authservice"
+	"project-skbackend/internal/services/geolocationservice"
 	"project-skbackend/internal/services/userservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utresponse"
@@ -20,6 +23,7 @@ type (
 		rdb   *redis.Client
 		sauth authservice.IAuthService
 		suser userservice.IUserService
+		sglct geolocationservice.IGeolocationService
 	}
 )
 
@@ -29,12 +33,14 @@ func newAuthRoutes(
 	rdb *redis.Client,
 	sauth authservice.IAuthService,
 	suser userservice.IUserService,
+	sglct geolocationservice.IGeolocationService,
 ) {
 	r := &authroutes{
 		cfg:   cfg,
 		rdb:   rdb,
 		sauth: sauth,
 		suser: suser,
+		sglct: sglct,
 	}
 
 	h := rg.Group("auth")
@@ -65,12 +71,20 @@ func newAuthRoutes(
 func (r *authroutes) signin(
 	ctx *gin.Context,
 ) {
+	add, err := r.sglct.GetGeolocation(requests.Geolocation{
+		Latitude:  "-27.05171",
+		Longitude: "125.11016",
+	})
+
+	jsondata, _ := json.MarshalIndent(add, "", "    ")
+	fmt.Printf("%s\n", jsondata)
+
 	var (
 		function = "signin"
 		req      requests.Signin
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err = ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(

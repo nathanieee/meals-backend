@@ -122,6 +122,7 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 		&models.User{},
 		&models.UserImage{},
 		&models.Address{},
+		&models.AddressDetail{},
 
 		&models.Admin{},
 		&models.Allergy{},

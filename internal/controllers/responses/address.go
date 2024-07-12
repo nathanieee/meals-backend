@@ -6,10 +6,18 @@ type (
 	Address struct {
 		base.Model
 
-		Name      string  `json:"name"`
-		Address   string  `json:"address"`
-		Note      string  `json:"note"`
-		Longitude float64 `json:"longitude"`
-		Latitude  float64 `json:"latitude"`
+		Name    string `json:"name"`
+		Address string `json:"address"`
+		Note    string `json:"note"`
+	}
+
+	AddressDetail struct {
+		base.Model
+
+		Geolocation
+
+		FormattedAddress string `json:"formatted_address"`
+		PostCode         string `json:"post_code"`
+		Country          string `json:"country"`
 	}
 )

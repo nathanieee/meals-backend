@@ -162,11 +162,16 @@ func SeedAdminCredentials(db *gorm.DB) error {
 						Role:        consttypes.UR_ADMIN,
 						Address: []*models.Address{
 							{
-								Name:      "Home Address",
-								Address:   "Oak Street",
-								Longitude: "-118.2437",
-								Latitude:  "34.0522",
-								Note:      "House with a red mailbox.",
+								Name:    "Indian Ocean Address",
+								Address: "Indian Ocean Address, 1st floor,",
+								Note:    "Ocean with the blue water",
+								AddressDetail: &models.AddressDetail{
+									Geolocation: models.Geolocation{
+										Longitude: "-26.10305",
+										Latitude:  "56.91996",
+									},
+									FormattedAddress: "Indian Ocean",
+								},
 							},
 						},
 					},
@@ -177,7 +182,7 @@ func SeedAdminCredentials(db *gorm.DB) error {
 				},
 			}
 
-			err := db.Create(&admins).Error
+			err := db.Session(&gorm.Session{FullSaveAssociations: true}).Create(&admins).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err
@@ -201,11 +206,17 @@ func SeedMemberCredentials(db *gorm.DB) error {
 						Role:        consttypes.UR_MEMBER,
 						Address: []*models.Address{
 							{
-								Name:      "Home Address",
-								Address:   "Maple Avenue",
-								Longitude: "-73.9876",
-								Latitude:  "40.7309",
-								Note:      "Apartment building with a blue door, buzz code 1234.",
+								Name:    "Home Address",
+								Address: "nkotakhota wildlife reserve",
+								Note:    "Apartment building with a blue door, buzz code 1234.",
+								AddressDetail: &models.AddressDetail{
+									Geolocation: models.Geolocation{
+										Longitude: "-12.80077",
+										Latitude:  "34.02462",
+									},
+									FormattedAddress: "Nkotakhota Wildlife Reserve, M7, Malawi",
+									Country:          "Malawi",
+								},
 							},
 						},
 					},
@@ -222,11 +233,17 @@ func SeedMemberCredentials(db *gorm.DB) error {
 							Role:        consttypes.UR_CAREGIVER,
 							Address: []*models.Address{
 								{
-									Name:      "Home Address",
-									Address:   "Elm Avenue",
-									Longitude: "-87.6298",
-									Latitude:  "41.8781",
-									Note:      "Corner house with a white picket fence.",
+									Name:    "Home Address",
+									Address: "Elm Avenue",
+									Note:    "Corner house with a white picket fence.",
+									AddressDetail: &models.AddressDetail{
+										Geolocation: models.Geolocation{
+											Longitude: "58.70232",
+											Latitude:  "62.81751",
+										},
+										FormattedAddress: "Alapayevskiy Rayon, Sverdlovsk Oblast, Russia",
+										Country:          "Russia",
+									},
 								},
 							},
 						},
@@ -238,7 +255,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 				},
 			}
 
-			err = db.Create(&members).Error
+			err = db.Session(&gorm.Session{FullSaveAssociations: true}).Create(&members).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err
@@ -262,11 +279,17 @@ func SeedOrganizationCredentials(db *gorm.DB) error {
 						Role:        consttypes.UR_ORGANIZATION,
 						Address: []*models.Address{
 							{
-								Name:      "Address",
-								Address:   "Cedar Lane",
-								Longitude: "-0.1276",
-								Latitude:  "51.5074",
-								Note:      "First floor apartment, entrance at the back.",
+								Name:    "Address",
+								Address: "Cedar Lane",
+								Note:    "First floor apartment, entrance at the back.",
+								AddressDetail: &models.AddressDetail{
+									Geolocation: models.Geolocation{
+										Longitude: "56.01747",
+										Latitude:  "11.37254",
+									},
+									FormattedAddress: "Hesselø Bugt, Denmark",
+									Country:          "Denmark",
+								},
 							},
 						},
 					},
@@ -275,7 +298,7 @@ func SeedOrganizationCredentials(db *gorm.DB) error {
 				},
 			}
 
-			err := db.Create(&organizations).Error
+			err := db.Session(&gorm.Session{FullSaveAssociations: true}).Create(&organizations).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err
@@ -302,11 +325,18 @@ func SeedPartnerCredentials(db *gorm.DB) error {
 						Role:        consttypes.UR_PARTNER,
 						Address: []*models.Address{
 							{
-								Name:      "Address",
-								Address:   "Pine Road",
-								Longitude: "2.3522",
-								Latitude:  "48.8566",
-								Note:      "Gated community, use code 5678 at the gate.",
+								Name:    "Address",
+								Address: "Pine Road",
+								Note:    "Gated community, use code 5678 at the gate.",
+								AddressDetail: &models.AddressDetail{
+									Geolocation: models.Geolocation{
+										Longitude: "-27.05171",
+										Latitude:  "125.11016",
+									},
+									FormattedAddress: "Lake Wells WA 6440, Australia",
+									PostCode:         "6440",
+									Country:          "Australia",
+								},
 							},
 						},
 					},
@@ -315,7 +345,7 @@ func SeedPartnerCredentials(db *gorm.DB) error {
 				},
 			}
 
-			err = db.Create(&partners).Error
+			err = db.Session(&gorm.Session{FullSaveAssociations: true}).Create(&partners).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err

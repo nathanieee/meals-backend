@@ -27,7 +27,15 @@ func ErrDailyMaxOrderReached(maxord uint) error {
 	return fmt.Errorf("daily max order of %v reached", maxord)
 }
 
+func ErrUnexpectedStatusCode(code int) error {
+	return fmt.Errorf("unexpected status code: %d", code)
+}
+
 var (
+	// external
+	ErrFailedToDeclareNewRequest = fmt.Errorf("failed to declare new request")
+	ErrFailedToCallExternalAPI   = fmt.Errorf("failed to call external api")
+
 	// queues
 	ErrFailedToPublishMessage = fmt.Errorf("failed to publish message")
 
