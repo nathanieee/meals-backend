@@ -138,4 +138,9 @@ var (
 	ErrTooQuickSendEmail = fmt.Errorf("an email was sent just under %v minutes ago", GetResetPasswordCooldown())
 	ErrDuplicateEmail    = fmt.Errorf("email address already exists")
 	ErrFailedToSendEmail = fmt.Errorf("failed to send email")
+
+	// geolocation
+	ErrGeolocationNotFound   = fmt.Errorf("location not found")
+	ErrInvalidGeolocation    = fmt.Errorf("invalid geolocation")
+	ErrInvalidDistanceMatrix = fmt.Errorf("invalid distance matrix")
 )

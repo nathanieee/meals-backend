@@ -3,6 +3,7 @@ package responses
 import (
 	"fmt"
 	"project-skbackend/internal/controllers/responses"
+	"project-skbackend/packages/consttypes"
 )
 
 type (
@@ -83,11 +84,11 @@ func (res *Geocode) ToAddressDetail() *responses.AddressDetail {
 	)
 
 	for _, component := range result.GeocodeAddressComponents {
-		if component.Types[0] == "postcode" {
+		if component.Types[0] == consttypes.DMT_POSTCODE.String() {
 			postcode = component.LongName
 		}
 
-		if component.Types[0] == "country" {
+		if component.Types[0] == consttypes.DMT_COUNTRY.String() {
 			country = component.LongName
 		}
 	}
@@ -100,5 +101,21 @@ func (res *Geocode) ToAddressDetail() *responses.AddressDetail {
 		FormattedAddress: result.FormattedAddress,
 		PostCode:         postcode,
 		Country:          country,
+	}
+}
+
+func (res *DistanceMatrix) ToDistanceMatrix() *responses.DistanceMatrix {
+	// * only take the first result because only 1 to 1 address is being compared
+	return &responses.DistanceMatrix{
+		OriginAddresses:      res.OriginAddresses[0],
+		DestinationAddresses: res.DestinationAddresses[0],
+		Distance: responses.Distance{
+			Text:  res.Rows[0].Elements[0].Distance.Text,
+			Value: res.Rows[0].Elements[0].Distance.Value,
+		},
+		Duration: responses.Duration{
+			Text:  res.Rows[0].Elements[0].Duration.Text,
+			Value: res.Rows[0].Elements[0].Duration.Value,
+		},
 	}
 }

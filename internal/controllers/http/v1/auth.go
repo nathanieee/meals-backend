@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
-	"fmt"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
@@ -10,6 +8,7 @@ import (
 	"project-skbackend/internal/services/geolocationservice"
 	"project-skbackend/internal/services/userservice"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/uttoken"
 
@@ -71,13 +70,26 @@ func newAuthRoutes(
 func (r *authroutes) signin(
 	ctx *gin.Context,
 ) {
-	add, err := r.sglct.GetGeolocation(requests.Geolocation{
-		Latitude:  "-27.05171",
-		Longitude: "125.11016",
+	dismat, err := r.sglct.GetLocationDistance(requests.DistanceMatrix{
+		Origins: requests.Geolocation{
+			Longitude: "51.507351",
+			Latitude:  "-0.127758",
+		},
+		Destinations: requests.Geolocation{
+			Longitude: "51.514414",
+			Latitude:  "-0.093123",
+		},
 	})
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			"signin",
+			ctx,
+			err,
+		)
+		return
+	}
 
-	jsondata, _ := json.MarshalIndent(add, "", "    ")
-	fmt.Printf("%s\n", jsondata)
+	utlogger.Info(dismat)
 
 	var (
 		function = "signin"
