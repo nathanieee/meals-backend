@@ -56,6 +56,15 @@ func NewMemberRepository(db *gorm.DB) *MemberRepository {
 	return &MemberRepository{db: db}
 }
 
+func (r *MemberRepository) omit() *gorm.DB {
+	return r.db.
+		Omit(
+			"Illnesses.Illness",
+			"Allergies.Allergy",
+			"Organization",
+		)
+}
+
 func (r *MemberRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
@@ -69,7 +78,9 @@ func (r *MemberRepository) preload() *gorm.DB {
 }
 
 func (r *MemberRepository) Create(m models.Member) (*models.Member, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Create(&m).Error
 
 	if err != nil {

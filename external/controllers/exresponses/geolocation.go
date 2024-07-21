@@ -1,11 +1,6 @@
-package responses
+package exresponses
 
 type (
-	Geolocation struct {
-		Longitude string `json:"longitude"`
-		Latitude  string `json:"latitude"`
-	}
-
 	RouteDetails struct {
 		OriginAddresses      string `json:"origin_addresses"`
 		DestinationAddresses string `json:"destination_addresses"`

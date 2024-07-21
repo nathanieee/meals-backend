@@ -96,12 +96,11 @@ func (s *MailService) SendEmail(
 
 	m.SetHeaders(map[string][]string{
 		"From":    {s.cfg.Mail.From},
-		"To":      {"jonathanvnc@gmail.com"},
+		"To":      {"jonathanvnc@gmail.com"}, // TODO: change this into the correct email
 		"Subject": {req.Subject},
 	})
 	m.SetBody("text/html", body.String())
 
-	// TODO - need to enable this
 	d := gomail.NewDialer(s.mailhost, s.mailport, s.mailfrom, s.mailpass)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 

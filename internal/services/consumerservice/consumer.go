@@ -70,7 +70,7 @@ func (s *ConsumerService) ConsumeMail() {
 				return
 			}
 
-			utlogger.Info(fmt.Sprintf("Reference data mail: %v ", data.Data))
+			utlogger.Info(fmt.Sprintf("Reference data mail: %v", data.Data))
 
 			err = s.smail.SendEmail(data)
 			if err != nil {
@@ -78,7 +78,7 @@ func (s *ConsumerService) ConsumeMail() {
 			}
 
 			ok := err == nil
-			utlogger.Info(fmt.Sprintf("Send mail ok: %v ", ok))
+			utlogger.Info(fmt.Sprintf("Send mail ok: %v", ok))
 		}
 	}()
 

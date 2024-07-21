@@ -1,6 +1,6 @@
 package requests
 
-import "project-skbackend/external/controllers/requests"
+import "project-skbackend/external/controllers/exrequests"
 
 type (
 	Geolocation struct {
@@ -14,15 +14,15 @@ type (
 	}
 )
 
-func (req *Geolocation) ToDistanceMatrixGeolocation() *requests.Geolocation {
-	return &requests.Geolocation{
+func (req *Geolocation) ToDistanceMatrixGeolocation() *exrequests.Geolocation {
+	return &exrequests.Geolocation{
 		Lng: req.Longitude,
 		Lat: req.Latitude,
 	}
 }
 
-func (req *DistanceMatrix) ToDistanceMatrix() *requests.DistanceMatrix {
-	return &requests.DistanceMatrix{
+func (req *DistanceMatrix) ToDistanceMatrix() *exrequests.DistanceMatrix {
+	return &exrequests.DistanceMatrix{
 		Origins:      *req.Origins.ToDistanceMatrixGeolocation(),
 		Destinations: *req.Destinations.ToDistanceMatrixGeolocation(),
 	}

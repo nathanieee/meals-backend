@@ -1,8 +1,10 @@
 package requests
 
 import (
+	"fmt"
 	"project-skbackend/internal/models"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utgeolocation"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utstring"
 	"strings"
@@ -18,7 +20,7 @@ type (
 		Password        string `json:"password" form:"password" binding:"required"`
 		ConfirmPassword string `json:"confirm_password" form:"confirm_password" binding:"required,eqfield=Password"`
 
-		Address *[]CreateAddress `json:"address" form:"address" binding:"-"`
+		Address []CreateAddress `json:"addresses" form:"address" binding:"-"`
 	}
 
 	UpdateUser struct {
@@ -28,7 +30,7 @@ type (
 		Password        string `json:"password" form:"password" binding:"-"`
 		ConfirmPassword string `json:"confirm_password" form:"confirm_password" binding:"required,eqfield=Password"`
 
-		Address *[]UpdateAddress `json:"address" form:"address" binding:"-"`
+		Address []UpdateAddress `json:"addresses" form:"address" binding:"-"`
 	}
 )
 
@@ -52,6 +54,30 @@ func (req *CreateUser) ToModel(
 	user.Email = strings.ToLower(req.Email)
 	user.Role = role
 	user.Password = hash
+
+	// * reset the user address
+	user.Address = nil
+	for _, address := range req.Address {
+		adrdetail, err := utgeolocation.GetGeolocation(*address.ToDistanceMatrixGeolocation())
+		if err != nil {
+			return nil, consttypes.ErrGeolocationNotFound
+		}
+
+		user.Address = append(user.Address, &models.Address{
+			Name:    address.Name,
+			Address: address.Address,
+			Note:    address.Note,
+			UserID:  user.ID,
+			AddressDetail: &models.AddressDetail{
+				Geolocation: models.Geolocation{
+					Latitude:  fmt.Sprintf("%s", adrdetail.Lat),
+					Longitude: fmt.Sprintf("%s", adrdetail.Lng),
+				},
+				FormattedAddress: adrdetail.FormattedAddress,
+				PostCode:         adrdetail.PostCode,
+				Country:          adrdetail.Country},
+		})
+	}
 
 	return &user, nil
 }

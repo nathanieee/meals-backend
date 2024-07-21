@@ -20,7 +20,6 @@ import (
 	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/consumerservice"
 	"project-skbackend/internal/services/cronservice"
-	"project-skbackend/internal/services/geolocationservice"
 	"project-skbackend/internal/services/illnessservice"
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/internal/services/mealservice"
@@ -52,7 +51,6 @@ type DependencyInjection struct {
 	OrderService        *orderservice.OrderService
 	CronService         *cronservice.CronService
 	IllnessService      *illnessservice.IllnessService
-	GeolocationService  *geolocationservice.GeolocationService
 
 	// * external services
 	DistanceMatrixService *distancematrixservice.DistanceMatrixService
@@ -79,13 +77,17 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	rorder := orderrepo.NewOrderRepository(db, *cfg)
 
 	/* --------------------------------- service -------------------------------- */
+	// * extenral services
+	sdsmx := distancematrixservice.NewDistanceMatrixService(cfg)
+
+	// * internal services
 	sprod := producerservice.NewProducerService(ch, cfg, ctx)
 	suser := userservice.NewUserService(ruser, radmin, rcare, rmemb, rorg, rpart)
 	spart := partnerservice.NewPartnerService(rpart)
 	smail := mailservice.NewMailService(cfg, ruser, sprod)
 	sauth := authservice.NewAuthService(cfg, rdb, ruser, smail, suser)
 	smeal := mealservice.NewMealService(rmeal, rill, rall, rpart)
-	smemb := memberservice.NewMemberService(rmemb, ruser, rcare, rall, rill, *rorg)
+	smemb := memberservice.NewMemberService(rmemb, ruser, rcare, rall, rill, rorg)
 	scart := cartservice.NewCartService(rcart, rcare, rmemb)
 	scons := consumerservice.NewConsumerService(ch, cfg, smail)
 	spatr := patronservice.NewPatronService(rpatron)
@@ -93,8 +95,6 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	sordr := orderservice.NewOrderService(*cfg, rorder, rmeal, rmemb, ruser, rcare)
 	scron := cronservice.NewCronService(cfg, rorder)
 	silln := illnessservice.NewIllnessService(rill)
-	sdsmx := distancematrixservice.NewDistanceMatrixService(cfg)
-	sglct := geolocationservice.NewGeolocationService(sdsmx)
 
 	return &DependencyInjection{
 		// * internal services
@@ -111,7 +111,6 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 		OrderService:        sordr,
 		CronService:         scron,
 		IllnessService:      silln,
-		GeolocationService:  sglct,
 
 		// * external services
 		DistanceMatrixService: sdsmx,

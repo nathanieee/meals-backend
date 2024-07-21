@@ -19,6 +19,11 @@ func (db DB) GetDbConnectionUrl() string {
 }
 
 func (db DB) DBSetup(gdb *gorm.DB) error {
+	if err := db.SetupExtension(gdb); err != nil {
+		utlogger.Error(err)
+		return err
+	}
+
 	if err := db.AutoSeedEnum(gdb); err != nil {
 		utlogger.Error(err)
 		return err
@@ -32,6 +37,29 @@ func (db DB) DBSetup(gdb *gorm.DB) error {
 	if err := db.AutoSeedData(gdb); err != nil {
 		utlogger.Error(err)
 		return err
+	}
+
+	return nil
+}
+
+func (db DB) SetupExtension(gdb *gorm.DB) error {
+	extfuncs := []func(*gorm.DB) error{
+		InstallUUIDExtension,
+	}
+
+	var (
+		errs []error
+	)
+
+	for _, extfunc := range extfuncs {
+		if err := extfunc(gdb); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if len(errs) > 0 {
+		utlogger.Error(errs...)
+		return errors.New("error setting up extension")
 	}
 
 	return nil

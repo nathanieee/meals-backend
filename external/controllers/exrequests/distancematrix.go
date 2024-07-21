@@ -1,4 +1,4 @@
-package requests
+package exrequests
 
 type (
 	Geolocation struct {

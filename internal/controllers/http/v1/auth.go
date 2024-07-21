@@ -5,10 +5,8 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
 	"project-skbackend/internal/services/authservice"
-	"project-skbackend/internal/services/geolocationservice"
 	"project-skbackend/internal/services/userservice"
 	"project-skbackend/packages/consttypes"
-	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/uttoken"
 
@@ -22,7 +20,6 @@ type (
 		rdb   *redis.Client
 		sauth authservice.IAuthService
 		suser userservice.IUserService
-		sglct geolocationservice.IGeolocationService
 	}
 )
 
@@ -32,14 +29,12 @@ func newAuthRoutes(
 	rdb *redis.Client,
 	sauth authservice.IAuthService,
 	suser userservice.IUserService,
-	sglct geolocationservice.IGeolocationService,
 ) {
 	r := &authroutes{
 		cfg:   cfg,
 		rdb:   rdb,
 		sauth: sauth,
 		suser: suser,
-		sglct: sglct,
 	}
 
 	h := rg.Group("auth")
@@ -70,33 +65,12 @@ func newAuthRoutes(
 func (r *authroutes) signin(
 	ctx *gin.Context,
 ) {
-	dismat, err := r.sglct.GetLocationDistance(requests.DistanceMatrix{
-		Origins: requests.Geolocation{
-			Longitude: "51.507351",
-			Latitude:  "-0.127758",
-		},
-		Destinations: requests.Geolocation{
-			Longitude: "51.514414",
-			Latitude:  "-0.093123",
-		},
-	})
-	if err != nil {
-		utresponse.GeneralInternalServerError(
-			"signin",
-			ctx,
-			err,
-		)
-		return
-	}
-
-	utlogger.Info(dismat)
-
 	var (
 		function = "signin"
 		req      requests.Signin
 	)
 
-	err = ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(

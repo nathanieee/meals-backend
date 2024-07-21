@@ -61,6 +61,50 @@ func createEnum(db *gorm.DB, enumname string, enumvalues ...any) error {
 	return nil
 }
 
+func InstallUUIDExtension(db *gorm.DB) error {
+	// Create or replace the UUID generation function
+	uuidsql := `
+	CREATE OR REPLACE FUNCTION uuid_generate_v7()
+	RETURNS uuid AS $$
+	BEGIN
+		-- Use random v4 UUID as starting point (which has the same variant we need)
+		-- Then overlay timestamp
+		-- Finally set version 7 by flipping the 2 and 1 bit in the version 4 string
+		RETURN encode(
+			set_bit(
+				set_bit(
+					overlay(
+						uuid_send(gen_random_uuid())
+						PLACING substring(int8send(floor(extract(epoch FROM clock_timestamp()) * 1000)::bigint) FROM 3)
+						FROM 1 FOR 6
+					),
+					52, 1
+				),
+				53, 1
+			),
+			'hex'
+		)::uuid;
+	END
+	$$ LANGUAGE plpgsql VOLATILE;
+	`
+
+	// Execute the UUID function creation SQL
+	err := db.Exec(uuidsql).Error
+	if err != nil {
+		utlogger.Error(err)
+		return err
+	}
+
+	// Create the UUID-OSSP extension if it doesn't exist
+	err = db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";").Error
+	if err != nil {
+		utlogger.Error(err)
+		return err
+	}
+
+	return nil
+}
+
 func SeedAllergensEnum(db *gorm.DB) error {
 	return createEnum(db,
 		"allergens_enum",

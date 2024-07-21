@@ -20,12 +20,13 @@ import (
 
 type (
 	MemberService struct {
+		// * repository
 		rmemb memberrepo.IMemberRepository
 		ruser userrepo.IUserRepository
 		rcare caregiverrepo.ICaregiverRepository
 		rall  allergyrepo.IAllergyRepository
 		rill  illnessrepo.IIllnessRepository
-		rorg  organizationrepo.OrganizationRepository
+		rorg  organizationrepo.IOrganizationRepository
 	}
 
 	IMemberService interface {
@@ -40,14 +41,16 @@ type (
 )
 
 func NewMemberService(
+	// * repository
 	rmemb memberrepo.IMemberRepository,
 	ruser userrepo.IUserRepository,
 	rcare caregiverrepo.ICaregiverRepository,
 	rall allergyrepo.IAllergyRepository,
 	rill illnessrepo.IIllnessRepository,
-	rorg organizationrepo.OrganizationRepository,
+	rorg organizationrepo.IOrganizationRepository,
 ) *MemberService {
 	return &MemberService{
+		// * repository
 		rmemb: rmemb,
 		ruser: ruser,
 		rcare: rcare,

@@ -1,8 +1,6 @@
-package responses
+package exresponses
 
 import (
-	"fmt"
-	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/packages/consttypes"
 )
 
@@ -76,7 +74,7 @@ type (
 	}
 )
 
-func (res *Geocode) ToAddressDetail() *responses.AddressDetail {
+func (res *Geocode) ToAddressDetail() *AddressDetail {
 	var (
 		postcode = ""
 		country  = ""
@@ -93,10 +91,10 @@ func (res *Geocode) ToAddressDetail() *responses.AddressDetail {
 		}
 	}
 
-	return &responses.AddressDetail{
-		Geolocation: responses.Geolocation{
-			Longitude: fmt.Sprintf("%.6f", result.Geometry.Location.Lng),
-			Latitude:  fmt.Sprintf("%.6f", result.Geometry.Location.Lat),
+	return &AddressDetail{
+		Geolocation: Geolocation{
+			Lng: result.Geometry.Location.Lng,
+			Lat: result.Geometry.Location.Lat,
 		},
 		FormattedAddress: result.FormattedAddress,
 		PostCode:         postcode,
@@ -104,16 +102,16 @@ func (res *Geocode) ToAddressDetail() *responses.AddressDetail {
 	}
 }
 
-func (res *DistanceMatrix) ToDistanceMatrix() *responses.DistanceMatrix {
+func (res *DistanceMatrix) ToRouteDetails() *RouteDetails {
 	// * only take the first result because only 1 to 1 address is being compared
-	return &responses.DistanceMatrix{
+	return &RouteDetails{
 		OriginAddresses:      res.OriginAddresses[0],
 		DestinationAddresses: res.DestinationAddresses[0],
-		Distance: responses.Distance{
+		Distance: Distance{
 			Text:  res.Rows[0].Elements[0].Distance.Text,
 			Value: res.Rows[0].Elements[0].Distance.Value,
 		},
-		Duration: responses.Duration{
+		Duration: Duration{
 			Text:  res.Rows[0].Elements[0].Duration.Text,
 			Value: res.Rows[0].Elements[0].Duration.Value,
 		},
