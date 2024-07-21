@@ -73,15 +73,15 @@ func (r *OrderRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
 		Preload("Member.User.Image.Image").
-		Preload("Member.User.Address").
+		Preload("Member.User.Address.AddressDetail").
 		Preload("Member.Caregiver.User.Image.Image").
-		Preload("Member.Caregiver.User.Address").
+		Preload("Member.Caregiver.User.Address.AddressDetail").
 		Preload("Member.Organization").
 		Preload("Member.Allergies.Allergy").
 		Preload("Member.Illnesses.Illness").
 		Preload("Meals.Meal").
 		Preload("History.User.Image.Image").
-		Preload("History.User.Address")
+		Preload("History.User.Address.AddressDetail")
 }
 
 func (r *OrderRepository) omit() *gorm.DB {

@@ -47,15 +47,23 @@ func NewPartnerRepository(db *gorm.DB) *PartnerRepository {
 	return &PartnerRepository{db: db}
 }
 
+func (r *PartnerRepository) omit() *gorm.DB {
+	return r.db.Omit(
+		"MealCategories",
+	)
+}
+
 func (r *PartnerRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
-		Preload("User.Address").
+		Preload("User.Address.AddressDetail").
 		Preload("User.Image.Image")
 }
 
 func (r *PartnerRepository) Create(p models.Partner) (*models.Partner, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Create(&p).Error
 
 	if err != nil {

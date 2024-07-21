@@ -9,6 +9,8 @@ type (
 		Name    string `json:"name"`
 		Address string `json:"address"`
 		Note    string `json:"note"`
+
+		AddressDetail AddressDetail `json:"address_detail"`
 	}
 
 	AddressDetail struct {

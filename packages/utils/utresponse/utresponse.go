@@ -287,7 +287,7 @@ func GeneralDuplicate(
 ) {
 	ErrorResponse(ctx, http.StatusConflict, ErrorRes{
 		Status:  consttypes.RST_FAIL,
-		Message: fmt.Sprintf("Duplicate %s", field),
+		Message: fmt.Sprintf("Failed to process, there is a duplicate %s", field),
 		Data: &ErrorData{
 			Debug:  &err,
 			Errors: err.Error(),

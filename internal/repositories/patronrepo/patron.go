@@ -50,7 +50,7 @@ func NewPatronRepository(db *gorm.DB) *PatronRepository {
 func (r *PatronRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
-		Preload("User.Address").
+		Preload("User.Address.AddressDetail").
 		Preload("User.Image.Image").
 		Preload("Donations")
 }

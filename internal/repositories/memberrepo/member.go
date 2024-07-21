@@ -69,9 +69,9 @@ func (r *MemberRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
 		Preload("User.Image.Image").
-		Preload("User.Address").
+		Preload("User.Address.AddressDetail").
 		Preload("Caregiver.User.Image.Image").
-		Preload("Caregiver.User.Address").
+		Preload("Caregiver.User.Address.AddressDetail").
 		Preload("Organization").
 		Preload("Allergies.Allergy").
 		Preload("Illnesses.Illness")

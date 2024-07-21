@@ -1,12 +1,12 @@
 package requests
 
 import (
-	"fmt"
 	"project-skbackend/internal/models"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utgeolocation"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utstring"
+	"strconv"
 	"strings"
 
 	"github.com/jinzhu/copier"
@@ -63,6 +63,10 @@ func (req *CreateUser) ToModel(
 			return nil, consttypes.ErrGeolocationNotFound
 		}
 
+		// * format the float into string
+		lat := strconv.FormatFloat(adrdetail.Lat, 'f', -1, 64)
+		lng := strconv.FormatFloat(adrdetail.Lng, 'f', -1, 64)
+
 		user.Address = append(user.Address, &models.Address{
 			Name:    address.Name,
 			Address: address.Address,
@@ -70,8 +74,8 @@ func (req *CreateUser) ToModel(
 			UserID:  user.ID,
 			AddressDetail: &models.AddressDetail{
 				Geolocation: models.Geolocation{
-					Latitude:  fmt.Sprintf("%s", adrdetail.Lat),
-					Longitude: fmt.Sprintf("%s", adrdetail.Lng),
+					Latitude:  lat,
+					Longitude: lng,
 				},
 				FormattedAddress: adrdetail.FormattedAddress,
 				PostCode:         adrdetail.PostCode,

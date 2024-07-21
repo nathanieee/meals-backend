@@ -54,12 +54,12 @@ func (r *CartRepository) preload() *gorm.DB {
 		Preload("Meal.Images.Image").
 		Preload("Meal.Illnesses.Illness").
 		Preload("Meal.Allergies.Allergy").
-		Preload("Meal.Partner.User.Address").
+		Preload("Meal.Partner.User.Address.AddressDetail").
 		Preload("Meal.Partner.User.Image.Image").
 		Preload("Member.User.Image.Image").
-		Preload("Member.User.Address").
+		Preload("Member.User.Address.AddressDetail").
 		Preload("Member.Caregiver.User.Image.Image").
-		Preload("Member.Caregiver.User.Address").
+		Preload("Member.Caregiver.User.Address.AddressDetail").
 		Preload("Member.Organization").
 		Preload("Member.Allergies.Allergy").
 		Preload("Member.Illnesses.Illness")
