@@ -46,13 +46,21 @@ func NewAllergyRepository(db *gorm.DB) *AllergyRepository {
 	return &AllergyRepository{db: db}
 }
 
+func (r *AllergyRepository) omit() *gorm.DB {
+	return r.db.Omit(
+		"",
+	)
+}
+
 func (r *AllergyRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations)
 }
 
 func (r *AllergyRepository) Create(al models.Allergy) (*models.Allergy, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Create(&al).Error
 
 	if err != nil {

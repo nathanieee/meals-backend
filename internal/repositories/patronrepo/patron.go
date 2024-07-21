@@ -47,6 +47,13 @@ func NewPatronRepository(db *gorm.DB) *PatronRepository {
 	return &PatronRepository{db: db}
 }
 
+func (r *PatronRepository) omit() *gorm.DB {
+	return r.db.
+		Omit(
+			"",
+		)
+}
+
 func (r *PatronRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).

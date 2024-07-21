@@ -45,13 +45,22 @@ func NewIllnessRepository(db *gorm.DB) *IllnessRepository {
 	return &IllnessRepository{db: db}
 }
 
+func (r *IllnessRepository) omit() *gorm.DB {
+	return r.db.
+		Omit(
+			"",
+		)
+}
+
 func (r *IllnessRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations)
 }
 
 func (r *IllnessRepository) Create(ill models.Illness) (*models.Illness, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Create(ill).Error
 
 	if err != nil {

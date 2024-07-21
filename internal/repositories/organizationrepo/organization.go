@@ -48,6 +48,12 @@ func NewOrganizationRepository(db *gorm.DB) *OrganizationRepository {
 	return &OrganizationRepository{db: db}
 }
 
+func (r *OrganizationRepository) omit() *gorm.DB {
+	return r.db.Omit(
+		"",
+	)
+}
+
 func (r *OrganizationRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
@@ -56,7 +62,9 @@ func (r *OrganizationRepository) preload() *gorm.DB {
 }
 
 func (r *OrganizationRepository) Create(o models.Organization) (*models.Organization, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Create(&o).Error
 
 	if err != nil {

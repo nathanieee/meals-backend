@@ -50,6 +50,12 @@ func NewAdminRepository(db *gorm.DB) *AdminRepository {
 	return &AdminRepository{db: db}
 }
 
+func (r *AdminRepository) omit() *gorm.DB {
+	return r.db.Omit(
+		"",
+	)
+}
+
 func (r *AdminRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
@@ -58,7 +64,9 @@ func (r *AdminRepository) preload() *gorm.DB {
 }
 
 func (r *AdminRepository) Create(a models.Admin) (*models.Admin, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Create(&a).Error
 
 	if err != nil {

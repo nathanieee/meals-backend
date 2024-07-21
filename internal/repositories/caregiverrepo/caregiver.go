@@ -50,6 +50,12 @@ func NewCaregiverRepository(db *gorm.DB) *CaregiverRepository {
 	return &CaregiverRepository{db: db}
 }
 
+func (r *CaregiverRepository) omit() *gorm.DB {
+	return r.db.Omit(
+		"",
+	)
+}
+
 func (r *CaregiverRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
@@ -58,7 +64,9 @@ func (r *CaregiverRepository) preload() *gorm.DB {
 }
 
 func (r *CaregiverRepository) Create(cg models.Caregiver) (*models.Caregiver, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Create(&cg).Error
 
 	if err != nil {

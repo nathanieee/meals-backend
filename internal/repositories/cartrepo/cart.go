@@ -48,6 +48,13 @@ func NewCartRepository(db *gorm.DB) *CartRepository {
 	return &CartRepository{db: db}
 }
 
+func (r *CartRepository) omit() *gorm.DB {
+	return r.db.Omit(
+		"Meal",
+		"Member",
+	)
+}
+
 func (r *CartRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
@@ -66,7 +73,9 @@ func (r *CartRepository) preload() *gorm.DB {
 }
 
 func (r *CartRepository) Create(c models.Cart) (*models.Cart, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Create(&c).Error
 
 	if err != nil {

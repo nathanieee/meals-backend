@@ -69,6 +69,15 @@ func NewOrderRepository(
 	}
 }
 
+func (r *OrderRepository) omit() *gorm.DB {
+	return r.db.Omit(
+		"Member",
+		"Meals.Meal",
+		"Meals.Partner",
+		"History.User",
+	)
+}
+
 func (r *OrderRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
@@ -84,16 +93,10 @@ func (r *OrderRepository) preload() *gorm.DB {
 		Preload("History.User.Address.AddressDetail")
 }
 
-func (r *OrderRepository) omit() *gorm.DB {
-	return r.db.Omit(
-		"Member",
-		"Meals.Meal",
-	)
-}
-
 func (r *OrderRepository) Create(o models.Order) (*models.Order, error) {
 	err := r.
 		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Create(&o).Error
 
 	if err != nil {
