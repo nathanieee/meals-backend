@@ -10,8 +10,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    env:
-      DOCKER_IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -42,7 +40,7 @@ jobs:
           script_stop: true
           command_timeout: 200m
           script: |
-            docker pull $DOCKER_IMAGE_NAME
+            docker pull ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
             echo "SERVER_ENV=${{ secrets.SERVER_ENV }}" > .env
             docker stop ${{ vars.DOCKER_APP_NAME }} || true
             docker rm ${{ vars.DOCKER_APP_NAME }} || true
@@ -50,5 +48,5 @@ jobs:
             --name ${{ vars.DOCKER_APP_NAME }} \
             --env-file .env \
             --restart always \
-            $DOCKER_IMAGE_NAME
+            ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
             sudo systemctl reload nginx
