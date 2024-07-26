@@ -1,16 +1,15 @@
 name: Deployment to staging
 
 on:
-  pull_request:
-    branches:
-      - main
-      - stg
-      - dev
+  workflow_run:
+    workflows: [Build and test]
+    types:
+      - completed
 
 jobs:
   build-and-deploy:
-    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     env:
       DOCKER_IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
     steps:
@@ -32,7 +31,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: $DOCKER_IMAGE_NAME
+          tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
 
       - name: SSH into EC2 and deploy golang container
         uses: appleboy/ssh-action@v1.0.3
