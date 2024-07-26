@@ -1,0 +1,15 @@
+# Next, we embrace the powerful and versatile Debian base image 🐳
+# This choice grants us easier access to essential build utilities and a robust development environment.
+FROM golang:1.22-alpine AS build
+
+WORKDIR /app 
+
+COPY . .
+
+RUN go mod download
+
+# During this stage, we compile our application ahead of time, avoiding any runtime surprises.
+# The resulting binary, web-app-golang, will be our steadfast companion in the final leg of our journey.
+RUN go build -o web-app-golang
+
+CMD ["./web-app-golang"]

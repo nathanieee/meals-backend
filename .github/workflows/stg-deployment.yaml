@@ -6,6 +6,11 @@ on:
     types:
       - completed
 
+# on:
+#   push:
+#     branches:
+#       - stg
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -31,9 +36,9 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+          tags: $DOCKER_IMAGE_NAME
 
-      - name: SSH into EC2 and deploy golang container
+      - name: Remote Access to Droplets
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}

@@ -25,8 +25,8 @@ services:
   meals-go:
     container_name: meals-go
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: build/ci/Dockerfile.prod
     ports:
       - "${HTTP_PORT:-8000}:${HTTP_PORT:-8000}"
       - "2345:2345"
@@ -37,7 +37,7 @@ services:
       - meals-redis
       - meals-rabbit
     volumes:
-      - .:/app:rw,delegated
+      - ..:/app:rw,delegated
     restart: always
 
   meals-redis:

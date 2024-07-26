@@ -23,9 +23,12 @@ RUN go install github.com/air-verse/air@latest \
   && go install github.com/go-delve/delve/cmd/dlv@latest \
   && go install github.com/vektra/mockery/v2@latest
 
+# Copy the .air.toml file to the /app directory
+COPY .air.toml /app/.air.toml
+
 # Expose ports
 EXPOSE ${HTTP_PORT}
 EXPOSE 2345
 
 # Use ENTRYPOINT to start the application
-ENTRYPOINT ["air", "-c", ".air.toml"]
+ENTRYPOINT ["air", "-c", "/app/.air.toml"]
