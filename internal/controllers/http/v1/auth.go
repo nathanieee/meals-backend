@@ -1,296 +1,355 @@
 package controllers
 
 import (
-	"net/http"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
-	"project-skbackend/internal/controllers/responses"
-	"project-skbackend/internal/services"
-	"project-skbackend/packages/utils"
+	"project-skbackend/internal/middlewares"
+	"project-skbackend/internal/services/authservice"
+	"project-skbackend/internal/services/userservice"
+	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utresponse"
+	"project-skbackend/packages/utils/uttoken"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
-type authRoutes struct {
-	cfg *configs.Config
-	as  services.IAuthService
-}
+type (
+	authroutes struct {
+		cfg   *configs.Config
+		rdb   *redis.Client
+		sauth authservice.IAuthService
+		suser userservice.IUserService
+	}
+)
 
-func newAuthRoutes(handler *gin.RouterGroup, cfg *configs.Config, as services.IAuthService) {
-	r := &authRoutes{as: as, cfg: cfg}
+func newAuthRoutes(
+	rg *gin.RouterGroup,
+	cfg *configs.Config,
+	rdb *redis.Client,
+	sauth authservice.IAuthService,
+	suser userservice.IUserService,
+) {
+	r := &authroutes{
+		cfg:   cfg,
+		rdb:   rdb,
+		sauth: sauth,
+		suser: suser,
+	}
 
-	h := handler.Group("auth")
+	h := rg.Group("auth")
 	{
-		h.POST("login", r.login)
-		h.POST("register", r.register)
+		h.POST("signin", r.signin)
+		h.POST("signout", r.signout)
 
-		verifyGroup := h.Group("verify")
+		gverif := h.Group("verify").Use(middlewares.JWTAuthMiddleware(cfg,
+			consttypes.UR_ADMIN,
+			consttypes.UR_CAREGIVER,
+			consttypes.UR_MEMBER,
+			consttypes.UR_ORGANIZATION,
+			consttypes.UR_PARTNER,
+			consttypes.UR_PATRON,
+			consttypes.UR_USER,
+		))
 		{
-			verifyGroup.POST("", r.verifyToken)
-			verifyGroup.POST("send", r.sendVerifyEmail)
+			gverif.POST("", r.verifyToken)
+			gverif.POST("send", r.sendVerifyEmail)
 		}
 
 		h.POST("forgot-password", r.forgotPassword)
 		h.POST("reset-password", r.resetPassword)
-
 		h.GET("refresh-token", r.refreshAuthToken)
 	}
 }
 
-func (r *authRoutes) login(ctx *gin.Context) {
-	var req requests.LoginRequest
+func (r *authroutes) signin(
+	ctx *gin.Context,
+) {
+	var (
+		function = "signin"
+		req      requests.Signin
+	)
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		ve := utils.ValidationResponse(err)
-
-		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
-			Message: "Invalid request",
-			Debug:   nil,
-			Errors:  ve,
-		})
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
 		return
 	}
 
-	user, token, err := r.as.Login(req)
+	resuser, thead, err := r.sauth.Signin(req, ctx)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-			Message: "Something went wrong",
-			Debug:   err,
-			Errors:  err.Error(),
-		})
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
 		return
 	}
 
-	res := responses.AuthResponse{
-		ID:                 user.ID,
-		FullName:           user.FullName,
-		Email:              user.Email,
-		Role:               user.Role,
-		ConfirmationSentAt: user.ConfirmationSentAt,
-		ConfirmedAt:        user.ConfirmedAt,
-		CreatedAt:          user.CreatedAt,
-		UpdatedAt:          user.UpdatedAt,
-		Token:              token.AuthToken,
-		Expires:            token.AuthTokenExpires,
-	}
-
-	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
-		Message: "Login Successful",
-		Data:    res,
-		Header:  *token,
-	})
+	resauth := thead.ToAuthResponse(*resuser)
+	utresponse.GeneralSuccessAuth(
+		function,
+		ctx,
+		resauth,
+		thead,
+	)
 }
 
-func (r *authRoutes) register(ctx *gin.Context) {
-	var req requests.RegisterRequest
+func (r *authroutes) forgotPassword(
+	ctx *gin.Context,
+) {
+	var (
+		function = "forgot password"
+		req      requests.ForgotPassword
+	)
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		ve := utils.ValidationResponse(err)
-
-		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
-			Message: "Invalid request",
-			Debug:   err,
-			Errors:  ve,
-		})
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
 		return
 	}
 
-	user, token, err := r.as.Register(req)
+	err = r.sauth.ForgotPassword(req)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-			Message: "Something went wrong while registering",
-			Debug:   err,
-			Errors:  err.Error(),
-		})
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
 		return
 	}
 
-	res := responses.AuthResponse{
-		ID:                 user.ID,
-		FullName:           user.FullName,
-		Email:              user.Email,
-		Role:               user.Role,
-		ConfirmationSentAt: user.ConfirmationSentAt,
-		ConfirmedAt:        user.ConfirmedAt,
-		CreatedAt:          user.CreatedAt,
-		UpdatedAt:          user.UpdatedAt,
-		Token:              token.AuthToken,
-		Expires:            token.AuthTokenExpires,
-	}
-
-	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
-		Message: "Register Successful",
-		Data:    res,
-		Header:  *token,
-	})
+	utresponse.GeneralSuccess(
+		function,
+		ctx,
+		nil,
+	)
 }
 
-func (r *authRoutes) sendVerifyEmail(ctx *gin.Context) {
-	ctxUser, exists := ctx.Get("user")
-	if !exists {
-		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
-			Message: "Error getting user",
-			Debug:   nil,
-			Errors:  utils.ErrUserNotFound,
-		})
-		return
-	}
-
-	loggedInUser, ok := ctxUser.(responses.UserResponse)
-	if !ok {
-		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
-			Message: "Error getting user",
-			Debug:   nil,
-			Errors:  utils.ErrUserIDNotFound,
-		})
-		return
-	}
-
-	token := utils.GenerateRandomToken()
-	err := r.as.SendVerificationEmail(loggedInUser.ID, token)
-	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusNotFound, utils.ErrorRes{
-			Message: "Error sending verification email",
-			Debug:   err,
-			Errors:  err.Error(),
-		})
-		return
-	}
-
-	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
-		Message: "Send Verification Email Successful",
-		Data:    nil,
-	})
-}
-
-func (r *authRoutes) verifyToken(ctx *gin.Context) {
-	var req requests.VerifyTokenRequest
+func (r *authroutes) resetPassword(
+	ctx *gin.Context,
+) {
+	var (
+		function = "reset password"
+		req      requests.ResetPassword
+	)
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
-			Message: "Invalid request",
-			Debug:   err,
-			Errors:  err.Error(),
-		})
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
 		return
 	}
 
-	err = r.as.VerifyToken(req)
+	err = r.sauth.ResetPassword(req)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
-			Message: "Cannot verify token",
-			Debug:   err,
-			Errors:  err.Error(),
-		})
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
 		return
 	}
 
-	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
-		Message: "Verification successful",
-		Data:    nil,
-	})
+	utresponse.GeneralSuccess(
+		function,
+		ctx,
+		nil,
+	)
 }
 
-func (r *authRoutes) forgotPassword(ctx *gin.Context) {
-	var req requests.ForgotPasswordRequest
+func (r *authroutes) refreshAuthToken(
+	ctx *gin.Context,
+) {
+	var (
+		function = "refresh token"
+	)
+
+	trefresh, err := ctx.Cookie("refresh-token")
+	if trefresh == "" || err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			consttypes.ErrTokenNotFound,
+		)
+		return
+	}
+
+	resuser, thead, err := r.sauth.RefreshAuthToken(trefresh, ctx)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	resauth := thead.ToAuthResponse(*resuser)
+
+	utresponse.GeneralSuccessAuth(
+		function,
+		ctx,
+		resauth,
+		thead,
+	)
+}
+
+func (r *authroutes) verifyToken(ctx *gin.Context) {
+	var (
+		function = "verify token"
+		req      requests.VerifyToken
+	)
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
-			Message: "Invalid request",
-			Debug:   err,
-			Errors:  err.Error(),
-		})
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
 		return
 	}
 
-	err = r.as.ForgotPassword(req)
+	resuser, theader, err := r.sauth.VerifyToken(req, ctx)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
-			Message: "Something went wrong",
-			Debug:   err,
-			Errors:  err.Error(),
-		})
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			nil,
+			err,
+		)
 		return
 	}
 
-	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
-		Message: "Successfully requested to forgot password",
-		Data:    nil,
-	})
+	resauth := theader.ToAuthResponse(*resuser)
+	utresponse.GeneralSuccessAuth(
+		function,
+		ctx,
+		resauth,
+		theader,
+	)
 }
 
-func (r *authRoutes) resetPassword(ctx *gin.Context) {
-	var req requests.ResetPasswordRequest
+func (r *authroutes) sendVerifyEmail(ctx *gin.Context) {
+	var (
+		function = "send verify email"
+	)
 
-	err := ctx.ShouldBindJSON(&req)
+	user, err := uttoken.GetUser(ctx)
 	if err != nil {
-		ve := utils.ValidationResponse(err)
-
-		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
-			Message: "Invalid request",
-			Debug:   err,
-			Errors:  ve,
-		})
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
 		return
 	}
 
-	err = r.as.ResetPassword(req)
+	err = r.sauth.SendVerificationEmail(user.ID)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusBadRequest, utils.ErrorRes{
-			Message: "Something went wrong",
-			Debug:   err,
-			Errors:  err.Error(),
-		})
+		var (
+			entity = "user"
+		)
+		utresponse.GeneralNotFound(
+			entity,
+			ctx,
+			consttypes.ErrUserNotFound,
+		)
 		return
 	}
 
-	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
-		Message: "Your password has been successfully changed",
-		Data:    nil,
-	})
+	utresponse.GeneralSuccess(
+		function,
+		ctx,
+		nil,
+	)
 }
 
-func (r *authRoutes) refreshAuthToken(ctx *gin.Context) {
-	refreshToken := ctx.Request.Header.Get("Refresh-Token")
+func (r *authroutes) signout(ctx *gin.Context) {
+	var (
+		function = "signout"
+	)
 
-	if refreshToken == "" {
-		utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-			Message: "Something went wrong",
-			Debug:   nil,
-			Errors:  "No Refresh token detected",
-		})
-		return
-	}
-
-	user, token, err := r.as.RefreshAuthToken(refreshToken)
+	taccess, trefresh, err := uttoken.GetToken(ctx)
 	if err != nil {
-		utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-			Message: "Something went wrong",
-			Debug:   err,
-			Errors:  err.Error(),
-		})
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
 		return
 	}
 
-	res := responses.AuthResponse{
-		ID:          user.ID,
-		FullName:    user.FullName,
-		Email:       user.Email,
-		Role:        user.Role,
-		ConfirmedAt: user.ConfirmedAt,
-		CreatedAt:   user.CreatedAt,
-		UpdatedAt:   user.UpdatedAt,
-		Token:       token.AuthToken,
-		Expires:     token.AuthTokenExpires,
+	if taccess == "" || trefresh == "" {
+		var (
+			entity = "token"
+		)
+		utresponse.GeneralNotFound(
+			entity,
+			ctx,
+			consttypes.ErrTokenNotFound,
+		)
+		return
 	}
 
-	utils.SuccessResponse(ctx, http.StatusOK, utils.SuccessRes{
-		Message: "Refresh Token Successful",
-		Data:    res,
-		Header:  *token,
-	})
+	taccessparsed, err := uttoken.ParseToken(taccess, r.cfg.JWT.JWTAccessToken.PublicKey)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	trefreshparsed, err := uttoken.ParseToken(trefresh, r.cfg.JWT.JWTRefreshToken.PublicKey)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	// * delete access token from Redis
+	if err = r.rdb.Del(ctx, taccessparsed.TokenUUID.String()).Err(); err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	// * delete refresh token from Redis
+	if err = r.rdb.Del(ctx, trefreshparsed.TokenUUID.String()).Err(); err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	uttoken.DeleteToken(ctx)
+
+	utresponse.GeneralSuccess(
+		function,
+		ctx,
+		nil,
+	)
 }

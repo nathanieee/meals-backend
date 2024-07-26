@@ -1,85 +1,88 @@
 package middlewares
 
 import (
-	"errors"
-	"net/http"
 	"project-skbackend/configs"
-	"project-skbackend/packages/utils"
+	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utrequest"
+	"project-skbackend/packages/utils/utresponse"
+	"project-skbackend/packages/utils/uttoken"
+	"slices"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/exp/slices"
 )
 
 func extractToken(c *gin.Context) (string, error) {
-	bearerToken := c.Request.Header.Get("Authorization")
-	err := errors.New("no Authorization token detected")
-
-	// Apple already reserved header for Authorization
-	// https://developer.apple.com/documentation/foundation/nsurlrequest
-	if bearerToken == "" {
-		bearerToken = c.Request.Header.Get("X-Authorization")
+	tbearer := c.Request.Header.Get("Authorization")
+	if tbearer == "" {
+		tbearer = c.Request.Header.Get("X-Authorization")
 	}
 
-	if len(strings.Split(bearerToken, " ")) == 2 {
-		bearerToken = strings.Split(bearerToken, " ")[1]
+	if tbearer == "" {
+		return "", consttypes.ErrTokenNotFound
 	}
 
-	if bearerToken == "" {
+	splitToken := strings.Split(tbearer, " ")
+	if len(splitToken) != 2 {
+		return "", consttypes.ErrTokenInvalidFormat
+	}
+
+	tbearer = splitToken[1]
+
+	taccess, err := c.Cookie("access_token")
+	if err != nil {
 		return "", err
+	} else if taccess == "" {
+		return "", consttypes.ErrUserNotSignedIn
 	}
 
-	return bearerToken, nil
+	return tbearer, nil
 }
 
-func JWTAuthMiddleware(cfg *configs.Config, allowedLevel ...uint) gin.HandlerFunc {
+func JWTAuthMiddleware(cfg *configs.Config, allowedlevel ...consttypes.UserRole) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		extractedToken, err := extractToken(ctx)
+		textract, err := extractToken(ctx)
 		if err != nil {
-			utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-				Message: "Invalid token",
-				Debug:   err,
-				Errors:  err.Error(),
-			})
+			utresponse.GeneralUnauthorized(
+				ctx,
+				err,
+			)
 			ctx.Abort()
 			return
 		}
 
-		parsedToken, err := utils.ParseToken(extractedToken, cfg.App.Secret)
+		tparsed, err := uttoken.ParseToken(textract, cfg.JWT.JWTAccessToken.PublicKey)
 		if err != nil {
-			utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-				Message: "Invalid token",
-				Debug:   err,
-				Errors:  err.Error(),
-			})
+			utresponse.GeneralUnauthorized(
+				ctx,
+				err,
+			)
 			ctx.Abort()
 			return
 		}
 
-		if !slices.Contains(allowedLevel, uint(parsedToken.User.Role)) || (time.Now().Unix() >= parsedToken.Expire) {
-			utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-				Message: "Invalid token",
-				Debug:   nil,
-				Errors:  "You're not authorized to access this",
-			})
+		if !slices.Contains(allowedlevel, tparsed.User.Role) || (consttypes.TimeNow().Unix() >= tparsed.Expires.Unix()) {
+			utresponse.GeneralUnauthorized(
+				ctx,
+				consttypes.ErrUnauthorized,
+			)
 			ctx.Abort()
 			return
 		}
 
-		if !utils.CheckWhitelistUrl(ctx.Request.URL.Path) {
-			if parsedToken.User.ConfirmedAt == (time.Time{}) && !strings.Contains(ctx.Request.URL.Path, "verify") {
-				utils.ErrorResponse(ctx, http.StatusUnauthorized, utils.ErrorRes{
-					Message: "Invalid token",
-					Debug:   nil,
-					Errors:  "This account is not verified",
-				})
+		if !utrequest.CheckWhitelistUrl(ctx.Request.URL.Path) {
+			if tparsed.User.ConfirmedAt.IsZero() && !strings.Contains(ctx.Request.URL.Path, "verify") {
+				utresponse.GeneralUnauthorized(
+					ctx,
+					consttypes.ErrAccountIsNotVerified,
+				)
 				ctx.Abort()
 				return
 			}
 		}
 
-		ctx.Set("user", *parsedToken.User)
+		ctx.Set("user", *tparsed.User)
+		ctx.Set("access_token_uuid", tparsed.TokenUUID.String())
 		ctx.Next()
 	}
 }

@@ -1,11 +1,17 @@
-clean:
-	docker-compose -f docker-compose.yaml down -v
+DOCKER_COMPOSE := docker-compose
+DOCKER_EXEC := docker exec
+APP_CONTAINER := meals-go
+ENV_FILE := .env
+
+ifndef ENV_EXISTS
+$(shell if [ ! -f $(ENV_FILE) ]; then cp example.env $(ENV_FILE); fi)
+endif
+
+.PHONY: dev
 
 dev:
-	if [ ! -f .env ]; then cp .env.example .env; fi;
-	docker-compose -f docker-compose.yaml up --build
+	$(DOCKER_COMPOSE) down --volumes --remove-orphans
+	$(DOCKER_COMPOSE) up --build
 
-restart:
-	docker-compose -f docker-compose.yaml down -v
-	if [ ! -f .env ]; then cp .env.example .env; fi;	
-	docker-compose -f docker-compose.yaml up --build
+generate-mockery:
+	$(DOCKER_EXEC) -it $(APP_CONTAINER) /bin/sh -c "mockery --all"

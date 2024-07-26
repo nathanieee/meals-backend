@@ -7,10 +7,11 @@ import (
 	"project-skbackend/internal/middlewares"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
-func NewRouter(ge *gin.Engine, db *gorm.DB, cfg *configs.Config, di *di.DependencyInjection) {
+func NewRouter(ge *gin.Engine, db *gorm.DB, cfg *configs.Config, di *di.DependencyInjection, rdb *redis.Client) {
 	ge.Use(gin.Logger())
 	ge.Use(gin.Recovery())
 	ge.Use(middlewares.CORSMiddleware())
@@ -21,7 +22,11 @@ func NewRouter(ge *gin.Engine, db *gorm.DB, cfg *configs.Config, di *di.Dependen
 
 	h := ge.Group("api/v1")
 	{
-		newUserRoutes(h, db, cfg, di.UserService, di.MailService)
-		newAuthRoutes(h, cfg, di.AuthService)
+		newAuthRoutes(h, cfg, rdb, di.AuthService, di.UserService)
+		newMemberRoutes(h, cfg, di.MemberService, di.CartService, di.UserService, di.AuthService, di.OrderService)
+		newPartnerRoutes(h, cfg, di.AuthService, di.PartnerService)
+		newManageRoutes(h, cfg, di.MealService, di.MemberService, di.PartnerService, di.PatronService, di.IllnessService)
+		newPatronRoutes(h, cfg, di.AuthService, di.PatronService)
+		newOrganizationRoutes(h, cfg, di.AuthService, di.OrganizationService)
 	}
 }

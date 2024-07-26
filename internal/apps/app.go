@@ -1,53 +1,60 @@
 package apps
 
 import (
-	"fmt"
+	"context"
 	"os"
 	"os/signal"
 	"project-skbackend/configs"
 	v1 "project-skbackend/internal/controllers/http/v1"
 	"project-skbackend/internal/di"
 	"project-skbackend/packages/servers"
+	"project-skbackend/packages/utils/utlogger"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 func Run(cfg *configs.Config) {
-	db, err := gorm.Open(postgres.Open(cfg.DB.GetDbConnectionUrl()))
+	// * setup context
+	ctx := context.Background()
+
+	// * init config
+	i := configs.NewInitConfig(ctx, *cfg)
+	i, err := i.InitConfig()
 	if err != nil {
-		fmt.Errorf("app - Run - postgres: %w", err)
+		utlogger.Fatal(err)
 	}
 
-	err = cfg.DB.AutoMigrate(db)
-	if err != nil {
-		fmt.Errorf("app - Run - migrate: %w", err)
-	}
+	// * close the init after finished
+	defer i.Close()
 
-	err = cfg.DB.AutoSeed(db)
-	if err != nil {
-		fmt.Errorf("app - Run - seed: %w", err)
-	}
+	// * setup new dependency injection
+	di := di.NewDependencyInjection(i.GormDB, i.Channel, cfg, i.RedisDB, ctx)
 
-	di := di.NewDependencyInjection(db, cfg)
+	// * setup consumer
+	di.InitServices()
+
+	var forever chan struct{}
+
+	// * HTTP Server
 	handler := gin.New()
-	v1.NewRouter(handler, db, cfg, di)
-	httpServer := servers.NewServer(handler, servers.Port(cfg.HTTP.Port))
+	v1.NewRouter(handler, i.GormDB, cfg, di, i.RedisDB)
+	server := servers.NewServer(handler, servers.Port(cfg.HTTP.Port))
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	select {
 	case s := <-interrupt:
-		fmt.Printf("app run: %s", s.String())
-	case err := <-httpServer.Notify():
-		fmt.Errorf("%w", err)
+		utlogger.Info("app run: " + s.String())
+	case err := <-server.Notify():
+		utlogger.Fatal(err)
 	}
 
-	err = httpServer.Shutdown()
+	err = server.Shutdown()
 	if err != nil {
-		fmt.Errorf("%w", err)
+		utlogger.Fatal(err)
 	}
+
+	<-forever
 }

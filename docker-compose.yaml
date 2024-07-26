@@ -1,39 +1,93 @@
-version: "3.9"
+version: "3.8"
 
 networks:
-  skbackend_network:
-    name: skbackend_network
+  meals-network:
+    name: meals-network
 
 services:
-  skbackend_db:
-    container_name: skbackend_pg_container
+  meals-pg:
+    container_name: meals-pg
     image: postgres:13-alpine
     ports:
-      - "${DB_PORT}:5432"
+      - "${DB_PORT:-5432}:5432"
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER:-root}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
+      - POSTGRES_DB=${DB_NAME:-meals-pg}
+      - TZ=${DB_TIMEZONE:-"Asia/Makassar"}
+      - PGTZ=${DB_TIMEZONE:-"Asia/Makassar"}
     volumes:
-      - skbackend_pg_volume:/var/lib/postgresql/data/
+      - meals-pg-volume:/var/lib/postgresql/data/
     networks:
-      - skbackend_network
+      - meals-network
     restart: always
 
-  skbackend_server:
-    container_name: skbackend_go_container
+  meals-go:
+    container_name: meals-go
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "${HTTP_PORT}:${HTTP_PORT}"
+      - "${HTTP_PORT:-8000}:${HTTP_PORT:-8000}"
+      - "2345:2345"
     networks:
-      - skbackend_network
+      - meals-network
     depends_on:
-      - skbackend_db
+      - meals-pg
+      - meals-redis
+      - meals-rabbit
     volumes:
-      - .:/app:rw,cached
+      - .:/app:rw,delegated
     restart: always
 
+  meals-redis:
+    container_name: meals-redis
+    image: redis:alpine
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - meals-redis-volume:/data
+    networks:
+      - meals-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  meals-rabbit:
+    container_name: "meals-rabbit"
+    image: "rabbitmq:alpine"
+    ports:
+      - "5672:5672"  # RabbitMQ default port
+      - "15672:15672"  # RabbitMQ Management UI port
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "secretcookie"  # Change this to a secure value
+    volumes:
+      - meals-rabbit-volume:/var/lib/rabbitmq
+    networks:
+      - meals-network
+    healthcheck:
+      test: "rabbitmq-diagnostics -q ping"
+      interval: 10s  # Adjust as needed
+      timeout: 10s   # Adjust as needed
+      retries: 3     # Adjust as needed
+
+  meals-ls:
+    container_name: "meals-ls"
+    image: localstack/localstack
+    ports:
+      - "${LOCALSTACK_PORT:-4566}:4566"            # LocalStack Gateway
+      - "4510-4559:4510-4559"  # external services port range
+    environment:
+      - DEBUG=${LOCALSTACK_DEBUG:-0} # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
+    volumes:
+      - "meals-ls-volume:/var/lib/localstack"
+      - "meals-ls-volume:/var/run/docker.sock:/var/run/docker.sock"
+
 volumes:
-  skbackend_pg_volume:
+  meals-pg-volume:
+  meals-redis-volume:
+  meals-ls-volume:
+  meals-rabbit-volume:
+    driver: local

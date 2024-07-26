@@ -1,25 +1,44 @@
 package requests
 
-import (
-	"encoding/json"
-	"fmt"
-)
-
 type (
-	SendEmailRequest struct {
-		Template string `validate:"required,oneof=email_veification.html"`
-		Subject  string `validate:"required"`
-		Name     string
-		Email    string `validate:"required,email"`
-		Token    int
+	SendEmail struct {
+		Template string         `validate:"required"`
+		Subject  string         `validate:"required"`
+		Email    string         `validate:"required"`
+		Data     map[string]any `validate:"required"`
+	}
+
+	SendEmailResetPassword struct {
+		Name    string `validate:"required"`
+		Email   string `validate:"required,email"`
+		LinkUrl string `validate:"required"`
+	}
+
+	SendEmailInvitation struct {
+		EmailInviter     string `validate:"required,email"`
+		EmailInvitee     string `validate:"required,email"`
+		OrganizationName string `validate:"required"`
+		DepartmentName   string `validate:"required"`
+		LinkUrl          string `validate:"required"`
+	}
+
+	SendEmailSurveyResult struct {
+		Name    string `validate:"required"`
+		Email   string `validate:"required,email"`
+		LinkUrl string `validate:"required"`
+	}
+
+	SendEmailVerification struct {
+		Name  string `validate:"required"`
+		Email string `validate:"required,email"`
+		Token string `validate:"required"`
 	}
 )
 
-func (s SendEmailRequest) ToString() string {
-	b, err := json.Marshal(s)
-	if err != nil {
-		fmt.Printf("Error: %s", err)
-		return ""
+func NewVerifyEmailRequest(name, email, token string) *SendEmailVerification {
+	return &SendEmailVerification{
+		Name:  name,
+		Email: email,
+		Token: token,
 	}
-	return string(b)
 }

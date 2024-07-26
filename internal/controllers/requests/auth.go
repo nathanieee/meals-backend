@@ -1,34 +1,56 @@
 package requests
 
+import (
+	"project-skbackend/internal/models"
+	"project-skbackend/packages/utils/utlogger"
+	"project-skbackend/packages/utils/utstring"
+
+	"github.com/jinzhu/copier"
+)
+
 type (
-	LoginRequest struct {
-		Email    string `json:"email" binding:"required,email" example:"email@email.com"`
-		Password string `json:"password" binding:"required" example:"password123"`
+	Signin struct {
+		Email    string `json:"email" form:"email" binding:"required,email"`
+		Password string `json:"password" form:"password" binding:"required"`
 	}
 
-	RegisterRequest struct {
-		FullName string `json:"fullName" binding:"required" example:"Full Name"`
-		Email    string `json:"email" binding:"required,email" example:"email@email.com"`
-		Password string `json:"password" binding:"required" example:"password123"`
+	VerifyToken struct {
+		Token string `json:"token" form:"token" binding:"required"`
+		Email string `json:"email" form:"email" binding:"required;email"`
 	}
 
-	VerifyTokenRequest struct {
-		Token int    `json:"token" binding:"required,number" example:""`
-		Email string `json:"email" binding:"required,email"`
+	ForgotPassword struct {
+		Email string `json:"email" form:"email" binding:"required,email"`
 	}
 
-	ForgotPasswordRequest struct {
-		Email string `json:"email" binding:"required,email"`
+	ResetPassword struct {
+		Email           string `json:"email" form:"email" binding:"required,email"`
+		Password        string `json:"password" form:"password" binding:"required"`
+		ConfirmPassword string `json:"confirm_password" form:"confirm_password" binding:"required,eqfield=Password"`
+		Token           string `json:"token" form:"token" binding:"required"`
 	}
 
-	ResetPasswordRequest struct {
-		Email           string `json:"email" binding:"required,email"`
-		Password        string `json:"password" binding:"required"`
-		ConfirmPassword string `json:"confirmPassword" binding:"required,eqfield=Password"`
-		Token           string `json:"token" binding:"required"`
-	}
-
-	ResetPasswordRedirectRequest struct {
+	ResetPasswordRedirect struct {
 		ResetToken string `uri:"token" binding:"required"`
 	}
 )
+
+func (r *ResetPassword) ToUserModel(
+	u models.User,
+) (*models.User, error) {
+	hashpass, err := utstring.HashPassword(r.Password)
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	if err := copier.CopyWithOption(&u, &r, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	u.Password = hashpass
+	u.ResetPasswordToken = ""
+
+	return &u, nil
+}
