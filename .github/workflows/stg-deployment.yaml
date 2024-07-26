@@ -2,7 +2,7 @@ name: Deployment to staging
 
 on:
   workflow_run:
-    workflows: ["Build and test"]
+    workflows: [Build and test]
     types:
       - completed
 
