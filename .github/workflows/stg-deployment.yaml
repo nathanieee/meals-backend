@@ -34,7 +34,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ env.DOCKER_IMAGE_NAME }}
+          tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
 
       - name: Remote Access to Droplets
         uses: appleboy/ssh-action@v1.0.3
