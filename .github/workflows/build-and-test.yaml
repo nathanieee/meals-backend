@@ -21,8 +21,6 @@ jobs:
         run: go install ./...
       - name: Build
         run: go build -v ./...
-      - name: Echo
-        run: echo "Hello, world!"
 
   test:
     name: Test
