@@ -1,0 +1,54 @@
+name: Deployment to staging
+
+on:
+  workflow_run:
+    workflows: ["Build and test"]
+    types:
+      - completed
+
+jobs:
+  build-and-deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build and Push
+        id: build-and-push
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: $DOCKER_IMAGE_NAME
+
+      - name: SSH into EC2 and deploy golang container
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script_stop: true
+          command_timeout: 200m
+          script: |
+            docker pull $DOCKER_IMAGE_NAME
+            echo "SERVER_ENV=${{ secrets.SERVER_ENV }}" > .env
+            docker stop ${{ vars.DOCKER_APP_NAME }} || true
+            docker rm ${{ vars.DOCKER_APP_NAME }} || true
+            docker run -d -p 7000:8000 \
+            --name ${{ vars.DOCKER_APP_NAME }} \
+            --env-file .env \
+            --restart always \
+            $DOCKER_IMAGE_NAME
+            sudo systemctl reload nginx
