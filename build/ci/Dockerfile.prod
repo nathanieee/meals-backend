@@ -1,15 +1,40 @@
-# Next, we embrace the powerful and versatile Debian base image 🐳
-# This choice grants us easier access to essential build utilities and a robust development environment.
-FROM golang:1.22-alpine AS build
+# Use a Go base image to build and run the application
+FROM golang:1.22-alpine
 
-WORKDIR /app 
+# Set the working directory
+WORKDIR /app
 
-COPY . .
+# Set the env for the server
+ENV GOOS="linux"
+ENV CGO_ENABLED=0
+ENV GO111MODULE="on"
 
+# Copy go.mod and go.sum and install dependencies
+COPY go.mod go.sum ./
 RUN go mod download
 
-# During this stage, we compile our application ahead of time, avoiding any runtime surprises.
-# The resulting binary, web-app-golang, will be our steadfast companion in the final leg of our journey.
-RUN go build -o web-app-golang
+# Install additional packages and tools
+RUN apk update \
+  && apk add --no-cache \
+  ca-certificates \
+  curl \
+  tzdata \
+  git \
+  && update-ca-certificates
 
-CMD ["./web-app-golang"]
+# Install Go tools and dependencies
+RUN go install github.com/air-verse/air@latest \
+  && go install github.com/go-delve/delve/cmd/dlv@latest \
+  && go install github.com/vektra/mockery/v2@latest 
+
+# Copy the rest of the application code
+COPY . .
+
+# Build the application
+RUN go build -gcflags="all=-N -l" -o /usr/local/bin/main cmd/app/main.go
+
+# Expose ports
+EXPOSE 8000
+
+# Start the Go application
+CMD ["/usr/local/bin/main"]
