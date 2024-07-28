@@ -27,10 +27,10 @@ type (
 
 func SuccessResponse(ctx *gin.Context, code int, res SuccessRes) {
 	if res.Header != (uttoken.TokenHeader{}) {
-		ctx.Header("refresh-token", res.Header.RefreshToken)
-		ctx.Header("refresh-token-expired", res.Header.RefreshTokenExpires.String())
-		ctx.Header("Authorization", "Bearer "+res.Header.AccessToken)
-		ctx.Header("expired-at", res.Header.AccessTokenExpires.String())
+		ctx.Request.Header.Set(consttypes.T_REFRESH, res.Header.RefreshToken)
+		ctx.Request.Header.Set("refresh-token-expired", res.Header.RefreshTokenExpires.String())
+		ctx.Request.Header.Set(consttypes.T_ACCESS, "Bearer "+res.Header.AccessToken)
+		ctx.Request.Header.Set("expired-at", res.Header.AccessTokenExpires.String())
 	}
 	ctx.JSON(code, res)
 }

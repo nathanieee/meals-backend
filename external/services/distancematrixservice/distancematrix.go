@@ -51,7 +51,7 @@ func (s *DistanceMatrixService) GetGeocoding(loc exrequests.Geolocation) (*exres
 		return nil, consttypes.ErrFailedToDeclareNewRequest
 	}
 
-	req.Header.Set("Authorization", "Bearer "+s.apikey)
+	req.Header.Set(consttypes.T_ACCESS, "Bearer "+s.apikey)
 	resp, err := s.httpclient.Do(req)
 	if err != nil {
 		utlogger.Error(err)
@@ -90,7 +90,7 @@ func (s *DistanceMatrixService) GetDistanceMatrix(dismat exrequests.DistanceMatr
 		return nil, consttypes.ErrFailedToDeclareNewRequest
 	}
 
-	req.Header.Set("Authorization", "Bearer "+s.apikey)
+	req.Header.Set(consttypes.T_ACCESS, "Bearer "+s.apikey)
 	resp, err := s.httpclient.Do(req)
 	if err != nil {
 		utlogger.Error(err)

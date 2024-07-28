@@ -13,9 +13,9 @@ import (
 )
 
 func extractToken(c *gin.Context) (string, error) {
-	tbearer := c.Request.Header.Get("Authorization")
+	tbearer := c.GetHeader("Authorization")
 	if tbearer == "" {
-		tbearer = c.Request.Header.Get("X-Authorization")
+		tbearer = c.GetHeader("X-Authorization")
 	}
 
 	if tbearer == "" {
@@ -29,7 +29,7 @@ func extractToken(c *gin.Context) (string, error) {
 
 	tbearer = splitToken[1]
 
-	taccess, err := c.Cookie("access_token")
+	taccess, err := c.Cookie(consttypes.T_ACCESS)
 	if err != nil {
 		return "", err
 	} else if taccess == "" {
