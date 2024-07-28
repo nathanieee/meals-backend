@@ -14,8 +14,6 @@ services:
       - POSTGRES_USER=${DB_USER:-root}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
       - POSTGRES_DB=${DB_NAME:-meals-pg}
-      - TZ=${DB_TIMEZONE:-"Asia/Makassar"}
-      - PGTZ=${DB_TIMEZONE:-"Asia/Makassar"}
     volumes:
       - meals-pg-volume:/var/lib/postgresql/data/
     networks:

@@ -42,6 +42,7 @@ jobs:
           command_timeout: 200m
           script: |
             docker pull ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+            rm -rf .env
             echo "SERVER_ENV=${{ secrets.SERVER_ENV }}" > .env
             docker stop ${{ vars.DOCKER_APP_NAME }} || true
             docker rm ${{ vars.DOCKER_APP_NAME }} || true
