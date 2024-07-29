@@ -241,7 +241,7 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 	// * setting the access token into redis
 	err = s.rdb.Set(ctx, taccess.TokenUUID.String(), user.ID, time.Unix(taccess.Expires.Unix(), 0).Sub(now)).Err()
 	if err != nil {
-		return nil, consttypes.ErrFailedToSetCache
+		fmt.Println("failed to set cache: ", err)
 	}
 
 	// * setting the cookie for access token
@@ -261,7 +261,7 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 	// * setting the refresh token into redis
 	err = s.rdb.Set(ctx, trefresh.TokenUUID.String(), user.ID, time.Unix(trefresh.Expires.Unix(), 0).Sub(now)).Err()
 	if err != nil {
-		return nil, consttypes.ErrFailedToSetCache
+		fmt.Println("failed to set cache: ", err)
 	}
 
 	// * setting the cookie for refresh token
