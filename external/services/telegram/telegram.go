@@ -25,9 +25,9 @@ type (
 
 func NewTelegramService() *TelegramService {
 	return &TelegramService{
-		apikey:   "bot7046722853:AAGvIquvtNmR8Ttaq7kfZnDb9Zn5D6dQui4",
-		url:      "https://api.telegram.org",
-		tochatid: "6390863276",
+		apikey:   "testing",
+		url:      "testing",
+		tochatid: "testing",
 
 		httpclient: &http.Client{
 			Timeout: time.Second * time.Duration(30), // Example: Timeout after 10 seconds
