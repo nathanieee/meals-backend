@@ -30,6 +30,7 @@ type (
 		Localstack
 		Queue
 		DistanceMatrix
+		Telegram
 	}
 
 	API struct {
@@ -172,6 +173,13 @@ type (
 		Timeout int    `env:"DISTANCE_MATRIX_TIMEOUT" env-default:"10"`
 		APIKey  string `env:"DISTANCE_MATRIX_API_KEY"`
 		BaseURL string `env:"DISTANCE_MATRIX_BASE_URL"`
+	}
+
+	Telegram struct {
+		APIKey   string `env:"TG_API_KEY"`
+		BaseURL  string `env:"TG_BASE_URL"`
+		ToChatID string `env:"TG_TO_CHAT_ID"`
+		Timeout  int    `env:"TG_TIMEOUT" env-default:"30"`
 	}
 )
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"project-skbackend/packages/utils/uttelegram"
 	"runtime"
 )
 
@@ -15,7 +16,13 @@ func Error(errs ...error) {
 			frames := runtime.CallersFrames(pc[:n])
 			frame, _ := frames.Next()
 
-			fmt.Printf("\nError occurred at: %s:%d\nError: %s\n\n", frame.File, frame.Line, err.Error())
+			// * wrap the error in a custom error
+			err = fmt.Errorf("Error occurred at: %s:%d, Error: %s", frame.File, frame.Line, err.Error())
+			fmt.Println(err)
+
+			// * wrap the message in the json format to be sent to telegram
+			msg, _ := json.MarshalIndent(err.Error(), "", "\t")
+			uttelegram.SendMessage(string(msg))
 		}
 	}
 }

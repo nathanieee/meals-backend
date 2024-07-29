@@ -3,7 +3,6 @@ package consttypes
 import (
 	"fmt"
 	"os"
-	"project-skbackend/packages/utils/utlogger"
 	"strconv"
 )
 
@@ -16,7 +15,6 @@ func GetResetPasswordCooldown() int {
 
 	rpcint, err := strconv.Atoi(rpc)
 	if err != nil {
-		utlogger.Error(err)
 		return 5
 	}
 

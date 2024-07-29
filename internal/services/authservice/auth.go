@@ -74,7 +74,7 @@ func (s *AuthService) Signin(req requests.Signin, ctx *gin.Context) (*responses.
 
 	thead, err := s.generateAuthTokens(user, ctx)
 	if err != nil {
-		return nil, nil, consttypes.ErrFailedToGenerateToken
+		return nil, nil, err
 	}
 
 	userres, err := user.ToResponse()
