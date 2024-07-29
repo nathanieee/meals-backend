@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"project-skbackend/packages/consttypes"
+	"strconv"
 	"sync"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type (
@@ -24,13 +28,18 @@ type (
 )
 
 func NewTelegramService() *TelegramService {
+	godotenv.Load()
+
+	timeout := os.Getenv("TG_TIMEOUT")
+	timeoutint, _ := strconv.Atoi(timeout)
+
 	return &TelegramService{
-		apikey:   "testing",
-		url:      "testing",
-		tochatid: "testing",
+		apikey:   os.Getenv("TG_API_KEY"),
+		url:      os.Getenv("TG_BASE_URL"),
+		tochatid: os.Getenv("TG_TO_CHAT_ID"),
 
 		httpclient: &http.Client{
-			Timeout: time.Second * time.Duration(30), // Example: Timeout after 10 seconds
+			Timeout: time.Second * time.Duration(timeoutint), // Example: Timeout after 10 seconds
 		},
 	}
 }

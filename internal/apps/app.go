@@ -12,19 +12,15 @@ import (
 	"syscall"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func Run(cfg *configs.Config) {
-	// * setup godotenv for getting os.GetEnv
-	err := godotenv.Load()
-
 	// * setup context
 	ctx := context.Background()
 
 	// * init config
 	i := configs.NewInitConfig(ctx, *cfg)
-	i, err = i.InitConfig()
+	i, err := i.InitConfig()
 	if err != nil {
 		utlogger.Fatal(err)
 	}
