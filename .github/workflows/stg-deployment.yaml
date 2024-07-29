@@ -46,7 +46,7 @@ jobs:
             echo "SERVER_ENV=${{ secrets.SERVER_ENV }}" > .env
             docker stop ${{ vars.DOCKER_APP_NAME }} || true
             docker rm ${{ vars.DOCKER_APP_NAME }} || true
-            docker run -d -p 7000:8000 \
+            docker run -d -p 7000:7000 \
             --name ${{ vars.DOCKER_APP_NAME }} \
             --env-file .env \
             --restart always \
