@@ -12,8 +12,8 @@ endif
 .PHONY: local
 
 local:
-	$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE_LOCAL) down --volumes --remove-orphans
-	$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE_LOCAL) up --build
+	$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE_LOCAL) --env-file ./.env down --volumes --remove-orphans
+	$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE_LOCAL) --env-file ./.env up --build
 
 prod:
 	$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE_PROD) down --volumes --remove-orphans

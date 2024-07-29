@@ -3,10 +3,10 @@ package uttoken
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -161,8 +161,8 @@ func ParseToken(token string, pubkey string) (*Token, error) {
 }
 
 func GetToken(ctx *gin.Context) (string, string, error) {
-	taccess := ctx.Request.Header.Get("Authorization")
-	if taccess == "" {
+	taccess, err := ctx.Cookie(consttypes.T_ACCESS)
+	if taccess == "" || err != nil {
 		taccess = ctx.Request.Header.Get("X-Authorization")
 	}
 
@@ -170,15 +170,8 @@ func GetToken(ctx *gin.Context) (string, string, error) {
 		return "", "", fmt.Errorf("access token not found")
 	}
 
-	splitToken := strings.Split(taccess, " ")
-	if len(splitToken) != 2 {
-		return "", "", fmt.Errorf("invalid access token")
-	}
-
-	taccess = splitToken[1]
-
-	trefresh := ctx.Request.Header.Get("Refresh-Token")
-	if trefresh == "" {
+	trefresh, err := ctx.Cookie(consttypes.T_REFRESH)
+	if trefresh == "" || err != nil {
 		return "", "", fmt.Errorf("refresh token not found")
 	}
 
@@ -186,8 +179,34 @@ func GetToken(ctx *gin.Context) (string, string, error) {
 }
 
 func DeleteToken(ctx *gin.Context) {
-	ctx.Request.Header.Del("Refresh-Token")
-	ctx.Request.Header.Del("Authorization")
+	var (
+		apiurl = os.Getenv("API_URL")
+	)
+
+	// * setting the cookie for access token
+	ctx.SetCookie(
+		consttypes.T_ACCESS,
+		"",
+		-1,
+		"/",
+		apiurl,
+		false,
+		true,
+	)
+
+	// * setting the cookie for refresh token
+	ctx.SetCookie(
+		consttypes.T_REFRESH,
+		"",
+		-1,
+		"/",
+		apiurl,
+		false,
+		true,
+	)
+
+	ctx.Request.Header.Del(consttypes.T_REFRESH)
+	ctx.Request.Header.Del(consttypes.T_ACCESS)
 }
 
 func GetUser(ctx *gin.Context) (*responses.User, error) {

@@ -185,35 +185,6 @@ func (s *AuthService) RefreshAuthToken(trefresh string, ctx *gin.Context) (*resp
 		return nil, nil, consttypes.ErrConvertFailed
 	}
 
-	taccess, err := uttoken.
-		GenerateToken(
-			userres,
-			s.cfg.JWT.JWTAccessToken.Life,
-			s.cfg.JWT.TimeUnit,
-			s.cfg.JWT.JWTAccessToken.PrivateKey,
-		)
-
-	if err != nil {
-		return nil, nil, consttypes.ErrFailedToGenerateToken
-	}
-
-	// * setting the access token into redis
-	err = s.rdb.Set(ctx, taccess.TokenUUID.String(), user.ID, time.Unix(taccess.Expires.Unix(), 0).Sub(now)).Err()
-	if err != nil {
-		return nil, nil, consttypes.ErrFailedToSetCache
-	}
-
-	// * setting the cookie for access token
-	ctx.SetCookie(
-		"access_token",
-		*taccess.Token,
-		int(taccess.Expires.Unix()),
-		"/",
-		s.cfg.API.URL,
-		false,
-		true,
-	)
-
 	theader, err := s.generateAuthTokens(user, ctx)
 	if err != nil {
 		return nil, nil, consttypes.ErrFailedToGenerateToken
@@ -264,6 +235,9 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 
 	theader := uttoken.NewTokenHeader(*taccess, *trefresh)
 
+	// * setting the access token into header
+	ctx.Header(consttypes.T_ACCESS, *taccess.Token)
+
 	// * setting the access token into redis
 	err = s.rdb.Set(ctx, taccess.TokenUUID.String(), user.ID, time.Unix(taccess.Expires.Unix(), 0).Sub(now)).Err()
 	if err != nil {
@@ -272,7 +246,7 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 
 	// * setting the cookie for access token
 	ctx.SetCookie(
-		"access_token",
+		consttypes.T_ACCESS,
 		*taccess.Token,
 		int(taccess.Expires.Unix()),
 		"/",
@@ -280,6 +254,9 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 		false,
 		true,
 	)
+
+	// * setting the refresh token into header
+	ctx.Header(consttypes.T_REFRESH, *trefresh.Token)
 
 	// * setting the refresh token into redis
 	err = s.rdb.Set(ctx, trefresh.TokenUUID.String(), user.ID, time.Unix(trefresh.Expires.Unix(), 0).Sub(now)).Err()
@@ -289,7 +266,7 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 
 	// * setting the cookie for refresh token
 	ctx.SetCookie(
-		"refresh-token",
+		consttypes.T_REFRESH,
 		*trefresh.Token,
 		int(trefresh.Expires.Unix()),
 		"/",
