@@ -1,10 +1,9 @@
 name: Deployment to staging
 
 on:
-  workflow_run:
-    workflows: [Build and test]
-    types:
-      - completed
+  push:
+    branches:
+      - main
 
 jobs:
   build-and-deploy:
