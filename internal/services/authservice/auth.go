@@ -244,17 +244,6 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 		fmt.Println("failed to set cache: ", err)
 	}
 
-	// * setting the cookie for access token
-	ctx.SetCookie(
-		consttypes.T_ACCESS,
-		*taccess.Token,
-		int(taccess.Expires.Unix()),
-		"/",
-		s.cfg.API.URL,
-		false,
-		true,
-	)
-
 	// * setting the refresh token into header
 	ctx.Header(consttypes.T_REFRESH, *trefresh.Token)
 
@@ -263,17 +252,6 @@ func (s *AuthService) generateAuthTokens(user *models.User, ctx *gin.Context) (*
 	if err != nil {
 		fmt.Println("failed to set cache: ", err)
 	}
-
-	// * setting the cookie for refresh token
-	ctx.SetCookie(
-		consttypes.T_REFRESH,
-		*trefresh.Token,
-		int(trefresh.Expires.Unix()),
-		"/",
-		s.cfg.API.URL,
-		false,
-		true,
-	)
 
 	return theader, nil
 }

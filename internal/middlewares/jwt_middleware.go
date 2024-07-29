@@ -12,10 +12,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func extractToken(c *gin.Context) (string, error) {
-	tbearer := c.GetHeader("Authorization")
+func extractToken(ctx *gin.Context) (string, error) {
+	tbearer := ctx.GetHeader("Authorization")
 	if tbearer == "" {
-		tbearer = c.GetHeader("X-Authorization")
+		tbearer = ctx.GetHeader("X-Authorization")
 	}
 
 	if tbearer == "" {
@@ -29,10 +29,8 @@ func extractToken(c *gin.Context) (string, error) {
 
 	tbearer = splitToken[1]
 
-	taccess, err := c.Cookie(consttypes.T_ACCESS)
-	if err != nil {
-		return "", err
-	} else if taccess == "" {
+	taccess := ctx.GetHeader(consttypes.T_ACCESS)
+	if taccess == "" {
 		return "", consttypes.ErrUserNotSignedIn
 	}
 

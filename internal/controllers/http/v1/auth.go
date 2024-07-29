@@ -182,8 +182,8 @@ func (r *authroutes) refreshAuthToken(
 		function = "refresh token"
 	)
 
-	trefresh, err := ctx.Cookie(consttypes.T_REFRESH)
-	if trefresh == "" || err != nil {
+	trefresh := ctx.GetHeader(consttypes.T_REFRESH)
+	if trefresh == "" {
 		utresponse.GeneralUnauthorized(
 			ctx,
 			consttypes.ErrTokenNotFound,

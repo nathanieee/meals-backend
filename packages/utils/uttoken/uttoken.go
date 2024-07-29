@@ -3,7 +3,6 @@ package uttoken
 import (
 	"encoding/base64"
 	"fmt"
-	"os"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
@@ -161,8 +160,8 @@ func ParseToken(token string, pubkey string) (*Token, error) {
 }
 
 func GetToken(ctx *gin.Context) (string, string, error) {
-	taccess, err := ctx.Cookie(consttypes.T_ACCESS)
-	if taccess == "" || err != nil {
+	taccess := ctx.GetHeader(consttypes.T_ACCESS)
+	if taccess == "" {
 		taccess = ctx.Request.Header.Get("X-Authorization")
 	}
 
@@ -170,8 +169,8 @@ func GetToken(ctx *gin.Context) (string, string, error) {
 		return "", "", fmt.Errorf("access token not found")
 	}
 
-	trefresh, err := ctx.Cookie(consttypes.T_REFRESH)
-	if trefresh == "" || err != nil {
+	trefresh := ctx.GetHeader(consttypes.T_REFRESH)
+	if trefresh == "" {
 		return "", "", fmt.Errorf("refresh token not found")
 	}
 
@@ -179,32 +178,6 @@ func GetToken(ctx *gin.Context) (string, string, error) {
 }
 
 func DeleteToken(ctx *gin.Context) {
-	var (
-		apiurl = os.Getenv("API_URL")
-	)
-
-	// * setting the cookie for access token
-	ctx.SetCookie(
-		consttypes.T_ACCESS,
-		"",
-		-1,
-		"/",
-		apiurl,
-		false,
-		true,
-	)
-
-	// * setting the cookie for refresh token
-	ctx.SetCookie(
-		consttypes.T_REFRESH,
-		"",
-		-1,
-		"/",
-		apiurl,
-		false,
-		true,
-	)
-
 	ctx.Request.Header.Del(consttypes.T_REFRESH)
 	ctx.Request.Header.Del(consttypes.T_ACCESS)
 }
