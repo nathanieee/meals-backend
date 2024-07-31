@@ -57,7 +57,7 @@ func (r *OrganizationRepository) omit() *gorm.DB {
 func (r *OrganizationRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
-		Preload("User.Address.AddressDetail").
+		Preload("User.Addresses.AddressDetail").
 		Preload("User.Image.Image")
 }
 

@@ -204,7 +204,7 @@ func SeedAdminCredentials(db *gorm.DB) error {
 						Email:       os.Getenv("ADMIN_EMAIL"),
 						Password:    getGlobalHashedPassword(os.Getenv("ADMIN_PASSWORD")),
 						Role:        consttypes.UR_ADMIN,
-						Address: []*models.Address{
+						Addresses: []*models.Address{
 							{
 								Name:    "Indian Ocean Address",
 								Address: "Indian Ocean Address, 1st floor,",
@@ -248,7 +248,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 						Email:       "member@test.com",
 						Password:    getGlobalHashedPassword("password"),
 						Role:        consttypes.UR_MEMBER,
-						Address: []*models.Address{
+						Addresses: []*models.Address{
 							{
 								Name:    "Home Address",
 								Address: "nkotakhota wildlife reserve",
@@ -275,7 +275,7 @@ func SeedMemberCredentials(db *gorm.DB) error {
 							Email:       "caregiver@test.com",
 							Password:    getGlobalHashedPassword("password"),
 							Role:        consttypes.UR_CAREGIVER,
-							Address: []*models.Address{
+							Addresses: []*models.Address{
 								{
 									Name:    "Home Address",
 									Address: "Elm Avenue",
@@ -321,7 +321,7 @@ func SeedOrganizationCredentials(db *gorm.DB) error {
 						Email:       "organization@test.com",
 						Password:    getGlobalHashedPassword("password"),
 						Role:        consttypes.UR_ORGANIZATION,
-						Address: []*models.Address{
+						Addresses: []*models.Address{
 							{
 								Name:    "Address",
 								Address: "Cedar Lane",
@@ -367,7 +367,7 @@ func SeedPartnerCredentials(db *gorm.DB) error {
 						Email:       "partner@test.com",
 						Password:    getGlobalHashedPassword("password"),
 						Role:        consttypes.UR_PARTNER,
-						Address: []*models.Address{
+						Addresses: []*models.Address{
 							{
 								Name:    "Address",
 								Address: "Pine Road",

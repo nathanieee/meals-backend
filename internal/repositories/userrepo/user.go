@@ -54,7 +54,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 func (r *UserRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
-		Preload("Address").
+		Preload("Addresses").
 		Preload("Image.Image")
 }
 

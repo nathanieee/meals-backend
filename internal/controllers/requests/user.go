@@ -20,7 +20,7 @@ type (
 		Password        string `json:"password" form:"password" binding:"required"`
 		ConfirmPassword string `json:"confirm_password" form:"confirm_password" binding:"required,eqfield=Password"`
 
-		Address []CreateAddress `json:"addresses" form:"address" binding:"-"`
+		Addresses []CreateAddress `json:"addresses" form:"address" binding:"-"`
 	}
 
 	UpdateUser struct {
@@ -29,8 +29,6 @@ type (
 		Email           string `json:"email" form:"email" binding:"email"`
 		Password        string `json:"password" form:"password" binding:"-"`
 		ConfirmPassword string `json:"confirm_password" form:"confirm_password" binding:"required,eqfield=Password"`
-
-		Address []UpdateAddress `json:"addresses" form:"address" binding:"-"`
 	}
 )
 
@@ -56,8 +54,8 @@ func (req *CreateUser) ToModel(
 	user.Password = hash
 
 	// * reset the user address
-	user.Address = nil
-	for _, address := range req.Address {
+	user.Addresses = nil
+	for _, address := range req.Addresses {
 		adrdetail, err := utgeolocation.GetGeolocation(*address.ToDistanceMatrixGeolocation())
 		if err != nil {
 			return nil, consttypes.ErrGeolocationNotFound
@@ -67,7 +65,7 @@ func (req *CreateUser) ToModel(
 		lat := strconv.FormatFloat(adrdetail.Lat, 'f', -1, 64)
 		lng := strconv.FormatFloat(adrdetail.Lng, 'f', -1, 64)
 
-		user.Address = append(user.Address, &models.Address{
+		user.Addresses = append(user.Addresses, &models.Address{
 			Name:    address.Name,
 			Address: address.Address,
 			Note:    address.Note,
@@ -96,13 +94,6 @@ func (req *UpdateUser) ToModel(
 
 	hash, err := utstring.HashPassword(req.Password)
 	if err != nil {
-		return nil, err
-	}
-
-	if req.Email != user.Email {
-		err := consttypes.ErrCannotChangeEmail
-
-		utlogger.Error(err)
 		return nil, err
 	}
 

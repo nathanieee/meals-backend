@@ -10,8 +10,8 @@ type (
 	Address struct {
 		base.Model
 
-		UserID uuid.UUID `json:"user_id" gorm:"required"`
-		User   User      `json:"user"`
+		UserID uuid.UUID `json:"-" gorm:"required"`
+		User   User      `json:"-"`
 
 		Name    string `json:"name" gorm:"required"`
 		Address string `json:"address" gorm:"required"`

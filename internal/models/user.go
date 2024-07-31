@@ -16,7 +16,7 @@ type (
 	User struct {
 		base.Model
 
-		Address []*Address `json:"address,omitempty"`
+		Addresses []*Address `json:"addresses,omitempty"`
 
 		Image *UserImage `json:"image,omitempty"`
 

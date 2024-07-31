@@ -60,7 +60,7 @@ func (r *CaregiverRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
 		Preload("User.Image.Image").
-		Preload("User.Address.AddressDetail")
+		Preload("User.Addresses.AddressDetail")
 }
 
 func (r *CaregiverRepository) Create(cg models.Caregiver) (*models.Caregiver, error) {

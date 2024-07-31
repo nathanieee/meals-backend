@@ -56,7 +56,7 @@ func (r *PartnerRepository) omit() *gorm.DB {
 func (r *PartnerRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
-		Preload("User.Address.AddressDetail").
+		Preload("User.Addresses.AddressDetail").
 		Preload("User.Image.Image")
 }
 
@@ -100,7 +100,9 @@ func (r *PartnerRepository) Read() ([]*models.Partner, error) {
 }
 
 func (r *PartnerRepository) Update(p models.Partner) (*models.Partner, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Save(&p).Error
 
 	if err != nil {

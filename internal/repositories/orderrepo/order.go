@@ -82,15 +82,15 @@ func (r *OrderRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
 		Preload("Member.User.Image.Image").
-		Preload("Member.User.Address.AddressDetail").
+		Preload("Member.User.Addresses.AddressDetail").
 		Preload("Member.Caregiver.User.Image.Image").
-		Preload("Member.Caregiver.User.Address.AddressDetail").
+		Preload("Member.Caregiver.User.Addresses.AddressDetail").
 		Preload("Member.Organization").
 		Preload("Member.Allergies.Allergy").
 		Preload("Member.Illnesses.Illness").
 		Preload("Meals.Meal").
 		Preload("History.User.Image.Image").
-		Preload("History.User.Address.AddressDetail")
+		Preload("History.User.Addresses.AddressDetail")
 }
 
 func (r *OrderRepository) Create(o models.Order) (*models.Order, error) {

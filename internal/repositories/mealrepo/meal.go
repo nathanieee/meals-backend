@@ -62,7 +62,7 @@ func (r *MealRepository) preload() *gorm.DB {
 		Preload("Images.Image").
 		Preload("Illnesses.Illness").
 		Preload("Allergies.Allergy").
-		Preload("Partner.User.Address.AddressDetail").
+		Preload("Partner.User.Addresses.AddressDetail").
 		Preload("Partner.User.Image.Image")
 }
 
