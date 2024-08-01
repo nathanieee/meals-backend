@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "imageName" : "docker.registry.url.com/jonathanvince/meals-backend:latest"
+  "imageName" : "docker.registry.url.com/jonathanvince/meals-backend:2024-08-01"
 }
