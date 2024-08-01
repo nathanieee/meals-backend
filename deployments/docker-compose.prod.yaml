@@ -1,5 +1,3 @@
-version: "3.8"
-
 networks:
   meals-network:
     name: meals-network
@@ -21,13 +19,10 @@ services:
     restart: always
 
   meals-go:
+    image: jonathanvince/meals-backend:latest
     container_name: meals-go
-    build:
-      context: ..
-      dockerfile: build/ci/Dockerfile.prod
     ports:
       - "${HTTP_PORT:-8000}:${HTTP_PORT:-8000}"
-      - "2345:2345"
     networks:
       - meals-network
     depends_on:
@@ -70,18 +65,6 @@ services:
       interval: 10s  # Adjust as needed
       timeout: 10s   # Adjust as needed
       retries: 3     # Adjust as needed
-
-  meals-ls:
-    container_name: "meals-ls"
-    image: localstack/localstack
-    ports:
-      - "${LOCALSTACK_PORT:-4566}:4566"            # LocalStack Gateway
-      - "4510-4559:4510-4559"  # external services port range
-    environment:
-      - DEBUG=${LOCALSTACK_DEBUG:-0} # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
-    volumes:
-      - "meals-ls-volume:/var/lib/localstack"
-      - "meals-ls-volume:/var/run/docker.sock:/var/run/docker.sock"
 
 volumes:
   meals-pg-volume:
