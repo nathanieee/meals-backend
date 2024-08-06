@@ -35,6 +35,8 @@ func NewPatronService(
 }
 
 func (s *PatronService) Create(req requests.CreatePatron) (*responses.Patron, error) {
+	// TODO: upload the image to S3 bucket and get the image url
+
 	user, err := req.User.ToModel(consttypes.UR_PATRON)
 	if err != nil {
 		return nil, err

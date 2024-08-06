@@ -4,6 +4,7 @@ import (
 	"context"
 	"project-skbackend/packages/utils/utlogger"
 
+	"github.com/minio/minio-go/v7"
 	"github.com/rabbitmq/amqp091-go"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/redis/go-redis/v9"
@@ -20,6 +21,7 @@ type (
 		Channel *amqp091.Channel
 		GormDB  *gorm.DB
 		RedisDB *redis.Client
+		Minio   *minio.Client
 
 		clqueue func()
 	}
@@ -51,6 +53,13 @@ func (i *Init) InitConfig() (*Init, error) {
 	}
 	i.Channel = ch
 	i.clqueue = clqueue
+
+	// * setup minio
+	minio, err := i.initMinio()
+	if err != nil {
+		return nil, err
+	}
+	i.Minio = minio
 
 	return i, err
 }
@@ -94,4 +103,17 @@ func (i *Init) Close() {
 	if i.clqueue != nil {
 		i.clqueue()
 	}
+}
+
+func (i *Init) initMinio() (*minio.Client, error) {
+	// * get minio client
+	minio, err := i.cfg.Minio.Init()
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	i.cfg.Minio.SetupMinio(minio, i.ctx)
+
+	return minio, nil
 }

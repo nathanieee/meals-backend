@@ -39,7 +39,7 @@ type (
 )
 
 func NewOrderService(
-	cfg configs.Config,
+	cfg *configs.Config,
 	rord orderrepo.IOrderRepository,
 	rmeal mealrepo.IMealRepository,
 	rmemb memberrepo.IMemberRepository,

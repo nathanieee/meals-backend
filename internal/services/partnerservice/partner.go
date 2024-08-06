@@ -35,6 +35,8 @@ func NewPartnerService(
 }
 
 func (s *PartnerService) Create(req requests.CreatePartner) (*responses.Partner, error) {
+	// TODO: upload the image to S3 bucket and get the image url
+
 	user, err := req.User.ToModel(consttypes.UR_PARTNER)
 	if err != nil {
 		return nil, err

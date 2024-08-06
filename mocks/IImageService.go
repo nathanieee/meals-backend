@@ -17,12 +17,12 @@ type IImageService struct {
 	mock.Mock
 }
 
-// Upload provides a mock function with given fields: fileheader, imgtype, ctx
-func (_m *IImageService) Upload(fileheader *multipart.FileHeader, imgtype consttypes.ImageType, ctx *gin.Context) error {
+// FileUpload provides a mock function with given fields: fileheader, imgtype, ctx
+func (_m *IImageService) FileUpload(fileheader *multipart.FileHeader, imgtype consttypes.ImageType, ctx *gin.Context) error {
 	ret := _m.Called(fileheader, imgtype, ctx)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Upload")
+		panic("no return value specified for FileUpload")
 	}
 
 	var r0 error

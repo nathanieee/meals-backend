@@ -36,6 +36,8 @@ func NewOrganizationService(
 }
 
 func (s *OrganizationService) Create(req requests.CreateOrganization) (*responses.Organization, error) {
+	// TODO: upload the image to S3 bucket and get the image url
+
 	user, err := req.User.ToModel(consttypes.UR_ORGANIZATION)
 	if err != nil {
 		return nil, err

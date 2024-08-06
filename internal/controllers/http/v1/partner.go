@@ -63,21 +63,6 @@ func (r *partnerroutes) partnerRegister(ctx *gin.Context) {
 		return
 	}
 
-	// * get the user image
-	file := req.User.CreateImage
-	if file != nil {
-		// * check if the file is an image
-		err := file.IsImage()
-		if err != nil {
-			utresponse.GeneralInternalServerError(
-				function,
-				ctx,
-				err,
-			)
-			return
-		}
-	}
-
 	_, err = r.spartner.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {

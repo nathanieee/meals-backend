@@ -1,64 +1,91 @@
 package fileservice
 
 import (
+	"context"
 	"fmt"
 	"mime/multipart"
-	"os"
 	"path/filepath"
 	"project-skbackend/configs"
+	"project-skbackend/internal/controllers/requests"
+	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utlogger"
 
-	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/minio/minio-go/v7"
 )
 
 type (
-	ImageService struct {
+	FileService struct {
 		cfg *configs.Config
-		ibd string
-		ipd string
-		imd string
+		ctx context.Context
+
+		minio minio.Client
+
+		ruser userrepo.IUserRepository
+
+		me    string
+		mussl bool
+		mpubk string
+		mpvtk string
+		mb    string
+		ml    string
 	}
 
-	IImageService interface {
-		Upload(fileheader *multipart.FileHeader, imgtype consttypes.ImageType, ctx *gin.Context) error
+	IFileService interface {
+		UploadImage(fileheader *multipart.FileHeader, imgtype consttypes.ImageType, ctx *context.Context) (string, error)
 	}
 )
 
-func NewImageService(cfg *configs.Config) *ImageService {
-	return &ImageService{
+func NewFileService(
+	cfg *configs.Config,
+	ctx context.Context,
+	minio minio.Client,
+	ruser userrepo.IUserRepository,
+) *FileService {
+	return &FileService{
 		cfg: cfg,
-		ibd: cfg.FileImage.BaseDir,
-		ipd: cfg.FileImage.BaseDir + cfg.FileImage.ProfileDir,
-		imd: cfg.FileImage.BaseDir + cfg.FileImage.MealDir,
+		ctx: ctx,
+
+		minio: minio,
+
+		ruser: ruser,
+
+		me:    cfg.Minio.Endpoint,
+		mussl: cfg.Minio.UseSSL,
+		mpubk: cfg.Minio.PublicKey,
+		mpvtk: cfg.Minio.PrivateKey,
+		mb:    cfg.Minio.Bucket,
+		ml:    cfg.Minio.Location,
 	}
 }
 
-func (s *ImageService) Upload(fileheader *multipart.FileHeader, imgtype consttypes.ImageType, ctx *gin.Context) error {
-	var (
-		uppath, filename string
-	)
-
-	// * switch the image type based on the image type
-	switch imgtype {
-	case consttypes.IT_PROFILE:
-		uppath = s.ipd
-	case consttypes.IT_MEAL:
-		uppath = s.imd
-	default:
-		uppath = s.ibd
-	}
-
-	// * create directory if it does not exist
-	if err := os.MkdirAll(uppath, os.ModePerm); err != nil {
-		return consttypes.ErrFailedToCreateDirectory
-	}
-
-	// * set the file name and destination
-	filename = fmt.Sprintf("%s_%s", imgtype, filename)
-	destination := filepath.Join(uppath, filename)
-	if err := ctx.SaveUploadedFile(fileheader, destination); err != nil {
-		return consttypes.ErrFailedToUploadFile
-	}
+func (s *FileService) UploadProfilePicture(uid uuid.UUID, fileheader *multipart.FileHeader) error {
+	// TODO: implement uploading to the S3 and return the URL
 
 	return nil
+}
+
+func (s *FileService) Upload(req requests.FileUpload) (string, error) {
+	fileheader := req.File
+
+	// * open the file
+	file, err := fileheader.Open()
+	if err != nil {
+		utlogger.Error(err)
+	}
+	defer file.Close()
+
+	// * generate object name and content type
+	objname := filepath.Base(fileheader.Filename)
+	contenttype := fileheader.Header.Get("Content-Type")
+
+	// * upload the file
+	info, err := s.minio.PutObject(s.ctx, s.mb, objname, file, fileheader.Size, minio.PutObjectOptions{ContentType: contenttype})
+	if err != nil {
+		utlogger.Error(err)
+	}
+
+	utlogger.Info(fmt.Sprintf("Successfully uploaded %s of size %d\n", objname, info.Size))
+	return "", nil
 }

@@ -347,21 +347,6 @@ func (r *manageroutes) createMember(ctx *gin.Context) {
 		return
 	}
 
-	// * get the user image
-	file := req.User.CreateImage
-	if file != nil {
-		// * check if the file is an image
-		err := file.IsImage()
-		if err != nil {
-			utresponse.GeneralInternalServerError(
-				function,
-				ctx,
-				err,
-			)
-			return
-		}
-	}
-
 	resmemb, err := r.smember.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
@@ -591,21 +576,6 @@ func (r *manageroutes) createPartner(ctx *gin.Context) {
 			err,
 		)
 		return
-	}
-
-	// * get the user image
-	file := req.User.CreateImage
-	if file != nil {
-		// * check if the file is an image
-		err := file.IsImage()
-		if err != nil {
-			utresponse.GeneralInternalServerError(
-				function,
-				ctx,
-				err,
-			)
-			return
-		}
 	}
 
 	respartner, err := r.spartner.Create(req)
@@ -840,21 +810,6 @@ func (r *manageroutes) createPatron(ctx *gin.Context) {
 			err,
 		)
 		return
-	}
-
-	// * get the user image
-	file := req.User.CreateImage
-	if file != nil {
-		// * check if the file is an image
-		err := file.IsImage()
-		if err != nil {
-			utresponse.GeneralInternalServerError(
-				function,
-				ctx,
-				err,
-			)
-			return
-		}
 	}
 
 	respatron, err := r.spatron.Create(req)

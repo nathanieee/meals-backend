@@ -20,6 +20,7 @@ import (
 	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/consumerservice"
 	"project-skbackend/internal/services/cronservice"
+	"project-skbackend/internal/services/fileservice"
 	"project-skbackend/internal/services/illnessservice"
 	"project-skbackend/internal/services/mailservice"
 	"project-skbackend/internal/services/mealservice"
@@ -31,6 +32,7 @@ import (
 	"project-skbackend/internal/services/producerservice"
 	"project-skbackend/internal/services/userservice"
 
+	"github.com/minio/minio-go/v7"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -51,12 +53,13 @@ type DependencyInjection struct {
 	OrderService        *orderservice.OrderService
 	CronService         *cronservice.CronService
 	IllnessService      *illnessservice.IllnessService
+	FileService         *fileservice.FileService
 
 	// * external services
 	DistanceMatrixService *distancematrixservice.DistanceMatrixService
 }
 
-func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, rdb *redis.Client, ctx context.Context) *DependencyInjection {
+func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, rdb *redis.Client, minio *minio.Client) *DependencyInjection {
 	/* -------------------------------- database -------------------------------- */
 	if cfg.DB.LogMode {
 		db = db.Debug()
@@ -77,7 +80,7 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	rorder := orderrepo.NewOrderRepository(db, *cfg)
 
 	/* --------------------------------- service -------------------------------- */
-	// * extenral services
+	// * external services
 	sdsmx := distancematrixservice.NewDistanceMatrixService(cfg)
 
 	// * internal services
@@ -92,9 +95,10 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 	scons := consumerservice.NewConsumerService(ch, cfg, smail)
 	spatr := patronservice.NewPatronService(rpatron)
 	sorga := organizationservice.NewOrganizationService(rorg)
-	sordr := orderservice.NewOrderService(*cfg, rorder, rmeal, rmemb, ruser, rcare)
+	sordr := orderservice.NewOrderService(cfg, rorder, rmeal, rmemb, ruser, rcare)
 	scron := cronservice.NewCronService(cfg, rorder)
 	silln := illnessservice.NewIllnessService(rill)
+	sfile := fileservice.NewFileService(cfg, ctx, *minio, ruser)
 
 	return &DependencyInjection{
 		// * internal services
@@ -111,6 +115,7 @@ func NewDependencyInjection(db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, 
 		OrderService:        sordr,
 		CronService:         scron,
 		IllnessService:      silln,
+		FileService:         sfile,
 
 		// * external services
 		DistanceMatrixService: sdsmx,

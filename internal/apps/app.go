@@ -29,7 +29,7 @@ func Run(cfg *configs.Config) {
 	defer i.Close()
 
 	// * setup new dependency injection
-	di := di.NewDependencyInjection(i.GormDB, i.Channel, cfg, i.RedisDB, ctx)
+	di := di.NewDependencyInjection(ctx, i.GormDB, i.Channel, cfg, i.RedisDB, i.Minio)
 
 	// * setup consumer
 	di.InitServices()

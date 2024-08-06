@@ -26,8 +26,7 @@ type (
 		// * external config
 		Redis
 		Xendit
-		AWS
-		Localstack
+		Minio
 		Queue
 		DistanceMatrix
 		Telegram
@@ -141,18 +140,16 @@ type (
 		WebhookToken string `env:"XEN_WEBHOOK_TOKEN"`
 	}
 
-	AWS struct {
-		AWSAccessKey
-		Region string `env:"AWS_REGION" env-default:"ap-southeast-1"`
+	Minio struct {
+		Endpoint string `env:"MINIO_ENDPOINT"`
+		UseSSL   bool   `env:"MINIO_USE_SSL"`
+		Bucket   string `env:"MINIO_BUCKET"`
+		Location string `env:"MINIO_LOCATION"`
+		MinioAccessKey
 	}
-	AWSAccessKey struct {
-		PublicKey string `env:"AWS_PUBLIC_ACCESS_KEY"`
-		SecretKey string `env:"AWS_SECRET_ACCESS_KEY"`
-	}
-
-	Localstack struct {
-		Port  string `env:"LOCALSTACK_PORT" env-default:"4566"`
-		Debug int    `env:"LOCALSTACK_DEBUG" env-default:"0"`
+	MinioAccessKey struct {
+		PublicKey  string `env:"MINIO_PUBLIC_ACCESS_KEY"`
+		PrivateKey string `env:"MINIO_PRIVATE_ACCESS_KEY"`
 	}
 
 	Queue struct {
