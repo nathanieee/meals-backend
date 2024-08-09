@@ -80,6 +80,17 @@ func ValidateFile(file *multipart.FileHeader, opts *ValidateFileOpts) (*string, 
 	return &filename, nil
 }
 
+func GetFileExtension(fileHeader *multipart.FileHeader) string {
+	// * extract the filename from the file header
+	filename := fileHeader.Filename
+
+	// * get the file extension using the filepath package
+	extension := filepath.Ext(filename)
+
+	// * return the extension
+	return extension
+}
+
 func GetReadableFileSize(size float64, ext string, opts *ValidateFileSizeOpts) error {
 	// * set default options if not provided
 	opts = setDefaultValidateFileSizeOpts(opts)
