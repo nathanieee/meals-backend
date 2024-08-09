@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"mime/multipart"
-	"path/filepath"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/models"
@@ -157,10 +156,19 @@ func (s *FileService) Upload(req requests.FileUpload) (string, error) {
 	}
 	defer file.Close()
 
-	// TODO: encode the filename so it could not be guessed
-	// * generate object name and content type
-	objname := filepath.Base(fileheader.Filename)
+	// * generate a new random uuid v7 to replace the filename
+	// * reason: so people could not guess the path or pattern of the file
+	randuuid, err := uuid.NewV7()
+	if err != nil {
+		utlogger.Error(err)
+		return "", err
+	}
+
+	// * extract the extension from the fileheader
+	// * and construct the object name
+	fileext := utfile.GetFileExtension(fileheader)
 	contenttype := fileheader.Header.Get("Content-Type")
+	objname := fmt.Sprintf("%s-%s%s", contenttype, randuuid.String(), fileext)
 
 	// * upload the file
 	info, err := s.minio.PutObject(s.ctx, s.mb, objname, file, fileheader.Size, minio.PutObjectOptions{ContentType: contenttype})
