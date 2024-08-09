@@ -70,7 +70,7 @@ func (r *authroutes) signin(
 		req      requests.Signin
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -109,7 +109,7 @@ func (r *authroutes) forgotPassword(
 		req      requests.ForgotPassword
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -146,7 +146,7 @@ func (r *authroutes) resetPassword(
 		req      requests.ResetPassword
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -217,7 +217,7 @@ func (r *authroutes) verifyToken(ctx *gin.Context) {
 		req      requests.VerifyToken
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(

@@ -5,12 +5,14 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math"
 	"mime/multipart"
 	"net/textproto"
 	"path/filepath"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utmath"
+	"strings"
 )
 
 var (
@@ -217,4 +219,55 @@ func Base64ToMultipartFileHeader(base64Str string, filename string, filetype con
 	}
 
 	return fileHeaders[0], nil
+}
+
+func MultipartFileHeaderToBase64(fileHeader *multipart.FileHeader) (*FileBase64, error) {
+	file, err := fileHeader.Open()
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file: %w", err)
+	}
+	defer file.Close()
+
+	fileBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	// * encode file content to base64
+	encodedFile := base64.StdEncoding.EncodeToString(fileBytes)
+
+	// * extract file extension
+	ext := strings.TrimPrefix(filepath.Ext(fileHeader.Filename), ".")
+
+	//  * map file extension to FileType
+	fileType, err := consttypes.MapFileExtensionToFileType(ext)
+	if err != nil {
+		return nil, fmt.Errorf("invalid file type: %w", err)
+	}
+
+	return &FileBase64{
+		FileBase64Str: encodedFile,
+		FileName:      fileHeader.Filename,
+		FileType:      fileType,
+	}, nil
+}
+
+// * used to replace a request and make it so its not
+// * dependent on other packages, hence delcaring it here
+type (
+	FileBase64 struct {
+		FileBase64Str string              `json:"file_base64" form:"file_base64" binding:"required"`
+		FileName      string              `json:"file_name" form:"file_name" binding:"required"`
+		FileType      consttypes.FileType `json:"file_type" form:"file_type" binding:"required"`
+	}
+
+	FileMultipart struct {
+		File *multipart.FileHeader `json:"file" form:"file"`
+	}
+)
+
+func NewFileUpload(file *multipart.FileHeader) *FileMultipart {
+	return &FileMultipart{
+		File: file,
+	}
 }

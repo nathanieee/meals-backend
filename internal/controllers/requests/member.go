@@ -30,7 +30,7 @@ type (
 	}
 
 	UpdateMember struct {
-		User UpdateUser `json:"user" form:"user" binding:"dive"`
+		User UpdateUser `json:"user" form:"user" binding:"omitempty,dive"`
 
 		Caregiver *UpdateCaregiver `json:"caregiver" form:"caregiver" binding:"omitempty"`
 

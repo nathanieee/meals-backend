@@ -141,6 +141,8 @@ var (
 	ErrFailedToOpenFile        = fmt.Errorf("failed to open file")
 	ErrFailedToReadFile        = fmt.Errorf("failed to read file")
 	ErrFailedToValidateFile    = fmt.Errorf("failed to validate file")
+	ErrTooManyFiles            = fmt.Errorf("too many files provided")
+	ErrNoFiles                 = fmt.Errorf("no files provided")
 
 	// * caches
 	ErrFailedToSetCache = fmt.Errorf("failed to set cache")

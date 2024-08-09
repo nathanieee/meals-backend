@@ -6,6 +6,7 @@ import (
 	"project-skbackend/internal/middlewares"
 	"project-skbackend/internal/services/authservice"
 	"project-skbackend/internal/services/cartservice"
+	"project-skbackend/internal/services/fileservice"
 	"project-skbackend/internal/services/memberservice"
 	"project-skbackend/internal/services/orderservice"
 	"project-skbackend/internal/services/userservice"
@@ -25,6 +26,7 @@ type (
 		suser   userservice.IUserService
 		sauth   authservice.IAuthService
 		sorder  orderservice.IOrderService
+		sfile   fileservice.IFileService
 	}
 )
 
@@ -36,6 +38,7 @@ func newMemberRoutes(
 	suser userservice.IUserService,
 	sauth authservice.IAuthService,
 	sorder orderservice.IOrderService,
+	sfile fileservice.IFileService,
 ) {
 	r := &memberroutes{
 		cfg:     cfg,
@@ -44,6 +47,7 @@ func newMemberRoutes(
 		suser:   suser,
 		sauth:   sauth,
 		sorder:  sorder,
+		sfile:   sfile,
 	}
 
 	gmemberspub := rg.Group("members")
@@ -74,7 +78,7 @@ func (r *memberroutes) memberRegister(ctx *gin.Context) {
 		err      error
 	)
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
 			function,
@@ -149,7 +153,7 @@ func (r *memberroutes) memberCreateCart(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
 			function,
@@ -212,7 +216,7 @@ func (r *memberroutes) memberCreateOrder(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
 			function,

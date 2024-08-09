@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"mime/multipart"
 	"project-skbackend/configs"
-	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/imagerepo"
 	"project-skbackend/internal/repositories/userimagerepo"
@@ -40,7 +39,7 @@ type (
 	}
 
 	IFileService interface {
-		Upload(req requests.FileMultipart) (string, error)
+		Upload(req utfile.FileMultipart) (string, error)
 	}
 )
 
@@ -94,7 +93,7 @@ func (s *FileService) UploadProfilePicture(uid uuid.UUID, fileheader *multipart.
 		return consttypes.ErrFailedToValidateFile
 	}
 
-	fileupload := requests.NewFileUpload(fileheader)
+	fileupload := utfile.NewFileUpload(fileheader)
 	url, err := s.Upload(*fileupload)
 	if err != nil {
 		utlogger.Error(err)
@@ -145,7 +144,7 @@ func (s *FileService) CheckAndSaveUserImage(u models.User, image models.Image) e
 	return nil
 }
 
-func (s *FileService) Upload(req requests.FileMultipart) (string, error) {
+func (s *FileService) Upload(req utfile.FileMultipart) (string, error) {
 	fileheader := req.File
 
 	// * open the file

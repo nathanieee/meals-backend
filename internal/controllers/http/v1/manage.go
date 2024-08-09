@@ -111,7 +111,7 @@ func (r *manageroutes) createMeal(ctx *gin.Context) {
 		req      requests.CreateMeal
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -335,7 +335,7 @@ func (r *manageroutes) createMember(ctx *gin.Context) {
 		req      requests.CreateMember
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -566,7 +566,7 @@ func (r *manageroutes) createPartner(ctx *gin.Context) {
 		req      requests.CreatePartner
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -675,7 +675,7 @@ func (r *manageroutes) updatePartner(ctx *gin.Context) {
 		req      requests.UpdatePartner
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -800,7 +800,7 @@ func (r *manageroutes) createPatron(ctx *gin.Context) {
 		req      requests.CreatePatron
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -907,7 +907,7 @@ func (r *manageroutes) updatePatron(ctx *gin.Context) {
 		req      requests.UpdatePatron
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -1032,7 +1032,7 @@ func (r *manageroutes) createIllness(ctx *gin.Context) {
 		req      requests.CreateIllness
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -1131,7 +1131,7 @@ func (r *manageroutes) updateIllness(ctx *gin.Context) {
 		req      requests.UpdateIllness
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(

@@ -1,5 +1,9 @@
 package consttypes
 
+import (
+	"strings"
+)
+
 type (
 	FileSuffixSize string
 	FileType       string
@@ -50,4 +54,61 @@ func (enum FileSuffixSize) String() string {
 
 func (enum FileType) String() string {
 	return string(enum)
+}
+
+func MapFileExtensionToFileType(extension string) (FileType, error) {
+	switch strings.ToLower(extension) {
+	// * text file types
+	case "txt":
+		return FT_PLAIN_TEXT, nil
+	case "html", "htm":
+		return FT_HTML, nil
+	case "css":
+		return FT_CSS, nil
+	case "js":
+		return FT_JAVASCRIPT, nil
+
+	// * image file types
+	case "jpeg", "jpg":
+		return FT_JPEG, nil
+	case "png":
+		return FT_PNG, nil
+	case "gif":
+		return FT_GIF, nil
+	case "bmp":
+		return FT_BMP, nil
+
+	// * audio file types
+	case "mp3":
+		return FT_MP3, nil
+	case "wav":
+		return FT_WAV, nil
+	case "ogg":
+		return FT_OGG, nil
+
+	// * video file types
+	case "mp4":
+		return FT_MP4, nil
+	case "webm":
+		return FT_WEBM, nil
+	case "oggv":
+		return FT_OGGV, nil
+
+	// * application file types
+	case "json":
+		return FT_JSON, nil
+	case "xml":
+		return FT_XML, nil
+	case "pdf":
+		return FT_PDF, nil
+	case "zip":
+		return FT_ZIP, nil
+
+	// * other file types
+	case "multipart":
+		return FT_MULTIPART_FORM, nil
+
+	default:
+		return "", ErrUnsupportedFileExtension(extension)
+	}
 }

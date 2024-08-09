@@ -52,7 +52,7 @@ func (r *partnerroutes) partnerRegister(ctx *gin.Context) {
 		err      error
 	)
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
 			function,
