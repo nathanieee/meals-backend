@@ -35,7 +35,7 @@ func newFileRoutes(
 func (r *fileroutes) uploadFile(ctx *gin.Context) {
 	var (
 		function = "upload file"
-		req      requests.FileUpload
+		req      requests.FileMultipart
 		err      error
 	)
 

@@ -12,13 +12,13 @@ type (
 		FileType      consttypes.FileType `json:"file_type" form:"file_type" binding:"required"`
 	}
 
-	FileUpload struct {
+	FileMultipart struct {
 		File *multipart.FileHeader `json:"file" form:"file" binding:"required,file"`
 	}
 )
 
-func NewFileUpload(file *multipart.FileHeader) *FileUpload {
-	return &FileUpload{
+func NewFileUpload(file *multipart.FileHeader) *FileMultipart {
+	return &FileMultipart{
 		File: file,
 	}
 }

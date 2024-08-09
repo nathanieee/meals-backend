@@ -40,7 +40,7 @@ type (
 	}
 
 	IFileService interface {
-		Upload(req requests.FileUpload) (string, error)
+		Upload(req requests.FileMultipart) (string, error)
 	}
 )
 
@@ -145,7 +145,7 @@ func (s *FileService) CheckAndSaveUserImage(u models.User, image models.Image) e
 	return nil
 }
 
-func (s *FileService) Upload(req requests.FileUpload) (string, error) {
+func (s *FileService) Upload(req requests.FileMultipart) (string, error) {
 	fileheader := req.File
 
 	// * open the file
