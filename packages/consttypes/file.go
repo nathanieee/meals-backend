@@ -1,26 +1,16 @@
 package consttypes
 
 type (
-	ImageType          string
-	PatronType         string
-	OrganizationType   string
-	ResponseStatusType string
-	FileType           string
+	FileSuffixSize string
+	FileType       string
 )
 
 const (
-	IT_PROFILE       ImageType = "Profile"
-	IT_MEAL          ImageType = "Meal"
-	IT_MEAL_CATEGORY ImageType = "Meal Category"
-
-	PT_ORGANIZATION PatronType = "Organization"
-	PT_PERSONAL     PatronType = "Personal"
-
-	OT_NURSINGHOME OrganizationType = "Nursing Home"
-
-	RST_SUCCESS ResponseStatusType = "success"
-	RST_FAIL    ResponseStatusType = "fail"
-	RST_ERROR   ResponseStatusType = "error"
+	FSS_B  FileSuffixSize = "B"
+	FSS_KB FileSuffixSize = "KB"
+	FSS_MB FileSuffixSize = "MB"
+	FSS_GB FileSuffixSize = "GB"
+	FSS_TB FileSuffixSize = "TB"
 
 	// * text file types
 	FT_PLAIN_TEXT FileType = "text/plain"
@@ -54,19 +44,7 @@ const (
 	FT_MULTIPART_FORM FileType = "multipart/form-data"
 )
 
-func (enum ImageType) String() string {
-	return string(enum)
-}
-
-func (enum PatronType) String() string {
-	return string(enum)
-}
-
-func (enum OrganizationType) String() string {
-	return string(enum)
-}
-
-func (enum ResponseStatusType) String() string {
+func (enum FileSuffixSize) String() string {
 	return string(enum)
 }
 

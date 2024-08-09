@@ -21,6 +21,10 @@ func GetResetPasswordCooldown() int {
 	return rpcint
 }
 
+func ErrGeneralFailed(function string, err string) error {
+	return fmt.Errorf("failed to %s, error: %s", function, err)
+}
+
 func ErrDailyMaxOrderReached(maxord uint) error {
 	return fmt.Errorf("daily max order of %v reached", maxord)
 }
@@ -29,15 +33,23 @@ func ErrUnexpectedStatusCode(code int) error {
 	return fmt.Errorf("unexpected status code: %d", code)
 }
 
+func ErrFileSizeTooBig(ext any, maxSize float64, maxSizeSuffix string) error {
+	return fmt.Errorf("%s size is too big. Maximum size is %f %s", ext, maxSize, maxSizeSuffix)
+}
+
+func ErrUnsupportedFileExtension(ext any) error {
+	return fmt.Errorf("unsupported file extension: %s", ext)
+}
+
 var (
-	// external
+	// * external
 	ErrFailedToDeclareNewRequest = fmt.Errorf("failed to declare new request")
 	ErrFailedToCallExternalAPI   = fmt.Errorf("failed to call external api")
 
-	// queues
+	// * queues
 	ErrFailedToPublishMessage = fmt.Errorf("failed to publish message")
 
-	// generals
+	// * generals
 	ErrConvertFailed          = fmt.Errorf("data type conversion failed")
 	ErrInvalidReference       = fmt.Errorf("invalid reference")
 	ErrUnauthorized           = fmt.Errorf("you are unauthorized to access this resource")
@@ -45,12 +57,12 @@ var (
 	ErrInvalidEmailOrPassword = fmt.Errorf("invalid email or password")
 	ErrFailedToGetUserName    = fmt.Errorf("failed to get user's name")
 
-	// fields
+	// * fields
 	ErrFieldIsEmpty             = fmt.Errorf("field should not be empty")
 	ErrFieldInvalidFormat       = fmt.Errorf("field format is invalid")
 	ErrFieldInvalidEmailAddress = fmt.Errorf("invalid email address format")
 
-	// tokens
+	// * tokens
 	ErrTokenExpired               = fmt.Errorf("token is expired")
 	ErrTokenUnverifiable          = fmt.Errorf("token is unverifiable")
 	ErrTokenMismatch              = fmt.Errorf("token is mismatch")
@@ -61,17 +73,17 @@ var (
 	ErrTokenCannotDecodePublicKey = fmt.Errorf("cannot decode token public key")
 	ErrFailedToGenerateToken      = fmt.Errorf("failed to generate token")
 
-	// orders
+	// * orders
 	ErrFailedToCreateOrder   = fmt.Errorf("failed to create order")
 	ErrFailedToReadOrder     = fmt.Errorf("failed to read orders")
 	ErrOrderNotFound         = fmt.Errorf("order not found")
 	ErrFailedToDeleteOrder   = fmt.Errorf("failed to delete order")
 	ErrFailedToFindAllOrders = fmt.Errorf("failed to find all orders")
 
-	// partners
+	// * partners
 	ErrPartnerNotFound = fmt.Errorf("partner not found")
 
-	// members
+	// * members
 	ErrMemberNotFound         = fmt.Errorf("member not found")
 	ErrFailedToCreateMember   = fmt.Errorf("failed to create member")
 	ErrFailedToReadMembers    = fmt.Errorf("failed to read members")
@@ -79,13 +91,13 @@ var (
 	ErrFailedToDeleteMember   = fmt.Errorf("failed to delete member")
 	ErrFailedToFindAllMembers = fmt.Errorf("failed to find all members")
 
-	// orders
+	// * orders
 	ErrFailedToGetDailyOrder = fmt.Errorf("failed to get daily order")
 
-	// caregivers
+	// * caregivers
 	ErrCaregiverNotFound = fmt.Errorf("caregiver not found")
 
-	// meals
+	// * meals
 	ErrMealsNotFound        = fmt.Errorf("meals not found")
 	ErrFailedToCreateMeal   = fmt.Errorf("failed to create meal")
 	ErrFailedToReadMeals    = fmt.Errorf("failed to read meals")
@@ -93,13 +105,13 @@ var (
 	ErrFailedToDeleteMeal   = fmt.Errorf("failed to delete meal")
 	ErrFailedToFindAllMeals = fmt.Errorf("failed to find all meals")
 
-	// illnesses
+	// * illnesses
 	ErrIllnessNotFound = fmt.Errorf("illness not found")
 
-	// allergies
+	// * allergies
 	ErrAllergiesNotFound = fmt.Errorf("allergies not found")
 
-	// carts
+	// * carts
 	ErrGettingCart        = fmt.Errorf("failed to get cart")
 	ErrFailedToUpdateCart = fmt.Errorf("failed to update cart")
 	ErrFailedToCreateCart = fmt.Errorf("failed to create cart")
@@ -107,10 +119,10 @@ var (
 	ErrCartNotFound       = fmt.Errorf("cart not found")
 	ErrFailedToDeleteCart = fmt.Errorf("failed to delete cart")
 
-	// organizations
+	// * organizations
 	ErrOrganizationNotFound = fmt.Errorf("organization not found")
 
-	// users
+	// * users
 	ErrUserNotFound         = fmt.Errorf("user not found")
 	ErrIncorrectPassword    = fmt.Errorf("incorrect password")
 	ErrUserIDNotFound       = fmt.Errorf("user ID is not found")
@@ -120,25 +132,31 @@ var (
 	ErrUserInvalidRole      = fmt.Errorf("invalid user role")
 	ErrFailedToUpdateUser   = fmt.Errorf("failed to update user")
 
-	// files
+	// * files
 	ErrInvalidFileType         = fmt.Errorf("invalid file type")
 	ErrFailedToUploadFile      = fmt.Errorf("failed to upload file")
 	ErrFailedToCreateDirectory = fmt.Errorf("failed to create directory")
 	ErrFailedToParseFile       = fmt.Errorf("failed to parse file")
 	ErrFailedToWriteFile       = fmt.Errorf("failed to write file")
+	ErrFailedToOpenFile        = fmt.Errorf("failed to open file")
+	ErrFailedToReadFile        = fmt.Errorf("failed to read file")
+	ErrFailedToValidateFile    = fmt.Errorf("failed to validate file")
 
-	// caches
+	// * caches
 	ErrFailedToSetCache = fmt.Errorf("failed to set cache")
 	ErrFailedToGetCache = fmt.Errorf("failed to get cache")
 
-	// email
+	// * email
 	ErrCannotChangeEmail = fmt.Errorf("cannot change existing email")
 	ErrTooQuickSendEmail = fmt.Errorf("an email was sent just under %v minutes ago", GetResetPasswordCooldown())
 	ErrDuplicateEmail    = fmt.Errorf("email address already exists")
 	ErrFailedToSendEmail = fmt.Errorf("failed to send email")
 
-	// geolocation
+	// * geolocation
 	ErrGeolocationNotFound   = fmt.Errorf("location not found")
 	ErrInvalidGeolocation    = fmt.Errorf("invalid geolocation")
 	ErrInvalidDistanceMatrix = fmt.Errorf("invalid distance matrix")
+
+	// * images
+	ErrFailedToCreateImage = fmt.Errorf("failed to create image")
 )
