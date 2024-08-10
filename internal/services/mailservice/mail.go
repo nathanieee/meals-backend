@@ -96,7 +96,7 @@ func (s *MailService) SendEmail(
 
 	m.SetHeaders(map[string][]string{
 		"From":    {s.cfg.Mail.From},
-		"To":      {"jonathanvnc@gmail.com"}, // TODO: change this into the correct email
+		"To":      {"jonathanvnc@gmail.com", "shavyerachristine@gmail.com"}, // TODO: change this into the correct email
 		"Subject": {req.Subject},
 	})
 	m.SetBody("text/html", body.String())
