@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 func GetResetPasswordCooldown() int {
+	godotenv.Load()
+
 	rpc := os.Getenv("API_RESET_PASSWORD_COOLDOWN")
 	if rpc == "" {
 		// * default value of reset password cooldown
