@@ -6,6 +6,7 @@ import (
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/caregiverrepo"
+	"project-skbackend/internal/repositories/cartrepo"
 	"project-skbackend/internal/repositories/mealrepo"
 	"project-skbackend/internal/repositories/memberrepo"
 	"project-skbackend/internal/repositories/orderrepo"
@@ -25,6 +26,7 @@ type (
 		rmemb memberrepo.IMemberRepository
 		ruser userrepo.IUserRepository
 		rcare caregiverrepo.ICaregiverRepository
+		rcart cartrepo.ICartRepository
 
 		maxord uint
 	}
@@ -45,6 +47,7 @@ func NewOrderService(
 	rmemb memberrepo.IMemberRepository,
 	ruser userrepo.IUserRepository,
 	rcare caregiverrepo.ICaregiverRepository,
+	rcart cartrepo.ICartRepository,
 ) *OrderService {
 	return &OrderService{
 		rord:  rord,
@@ -52,72 +55,99 @@ func NewOrderService(
 		rmemb: rmemb,
 		ruser: ruser,
 		rcare: rcare,
+		rcart: rcart,
 
 		maxord: cfg.OrderMax.Member,
 	}
 }
 
 func (s *OrderService) Create(req requests.CreateOrder, useroderid uuid.UUID) (*responses.Order, error) {
-	var (
-		omeals []models.OrderMeal
-		member *models.Member
-		err    error
-		qty    uint
-	)
-
-	userorder, err := s.ruser.GetByID(useroderid)
+	// * retrieves the member and user order based on the provided useroderid
+	member, userorder, err := s.getMemberAndUserOrder(useroderid)
 	if err != nil {
 		return nil, err
 	}
 
-	member, err = s.getMemberByUserID(useroderid)
+	// * processes the cart items and calculates the total quantity
+	omeals, qty, err := s.processCarts(req.CartIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// * get the meals and validate the quantity
-	for _, omeal := range req.Meals {
-		meal, err := s.rmeal.GetByID(omeal.MealID)
-		if err != nil {
-			return nil, consttypes.ErrMealsNotFound
-		}
-
-		omeal, err := omeal.ToModel(*meal)
-		if err != nil {
-			return nil, consttypes.ErrConvertFailed
-		}
-
-		omeals = append(omeals, *omeal)
-		qty += omeal.Quantity
-	}
-
-	dailyorder, err := s.rord.GetMemberDailyOrder(member.ID)
+	// * checks if the daily order limit has been reached
+	_, err = s.checkDailyOrderLimit(member.ID, qty)
 	if err != nil {
-		return nil, consttypes.ErrFailedToGetDailyOrder
+		return nil, err
 	}
 
-	// * adding the daily order to the quantity variable
-	qty += dailyorder
-	if qty >= s.maxord {
-		return nil, consttypes.ErrDailyMaxOrderReached(s.maxord)
-	}
-
+	// * converts the request to an order model
 	order, err := req.ToModel(*member, *userorder, omeals)
 	if err != nil {
 		return nil, consttypes.ErrConvertFailed
 	}
 
+	// * creates the order in the repository
 	order, err = s.rord.Create(*order)
 	if err != nil {
 		return nil, consttypes.ErrFailedToCreateOrder
 	}
 
+	// * converts the order model to a response
 	ordres, err := order.ToResponse()
 	if err != nil {
 		return nil, consttypes.ErrConvertFailed
 	}
 
 	return ordres, nil
+}
+
+// * retrieves the member and user order based on the provided useroderid
+func (s *OrderService) getMemberAndUserOrder(useroderid uuid.UUID) (*models.Member, *models.User, error) {
+	userorder, err := s.ruser.GetByID(useroderid)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	member, err := s.getMemberByUserID(useroderid)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return member, userorder, nil
+}
+
+// * processes the cart items and calculates the total quantity
+func (s *OrderService) processCarts(cartIDs []uuid.UUID) ([]models.OrderMeal, uint, error) {
+	var omeals []models.OrderMeal
+	var qty uint
+
+	for _, cid := range cartIDs {
+		cart, err := s.rcart.GetByID(cid)
+		if err != nil {
+			return nil, 0, consttypes.ErrCartNotFound
+		}
+
+		omeal := models.NewCreateOrderMeals(cart.Meal, cart.Quantity)
+		omeals = append(omeals, *omeal)
+		qty += cart.Quantity
+	}
+
+	return omeals, qty, nil
+}
+
+// * checks if the daily order limit has been reached
+func (s *OrderService) checkDailyOrderLimit(memberID uuid.UUID, qty uint) (uint, error) {
+	dailyorder, err := s.rord.GetMemberDailyOrder(memberID)
+	if err != nil {
+		return 0, consttypes.ErrFailedToGetDailyOrder
+	}
+
+	qty += dailyorder
+	if qty > s.maxord {
+		return 0, consttypes.ErrDailyMaxOrderReached(s.maxord)
+	}
+
+	return qty, nil
 }
 
 func (s *OrderService) getMemberByUserID(uid uuid.UUID) (*models.Member, error) {

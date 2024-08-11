@@ -33,6 +33,7 @@ import (
 	"project-skbackend/internal/services/patronservice"
 	"project-skbackend/internal/services/producerservice"
 	"project-skbackend/internal/services/userservice"
+	"project-skbackend/packages/utils/utlogger"
 
 	"github.com/minio/minio-go/v7"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -99,7 +100,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	scons := consumerservice.NewConsumerService(ch, cfg, smail)
 	spatr := patronservice.NewPatronService(rpatron)
 	sorga := organizationservice.NewOrganizationService(rorg)
-	sordr := orderservice.NewOrderService(cfg, rorder, rmeal, rmemb, ruser, rcare)
+	sordr := orderservice.NewOrderService(cfg, rorder, rmeal, rmemb, ruser, rcare, rcart)
 	scron := cronservice.NewCronService(cfg, rorder)
 	silln := illnessservice.NewIllnessService(rill)
 	sfile := fileservice.NewFileService(cfg, ctx, *minio, ruser, rimg, ruimg)
@@ -127,9 +128,14 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 }
 
 func (di *DependencyInjection) InitServices() {
+	var (
+		err error
+	)
+
 	// * setup consumer service
 	di.ConsumerService.ConsumeTask()
 
 	// * init cron service
-	di.CronService.Init()
+	_, err = di.CronService.Init()
+	utlogger.Fatal(err)
 }

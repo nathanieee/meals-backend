@@ -63,3 +63,14 @@ func (o *Order) ToResponse() (*responses.Order, error) {
 
 	return &ores, nil
 }
+
+func NewCreateOrderMeals(
+	meal Meal,
+	quantity uint,
+) *OrderMeal {
+	return &OrderMeal{
+		MealID:    meal.ID,
+		PartnerID: meal.PartnerID,
+		Quantity:  quantity,
+	}
+}

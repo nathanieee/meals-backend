@@ -15,7 +15,7 @@ const (
 func TimeNow() time.Time {
 	godotenv.Load()
 
-	tz, _ := time.LoadLocation(os.Getenv("API_TIMEZONE"))
+	tz, _ := time.LoadLocation(os.Getenv("TZ"))
 
 	return time.Now().In(tz)
 }

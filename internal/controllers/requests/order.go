@@ -11,13 +11,7 @@ import (
 
 type (
 	CreateOrder struct {
-		Meals []CreateOrderMeal `json:"meals" form:"meals" binding:"required,dive"`
-	}
-
-	CreateOrderMeal struct {
-		MealID uuid.UUID `json:"meal_id" form:"meal_id" binding:"required"`
-
-		Quantity uint `json:"quantity" form:"quantity" binding:"required"`
+		CartIDs []uuid.UUID `json:"cart_ids" form:"cart_ids" binding:"required"`
 	}
 )
 
@@ -47,22 +41,4 @@ func (req *CreateOrder) ToModel(
 	})
 
 	return &order, nil
-}
-
-func (req *CreateOrderMeal) ToModel(meal models.Meal) (*models.OrderMeal, error) {
-	var (
-		omeal models.OrderMeal
-	)
-
-	if err := copier.CopyWithOption(&omeal, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.Error(err)
-		return nil, err
-	}
-
-	omeal.MealID = meal.ID
-	omeal.Meal = meal
-	omeal.PartnerID = meal.PartnerID
-	omeal.Partner = meal.Partner
-
-	return &omeal, nil
 }
