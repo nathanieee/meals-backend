@@ -89,7 +89,7 @@ func (r *memberroutes) memberRegister(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.smember.Create(req)
+	member, err := r.smember.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utresponse.GeneralDuplicate(
@@ -105,6 +105,42 @@ func (r *memberroutes) memberRegister(ctx *gin.Context) {
 			)
 		}
 		return
+	}
+
+	// * define the image request
+	reqimg := req.User.CreateImage
+	// * if the image request is not empty
+	// * validate and upload the image
+	if reqimg != nil {
+		if err := reqimg.Validate(); err != nil {
+			utresponse.GeneralInvalidRequest(
+				function,
+				ctx,
+				nil,
+				err,
+			)
+			return
+		}
+
+		multipart, err := reqimg.GetMultipartFile()
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		err = r.sfile.UploadProfilePicture(member.User.ID, multipart)
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
 	}
 
 	resuser, thead, err := r.sauth.Signin(*req.ToSignin(), ctx)

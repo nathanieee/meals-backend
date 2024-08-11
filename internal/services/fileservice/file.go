@@ -40,6 +40,7 @@ type (
 
 	IFileService interface {
 		Upload(req utfile.FileMultipart) (string, error)
+		UploadProfilePicture(uid uuid.UUID, fileheader *multipart.FileHeader) error
 	}
 )
 
@@ -90,7 +91,7 @@ func (s *FileService) UploadProfilePicture(uid uuid.UUID, fileheader *multipart.
 	})
 	if err != nil {
 		utlogger.Error(err)
-		return consttypes.ErrFailedToValidateFile
+		return err
 	}
 
 	fileupload := utfile.NewFileUpload(fileheader)
@@ -121,7 +122,7 @@ func (s *FileService) UploadProfilePicture(uid uuid.UUID, fileheader *multipart.
 
 func (s *FileService) CheckAndSaveUserImage(u models.User, image models.Image) error {
 	ui, err := s.ruimg.GetByUserID(u.ID)
-	if err != nil {
+	if ui == nil || (err != nil && errors.Is(err, gorm.ErrRecordNotFound)) {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return consttypes.ErrGeneralFailed("get by user id", err.Error())
 		}

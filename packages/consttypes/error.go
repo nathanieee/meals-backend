@@ -45,6 +45,10 @@ func ErrUnsupportedFileExtension(ext any) error {
 	return fmt.Errorf("unsupported file extension: %s", ext)
 }
 
+func ErrUnsupportedFileType(filetype any) error {
+	return fmt.Errorf("unsupported file type: %s", filetype)
+}
+
 var (
 	// * external
 	ErrFailedToDeclareNewRequest = fmt.Errorf("failed to declare new request")
