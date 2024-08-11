@@ -75,7 +75,7 @@ func (r *partnerroutes) partnerRegister(ctx *gin.Context) {
 		if errors.As(err, &pgerr) {
 			if pgerrcode.IsIntegrityConstraintViolation(pgerr.SQLState()) {
 				utresponse.GeneralDuplicate(
-					"email",
+					pgerr.TableName,
 					ctx,
 					pgerr,
 				)

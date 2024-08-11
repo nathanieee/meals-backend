@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
@@ -13,9 +14,10 @@ import (
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/uttoken"
-	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type (
@@ -91,12 +93,16 @@ func (r *memberroutes) memberRegister(ctx *gin.Context) {
 
 	member, err := r.smember.Create(req)
 	if err != nil {
-		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			utresponse.GeneralDuplicate(
-				"email",
-				ctx,
-				err,
-			)
+		var pgerr *pgconn.PgError
+		if errors.As(err, &pgerr) {
+			if pgerrcode.IsIntegrityConstraintViolation(pgerr.SQLState()) {
+				utresponse.GeneralDuplicate(
+					pgerr.TableName,
+					ctx,
+					pgerr,
+				)
+				return
+			}
 		} else {
 			utresponse.GeneralInternalServerError(
 				function,

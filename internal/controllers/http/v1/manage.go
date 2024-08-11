@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
@@ -13,10 +14,11 @@ import (
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utrequest"
 	"project-skbackend/packages/utils/utresponse"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )
 
@@ -353,12 +355,16 @@ func (r *manageroutes) createMember(ctx *gin.Context) {
 
 	resmemb, err := r.smember.Create(req)
 	if err != nil {
-		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			utresponse.GeneralDuplicate(
-				"email",
-				ctx,
-				err,
-			)
+		var pgerr *pgconn.PgError
+		if errors.As(err, &pgerr) {
+			if pgerrcode.IsIntegrityConstraintViolation(pgerr.SQLState()) {
+				utresponse.GeneralDuplicate(
+					pgerr.TableName,
+					ctx,
+					pgerr,
+				)
+				return
+			}
 		} else {
 			utresponse.GeneralInternalServerError(
 				function,
@@ -656,12 +662,16 @@ func (r *manageroutes) createPartner(ctx *gin.Context) {
 
 	respartner, err := r.spartner.Create(req)
 	if err != nil {
-		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			utresponse.GeneralDuplicate(
-				"email",
-				ctx,
-				err,
-			)
+		var pgerr *pgconn.PgError
+		if errors.As(err, &pgerr) {
+			if pgerrcode.IsIntegrityConstraintViolation(pgerr.SQLState()) {
+				utresponse.GeneralDuplicate(
+					pgerr.TableName,
+					ctx,
+					pgerr,
+				)
+				return
+			}
 		} else {
 			utresponse.GeneralInternalServerError(
 				function,
@@ -962,12 +972,16 @@ func (r *manageroutes) createPatron(ctx *gin.Context) {
 
 	respatron, err := r.spatron.Create(req)
 	if err != nil {
-		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			utresponse.GeneralDuplicate(
-				"email",
-				ctx,
-				err,
-			)
+		var pgerr *pgconn.PgError
+		if errors.As(err, &pgerr) {
+			if pgerrcode.IsIntegrityConstraintViolation(pgerr.SQLState()) {
+				utresponse.GeneralDuplicate(
+					pgerr.TableName,
+					ctx,
+					pgerr,
+				)
+				return
+			}
 		} else {
 			utresponse.GeneralInternalServerError(
 				function,
