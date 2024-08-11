@@ -5,6 +5,7 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
 	"project-skbackend/internal/services/authservice"
+	"project-skbackend/internal/services/fileservice"
 	"project-skbackend/internal/services/partnerservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utresponse"
@@ -18,6 +19,7 @@ type (
 		cfg      *configs.Config
 		sauth    authservice.IAuthService
 		spartner partnerservice.IPartnerService
+		sfile    fileservice.IFileService
 	}
 )
 
@@ -26,11 +28,13 @@ func newPartnerRoutes(
 	cfg *configs.Config,
 	sauth authservice.IAuthService,
 	spartner partnerservice.IPartnerService,
+	sfile fileservice.IFileService,
 ) {
 	r := &partnerroutes{
 		cfg:      cfg,
 		sauth:    sauth,
 		spartner: spartner,
+		sfile:    sfile,
 	}
 
 	gpartnerspub := rg.Group("partners")
@@ -63,7 +67,7 @@ func (r *partnerroutes) partnerRegister(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.spartner.Create(req)
+	respartner, err := r.spartner.Create(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 23505") {
 			utresponse.GeneralDuplicate(
@@ -79,6 +83,42 @@ func (r *partnerroutes) partnerRegister(ctx *gin.Context) {
 			)
 		}
 		return
+	}
+
+	// * define the image request
+	reqimg := req.User.CreateImage
+	// * if the image request is not empty
+	// * validate and upload the image
+	if reqimg != nil {
+		if err := reqimg.Validate(); err != nil {
+			utresponse.GeneralInvalidRequest(
+				function,
+				ctx,
+				nil,
+				err,
+			)
+			return
+		}
+
+		multipart, err := reqimg.GetMultipartFile()
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		err = r.sfile.UploadProfilePicture(respartner.User.ID, multipart)
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
 	}
 
 	resuser, thead, err := r.sauth.Signin(*req.ToSignin(), ctx)
