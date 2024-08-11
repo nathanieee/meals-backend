@@ -98,6 +98,12 @@ func (s *OrderService) Create(req requests.CreateOrder, useroderid uuid.UUID) (*
 		return nil, consttypes.ErrConvertFailed
 	}
 
+	// * delete the cart after processing
+	err = s.rcart.DeleteByIDs(req.CartIDs)
+	if err != nil {
+		return nil, err
+	}
+
 	return ordres, nil
 }
 
@@ -118,8 +124,10 @@ func (s *OrderService) getMemberAndUserOrder(useroderid uuid.UUID) (*models.Memb
 
 // * processes the cart items and calculates the total quantity
 func (s *OrderService) processCarts(cartIDs []uuid.UUID) ([]models.OrderMeal, uint, error) {
-	var omeals []models.OrderMeal
-	var qty uint
+	var (
+		omeals []models.OrderMeal
+		qty    uint
+	)
 
 	for _, cid := range cartIDs {
 		cart, err := s.rcart.GetByID(cid)
@@ -142,7 +150,10 @@ func (s *OrderService) checkDailyOrderLimit(memberID uuid.UUID, qty uint) (uint,
 		return 0, consttypes.ErrFailedToGetDailyOrder
 	}
 
+	// * add the order to the daily order
 	qty += dailyorder
+	// * if the quantity of the order is greater than the
+	// * daily order limit then block the user to order more
 	if qty > s.maxord {
 		return 0, consttypes.ErrDailyMaxOrderReached(s.maxord)
 	}
