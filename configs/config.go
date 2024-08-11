@@ -101,6 +101,7 @@ type (
 		TemplateDir string `env:"MAIL_TEMPLATE_DIR" env-default:"../web/templates"`
 		SMTPHost    string `env:"SMTP_HOST" env-default:"smtp.gmail.com"`
 		SMTPPort    int    `env:"SMTP_PORT" env-default:"587"`
+		LogoURL     string `env:"MAIL_LOGO_URL"`
 	}
 
 	JWT struct {
