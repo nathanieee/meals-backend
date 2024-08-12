@@ -21,7 +21,8 @@ func (req *CreateOrder) ToModel(
 	meals []models.OrderMeal,
 ) (*models.Order, error) {
 	var (
-		order models.Order
+		order  models.Order
+		status = consttypes.OS_PLACED
 	)
 
 	if err := copier.CopyWithOption(&order, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
@@ -32,13 +33,13 @@ func (req *CreateOrder) ToModel(
 	order.MemberID = member.ID
 	order.Member = member
 	order.Meals = meals
-	order.Status = consttypes.OS_PLACED
-	order.History = append(order.History, models.OrderHistory{
-		UserID:      userorder.ID,
-		User:        userorder,
-		Status:      consttypes.OS_PLACED,
-		Description: consttypes.NewOrderHistoryDescription(consttypes.OS_PLACED, userorder.Email),
-	})
+	order.Status = status
+
+	// * create new order history
+	oh := models.NewOrderHistory(userorder, status)
+
+	// * append history
+	order.History = append(order.History, *oh)
 
 	return &order, nil
 }

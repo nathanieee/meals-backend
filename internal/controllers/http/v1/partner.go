@@ -10,8 +10,10 @@ import (
 	"project-skbackend/internal/services/partnerservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utresponse"
+	"project-skbackend/packages/utils/uttoken"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -47,7 +49,12 @@ func newPartnerRoutes(
 	gpartnerspvt := rg.Group("partners")
 	gpartnerspvt.Use(middlewares.JWTAuthMiddleware(cfg, consttypes.UR_PARTNER))
 	{
-
+		gorder := gpartnerspvt.Group("orders")
+		{
+			gorder.PATCH(":oid/confirmed", r.orderConfirmed)
+			gorder.PATCH(":oid/being-prepared", r.orderBeingPrepared)
+			gorder.PATCH(":oid/prepared", r.orderPrepared)
+		}
 	}
 }
 
@@ -153,5 +160,138 @@ func (r *partnerroutes) partnerRegister(ctx *gin.Context) {
 		ctx,
 		resauth,
 		thead,
+	)
+}
+
+// TODO: test this function later
+func (r *partnerroutes) orderConfirmed(ctx *gin.Context) {
+	var (
+		function = "order confirmed"
+		err      error
+	)
+
+	user, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			nil,
+			err,
+		)
+		return
+	}
+
+	oid, err := uuid.Parse(ctx.Param("oid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.spartner.OrderConfirmed(oid, user.ID)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccess(
+		function,
+		ctx,
+		nil,
+	)
+}
+
+func (r *partnerroutes) orderBeingPrepared(ctx *gin.Context) {
+	var (
+		function = "order being prepared"
+		err      error
+	)
+
+	user, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			nil,
+			err,
+		)
+		return
+	}
+
+	oid, err := uuid.Parse(ctx.Param("oid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.spartner.OrderBeingPrepared(oid, user.ID)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccess(
+		function,
+		ctx,
+		nil,
+	)
+}
+
+func (r *partnerroutes) orderPrepared(ctx *gin.Context) {
+	var (
+		function = "order prepared"
+		err      error
+	)
+
+	user, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			nil,
+			err,
+		)
+		return
+	}
+
+	oid, err := uuid.Parse(ctx.Param("oid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.spartner.OrderPrepared(oid, user.ID)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccess(
+		function,
+		ctx,
+		nil,
 	)
 }

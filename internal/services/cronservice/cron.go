@@ -90,6 +90,7 @@ func (s *CronService) orderSchedule(gsch gocron.Scheduler) {
 func (s *CronService) scheduleOrderCancelled(gsch gocron.Scheduler) error {
 	_, err := gsch.NewJob(
 		gocron.DurationJob(
+			// TODO: use the env variable
 			time.Duration(1)*time.Minute,
 		),
 		gocron.NewTask(
@@ -118,6 +119,7 @@ func (s *CronService) scheduleOrderCancelled(gsch gocron.Scheduler) error {
 func (s *CronService) scheduleOrderPickedUp(gsch gocron.Scheduler) error {
 	_, err := gsch.NewJob(
 		gocron.DurationJob(
+			// TODO: use the env variable
 			time.Duration(1)*time.Minute,
 		),
 		gocron.NewTask(
@@ -146,6 +148,7 @@ func (s *CronService) scheduleOrderPickedUp(gsch gocron.Scheduler) error {
 func (s *CronService) scheduleOrderOutForDelivery(gsch gocron.Scheduler) error {
 	_, err := gsch.NewJob(
 		gocron.DurationJob(
+			// TODO: use the env variable
 			time.Duration(1)*time.Minute,
 		),
 		gocron.NewTask(
@@ -174,6 +177,7 @@ func (s *CronService) scheduleOrderOutForDelivery(gsch gocron.Scheduler) error {
 func (s *CronService) scheduleOrderDelivered(gsch gocron.Scheduler) error {
 	_, err := gsch.NewJob(
 		gocron.DurationJob(
+			// TODO: use the env variable
 			time.Duration(1)*time.Minute,
 		),
 		gocron.NewTask(

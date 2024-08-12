@@ -101,6 +101,7 @@ var (
 
 	// * orders
 	ErrFailedToGetDailyOrder = fmt.Errorf("failed to get daily order")
+	ErrInvalidOrderStatus    = fmt.Errorf("invalid order status")
 
 	// * caregivers
 	ErrCaregiverNotFound = fmt.Errorf("caregiver not found")

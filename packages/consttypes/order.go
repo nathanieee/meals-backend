@@ -6,37 +6,32 @@ import (
 )
 
 type (
-	MealStatus     string
-	DonationStatus string
-	OrderStatus    string
+	OrderStatus string
 )
 
 const (
-	MS_ACTIVE     MealStatus = "Active"
-	MS_INACTIVE   MealStatus = "Inactive"
-	MS_OUTOFSTOCK MealStatus = "Out of Stock"
+	// * by member
+	// * when member just checkout their cart
+	OS_PLACED OrderStatus = "Placed"
 
-	DS_ACCEPTED DonationStatus = "Accepted"
-	DS_REJECTED DonationStatus = "Rejected"
+	// * by partner
+	// * when partner accept the order and update it
+	OS_CONFIRMED      OrderStatus = "Confirmed"
+	OS_BEING_PREPARED OrderStatus = "Being Prepared"
+	OS_PREPARED       OrderStatus = "Prepared"
 
-	OS_PLACED           OrderStatus = "Placed"
-	OS_CONFIRMED        OrderStatus = "Confirmed"
-	OS_BEING_PREPARED   OrderStatus = "Being Prepared"
-	OS_PREPARED         OrderStatus = "Prepared"
+	// * automatically by system
+	// * when the meal already picked up for 10 minutes
 	OS_PICKED_UP        OrderStatus = "Picked Up"
 	OS_OUT_FOR_DELIVERY OrderStatus = "Out for Delivery"
 	OS_DELIVERED        OrderStatus = "Delivered"
-	OS_COMPLETED        OrderStatus = "Completed"
-	OS_CANCELLED        OrderStatus = "Cancelled"
+
+	// * by member
+	OS_COMPLETED OrderStatus = "Completed"
+
+	// * automatically by system
+	OS_CANCELLED OrderStatus = "Cancelled"
 )
-
-func (enum MealStatus) String() string {
-	return string(enum)
-}
-
-func (enum DonationStatus) String() string {
-	return string(enum)
-}
 
 func (enum OrderStatus) String() string {
 	return string(enum)

@@ -74,3 +74,60 @@ func NewCreateOrderMeals(
 		Quantity:  quantity,
 	}
 }
+
+func NewOrderHistory(
+	user User,
+	status consttypes.OrderStatus,
+) *OrderHistory {
+	return &OrderHistory{
+		UserID:      user.ID,
+		User:        user,
+		Status:      status,
+		Description: consttypes.NewOrderHistoryDescription(status, user.Email),
+	}
+}
+
+func (o *Order) OrderConfirmed(user User) *Order {
+	var (
+		status = consttypes.OS_CONFIRMED
+	)
+
+	o.Status = status
+
+	// * create new order history
+	oh := NewOrderHistory(user, status)
+
+	// * append history
+	o.History = append(o.History, *oh)
+	return o
+}
+
+func (o *Order) OrderBeingPrepared(user User) *Order {
+	var (
+		status = consttypes.OS_BEING_PREPARED
+	)
+
+	o.Status = status
+
+	// * create new order history
+	oh := NewOrderHistory(user, status)
+
+	// * append history
+	o.History = append(o.History, *oh)
+	return o
+}
+
+func (o *Order) OrderPrepared(user User) *Order {
+	var (
+		status = consttypes.OS_PREPARED
+	)
+
+	o.Status = status
+
+	// * create new order history
+	oh := NewOrderHistory(user, status)
+
+	// * append history
+	o.History = append(o.History, *oh)
+	return o
+}

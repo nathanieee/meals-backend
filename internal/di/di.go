@@ -83,6 +83,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	rorder := orderrepo.NewOrderRepository(db, *cfg)
 	rimg := imagerepo.NewImageRepository(db)
 	ruimg := userimagerepo.NewUserImageRepository(db)
+	rordr := orderrepo.NewOrderRepository(db, *cfg)
 
 	/* --------------------------------- service -------------------------------- */
 	// * external services
@@ -91,7 +92,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	// * internal services
 	sprod := producerservice.NewProducerService(ch, cfg, ctx)
 	suser := userservice.NewUserService(ruser, radmin, rcare, rmemb, rorg, rpart)
-	spart := partnerservice.NewPartnerService(rpart)
+	spart := partnerservice.NewPartnerService(rpart, rordr)
 	smail := mailservice.NewMailService(cfg, ruser, sprod)
 	sauth := authservice.NewAuthService(cfg, rdb, ruser, smail, suser)
 	smeal := mealservice.NewMealService(rmeal, rill, rall, rpart)

@@ -305,13 +305,14 @@ func (r *OrderRepository) UpdateAutomaticallyStatus(status consttypes.OrderStatu
 
 	// * loop through orders and update them
 	for _, order := range orders {
-		// Append history
-		order.History = append(order.History, models.OrderHistory{
-			UserID:      admin.ID,
-			User:        *admin,
-			Status:      status,
-			Description: consttypes.NewOrderHistoryDescription(status, admin.Email),
-		})
+		// * create new order history
+		oh := models.NewOrderHistory(
+			*admin,
+			status,
+		)
+
+		// * append history
+		order.History = append(order.History, *oh)
 
 		// * update the order status
 		err := r.db.Model(&order).Updates(models.Order{Status: status}).Error
