@@ -28,6 +28,8 @@ type (
 		mailhost   string
 		mailport   int
 		mailtemdir string
+
+		logourl string
 	}
 
 	IMailService interface {
@@ -53,6 +55,8 @@ func NewMailService(
 		mailhost:   cfg.Mail.SMTPHost,
 		mailport:   cfg.Mail.SMTPPort,
 		mailtemdir: cfg.Mail.TemplateDir,
+
+		logourl: cfg.LogoURL,
 	}
 }
 
@@ -117,6 +121,7 @@ func (s *MailService) SendResetPasswordEmail(req requests.SendEmailResetPassword
 		Subject:  "Reset Password Request on Meals to Heals",
 		Email:    req.Email,
 		Data: map[string]any{
+			"LogoUrl": s.logourl,
 			"Name":    req.Name,
 			"Email":   req.Email,
 			"LinkUrl": template.URL(req.LinkUrl),
@@ -136,9 +141,10 @@ func (s *MailService) SendVerifyEmail(req requests.SendEmailVerification) error 
 		Subject:  fmt.Sprintf("Verify Your Email Address on Meals to Heals"),
 		Email:    req.Email,
 		Data: map[string]any{
-			"Email": req.Email,
-			"Token": req.Token,
-			"Name":  req.Name,
+			"LogoUrl": s.logourl,
+			"Email":   req.Email,
+			"Token":   req.Token,
+			"Name":    req.Name,
 		},
 	}
 

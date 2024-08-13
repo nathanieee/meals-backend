@@ -20,7 +20,7 @@ type (
 	}
 
 	UpdateCaregiver struct {
-		User UpdateUser `json:"user" form:"user" binding:"dive"`
+		User UpdateUser `json:"user" form:"user" binding:"omitempty,dive"`
 
 		Gender      consttypes.Gender   `json:"gender" form:"gender" binding:"-"`
 		FirstName   string              `json:"first_name" form:"first_name" binding:"-"`

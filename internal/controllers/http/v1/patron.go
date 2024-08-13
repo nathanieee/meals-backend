@@ -1,14 +1,17 @@
 package controllers
 
 import (
+	"errors"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/services/authservice"
+	"project-skbackend/internal/services/fileservice"
 	"project-skbackend/internal/services/patronservice"
 	"project-skbackend/packages/utils/utresponse"
-	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type (
@@ -16,6 +19,7 @@ type (
 		cfg     *configs.Config
 		spatron patronservice.IPatronService
 		sauth   authservice.IAuthService
+		sfile   fileservice.IFileService
 	}
 )
 
@@ -24,11 +28,13 @@ func newPatronRoutes(
 	cfg *configs.Config,
 	sauth authservice.IAuthService,
 	spatron patronservice.IPatronService,
+	sfile fileservice.IFileService,
 ) {
 	r := &patronroutes{
 		cfg:     cfg,
 		sauth:   sauth,
 		spatron: spatron,
+		sfile:   sfile,
 	}
 
 	gpatronspub := rg.Group("patrons")
@@ -45,7 +51,7 @@ func (r *patronroutes) patronRegister(ctx *gin.Context) {
 		err      error
 	)
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
 			function,
@@ -56,14 +62,18 @@ func (r *patronroutes) patronRegister(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.spatron.Create(req)
+	respatron, err := r.spatron.Create(req)
 	if err != nil {
-		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			utresponse.GeneralDuplicate(
-				"email",
-				ctx,
-				err,
-			)
+		var pgerr *pgconn.PgError
+		if errors.As(err, &pgerr) {
+			if pgerrcode.IsIntegrityConstraintViolation(pgerr.SQLState()) {
+				utresponse.GeneralDuplicate(
+					pgerr.TableName,
+					ctx,
+					pgerr,
+				)
+				return
+			}
 		} else {
 			utresponse.GeneralInternalServerError(
 				function,
@@ -72,6 +82,42 @@ func (r *patronroutes) patronRegister(ctx *gin.Context) {
 			)
 		}
 		return
+	}
+
+	// * define the image request
+	reqimg := req.User.CreateImage
+	// * if the image request is not empty
+	// * validate and upload the image
+	if reqimg != nil {
+		if err := reqimg.Validate(); err != nil {
+			utresponse.GeneralInvalidRequest(
+				function,
+				ctx,
+				nil,
+				err,
+			)
+			return
+		}
+
+		multipart, err := reqimg.GetMultipartFile()
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		err = r.sfile.UploadProfilePicture(respatron.User.ID, multipart)
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
 	}
 
 	resuser, thead, err := r.sauth.Signin(*req.ToSignin(), ctx)

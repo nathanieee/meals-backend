@@ -11,6 +11,7 @@ import (
 	"project-skbackend/internal/repositories/memberrepo"
 	"project-skbackend/internal/repositories/organizationrepo"
 	"project-skbackend/internal/repositories/partnerrepo"
+	"project-skbackend/internal/repositories/patronrepo"
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utpagination"
@@ -26,7 +27,7 @@ type (
 		rmemb memberrepo.IMemberRepository
 		rorga organizationrepo.IOrganizationRepository
 		rpart partnerrepo.IPartnerRepository
-		// rpatr patronrepo.IPatronRepository
+		rpatr patronrepo.IPatronRepository
 	}
 
 	IUserService interface {
@@ -47,7 +48,7 @@ func NewUserService(
 	rmemb memberrepo.IMemberRepository,
 	rorga organizationrepo.IOrganizationRepository,
 	rpart partnerrepo.IPartnerRepository,
-	// rpatr patronrepo.IPatronRepository,
+	rpatr patronrepo.IPatronRepository,
 ) *UserService {
 	return &UserService{
 		ruser: ruser,
@@ -56,7 +57,7 @@ func NewUserService(
 		rmemb: rmemb,
 		rorga: rorga,
 		rpart: rpart,
-		// rpatr: rpatr,
+		rpatr: rpatr,
 	}
 }
 
@@ -198,8 +199,7 @@ func (s *UserService) GetUserName(uid uuid.UUID) (string, string, error) {
 
 		firstname = p.Name
 	case consttypes.UR_PATRON:
-		// TODO - change this into patron repo, not partner
-		p, err := s.rpart.GetByUserID(uid)
+		p, err := s.rpatr.GetByUserID(uid)
 		if err != nil {
 			return "", "", err
 		}
@@ -259,7 +259,6 @@ func (s *UserService) GetRoleDataByUserID(uid uuid.UUID) (*responses.BaseRole, e
 
 		data = p
 	case consttypes.UR_PATRON:
-		// TODO - change this into patron repo, not partner
 		p, err := s.rpart.GetByUserID(uid)
 		if err != nil {
 			return nil, err

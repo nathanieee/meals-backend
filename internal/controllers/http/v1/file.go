@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"mime/multipart"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/services/fileservice"
+	"project-skbackend/packages/utils/utfile"
 	"project-skbackend/packages/utils/utresponse"
 
 	"github.com/gin-gonic/gin"
@@ -34,9 +36,10 @@ func newFileRoutes(
 
 func (r *fileroutes) uploadFile(ctx *gin.Context) {
 	var (
-		function = "upload file"
-		req      requests.FileUpload
-		err      error
+		function  = "upload file"
+		req       requests.CreateImage
+		err       error
+		multipart *multipart.FileHeader
 	)
 
 	if err = ctx.ShouldBind(&req); err != nil {
@@ -50,7 +53,29 @@ func (r *fileroutes) uploadFile(ctx *gin.Context) {
 		return
 	}
 
-	url, err := r.sfile.Upload(req)
+	// * validate the request with custom function
+	if err := req.Validate(); err != nil {
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			nil,
+			err,
+		)
+		return
+	}
+
+	multipart, err = req.GetMultipartFile()
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	fileupload := utfile.NewFileUpload(multipart)
+	url, err := r.sfile.Upload(*fileupload)
 	if err != nil {
 		utresponse.GeneralInternalServerError(
 			function,

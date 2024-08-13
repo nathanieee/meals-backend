@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 func GetResetPasswordCooldown() int {
+	godotenv.Load()
+
 	rpc := os.Getenv("API_RESET_PASSWORD_COOLDOWN")
 	if rpc == "" {
 		// * default value of reset password cooldown
@@ -39,6 +43,10 @@ func ErrFileSizeTooBig(ext any, maxSize float64, maxSizeSuffix string) error {
 
 func ErrUnsupportedFileExtension(ext any) error {
 	return fmt.Errorf("unsupported file extension: %s", ext)
+}
+
+func ErrUnsupportedFileType(filetype any) error {
+	return fmt.Errorf("unsupported file type: %s", filetype)
 }
 
 var (
@@ -93,6 +101,7 @@ var (
 
 	// * orders
 	ErrFailedToGetDailyOrder = fmt.Errorf("failed to get daily order")
+	ErrInvalidOrderStatus    = fmt.Errorf("invalid order status")
 
 	// * caregivers
 	ErrCaregiverNotFound = fmt.Errorf("caregiver not found")
@@ -141,6 +150,8 @@ var (
 	ErrFailedToOpenFile        = fmt.Errorf("failed to open file")
 	ErrFailedToReadFile        = fmt.Errorf("failed to read file")
 	ErrFailedToValidateFile    = fmt.Errorf("failed to validate file")
+	ErrTooManyFiles            = fmt.Errorf("too many files provided")
+	ErrNoFiles                 = fmt.Errorf("no files provided")
 
 	// * caches
 	ErrFailedToSetCache = fmt.Errorf("failed to set cache")

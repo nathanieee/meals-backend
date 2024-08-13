@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"errors"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
+	"project-skbackend/internal/services/fileservice"
 	"project-skbackend/internal/services/illnessservice"
 	"project-skbackend/internal/services/mealservice"
 	"project-skbackend/internal/services/memberservice"
@@ -12,10 +14,11 @@ import (
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utrequest"
 	"project-skbackend/packages/utils/utresponse"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )
 
@@ -27,6 +30,7 @@ type (
 		spartner partnerservice.IPartnerService
 		spatron  patronservice.IPatronService
 		sillness illnessservice.IIllnessService
+		sfile    fileservice.IFileService
 	}
 )
 
@@ -38,6 +42,7 @@ func newManageRoutes(
 	spartner partnerservice.IPartnerService,
 	spatron patronservice.IPatronService,
 	sillness illnessservice.IIllnessService,
+	sfile fileservice.IFileService,
 ) {
 	r := &manageroutes{
 		cfg:      cfg,
@@ -46,6 +51,7 @@ func newManageRoutes(
 		spartner: spartner,
 		spatron:  spatron,
 		sillness: sillness,
+		sfile:    sfile,
 	}
 
 	gmanage := rg.Group("manages")
@@ -111,7 +117,7 @@ func (r *manageroutes) createMeal(ctx *gin.Context) {
 		req      requests.CreateMeal
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -335,7 +341,7 @@ func (r *manageroutes) createMember(ctx *gin.Context) {
 		req      requests.CreateMember
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -349,12 +355,16 @@ func (r *manageroutes) createMember(ctx *gin.Context) {
 
 	resmemb, err := r.smember.Create(req)
 	if err != nil {
-		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			utresponse.GeneralDuplicate(
-				"email",
-				ctx,
-				err,
-			)
+		var pgerr *pgconn.PgError
+		if errors.As(err, &pgerr) {
+			if pgerrcode.IsIntegrityConstraintViolation(pgerr.SQLState()) {
+				utresponse.GeneralDuplicate(
+					pgerr.TableName,
+					ctx,
+					pgerr,
+				)
+				return
+			}
 		} else {
 			utresponse.GeneralInternalServerError(
 				function,
@@ -363,6 +373,42 @@ func (r *manageroutes) createMember(ctx *gin.Context) {
 			)
 		}
 		return
+	}
+
+	// * define the image request
+	reqimg := req.User.CreateImage
+	// * if the image request is not empty
+	// * validate and upload the image
+	if reqimg != nil {
+		if err := reqimg.Validate(); err != nil {
+			utresponse.GeneralInvalidRequest(
+				function,
+				ctx,
+				nil,
+				err,
+			)
+			return
+		}
+
+		multipart, err := reqimg.GetMultipartFile()
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		err = r.sfile.UploadProfilePicture(resmemb.User.ID, multipart)
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
 	}
 
 	utresponse.GeneralSuccessCreate(
@@ -493,6 +539,42 @@ func (r *manageroutes) updateMember(ctx *gin.Context) {
 		return
 	}
 
+	// * define the image request
+	reqimg := req.User.UpdateImage
+	// * if the image request is not empty
+	// * validate and upload the image
+	if reqimg != nil {
+		if err := reqimg.Validate(); err != nil {
+			utresponse.GeneralInvalidRequest(
+				function,
+				ctx,
+				nil,
+				err,
+			)
+			return
+		}
+
+		multipart, err := reqimg.GetMultipartFile()
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		err = r.sfile.UploadProfilePicture(resmemb.User.ID, multipart)
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+	}
+
 	utresponse.GeneralSuccessUpdate(
 		entity,
 		ctx,
@@ -566,7 +648,7 @@ func (r *manageroutes) createPartner(ctx *gin.Context) {
 		req      requests.CreatePartner
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -580,12 +662,16 @@ func (r *manageroutes) createPartner(ctx *gin.Context) {
 
 	respartner, err := r.spartner.Create(req)
 	if err != nil {
-		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			utresponse.GeneralDuplicate(
-				"email",
-				ctx,
-				err,
-			)
+		var pgerr *pgconn.PgError
+		if errors.As(err, &pgerr) {
+			if pgerrcode.IsIntegrityConstraintViolation(pgerr.SQLState()) {
+				utresponse.GeneralDuplicate(
+					pgerr.TableName,
+					ctx,
+					pgerr,
+				)
+				return
+			}
 		} else {
 			utresponse.GeneralInternalServerError(
 				function,
@@ -594,6 +680,42 @@ func (r *manageroutes) createPartner(ctx *gin.Context) {
 			)
 		}
 		return
+	}
+
+	// * define the image request
+	reqimg := req.User.CreateImage
+	// * if the image request is not empty
+	// * validate and upload the image
+	if reqimg != nil {
+		if err := reqimg.Validate(); err != nil {
+			utresponse.GeneralInvalidRequest(
+				function,
+				ctx,
+				nil,
+				err,
+			)
+			return
+		}
+
+		multipart, err := reqimg.GetMultipartFile()
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		err = r.sfile.UploadProfilePicture(respartner.User.ID, multipart)
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
 	}
 
 	utresponse.GeneralSuccessCreate(
@@ -675,7 +797,7 @@ func (r *manageroutes) updatePartner(ctx *gin.Context) {
 		req      requests.UpdatePartner
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -724,6 +846,42 @@ func (r *manageroutes) updatePartner(ctx *gin.Context) {
 			err,
 		)
 		return
+	}
+
+	// * define the image request
+	reqimg := req.User.UpdateImage
+	// * if the image request is not empty
+	// * validate and upload the image
+	if reqimg != nil {
+		if err := reqimg.Validate(); err != nil {
+			utresponse.GeneralInvalidRequest(
+				function,
+				ctx,
+				nil,
+				err,
+			)
+			return
+		}
+
+		multipart, err := reqimg.GetMultipartFile()
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		err = r.sfile.UploadProfilePicture(respartner.User.ID, multipart)
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
 	}
 
 	utresponse.GeneralSuccessUpdate(
@@ -800,7 +958,7 @@ func (r *manageroutes) createPatron(ctx *gin.Context) {
 		req      requests.CreatePatron
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -814,12 +972,16 @@ func (r *manageroutes) createPatron(ctx *gin.Context) {
 
 	respatron, err := r.spatron.Create(req)
 	if err != nil {
-		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			utresponse.GeneralDuplicate(
-				"email",
-				ctx,
-				err,
-			)
+		var pgerr *pgconn.PgError
+		if errors.As(err, &pgerr) {
+			if pgerrcode.IsIntegrityConstraintViolation(pgerr.SQLState()) {
+				utresponse.GeneralDuplicate(
+					pgerr.TableName,
+					ctx,
+					pgerr,
+				)
+				return
+			}
 		} else {
 			utresponse.GeneralInternalServerError(
 				function,
@@ -828,6 +990,42 @@ func (r *manageroutes) createPatron(ctx *gin.Context) {
 			)
 		}
 		return
+	}
+
+	// * define the image request
+	reqimg := req.User.CreateImage
+	// * if the image request is not empty
+	// * validate and upload the image
+	if reqimg != nil {
+		if err := reqimg.Validate(); err != nil {
+			utresponse.GeneralInvalidRequest(
+				function,
+				ctx,
+				nil,
+				err,
+			)
+			return
+		}
+
+		multipart, err := reqimg.GetMultipartFile()
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		err = r.sfile.UploadProfilePicture(respatron.User.ID, multipart)
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
 	}
 
 	utresponse.GeneralSuccessCreate(
@@ -907,7 +1105,7 @@ func (r *manageroutes) updatePatron(ctx *gin.Context) {
 		req      requests.UpdatePatron
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -956,6 +1154,42 @@ func (r *manageroutes) updatePatron(ctx *gin.Context) {
 			err,
 		)
 		return
+	}
+
+	// * define the image request
+	reqimg := req.User.UpdateImage
+	// * if the image request is not empty
+	// * validate and upload the image
+	if reqimg != nil {
+		if err := reqimg.Validate(); err != nil {
+			utresponse.GeneralInvalidRequest(
+				function,
+				ctx,
+				nil,
+				err,
+			)
+			return
+		}
+
+		multipart, err := reqimg.GetMultipartFile()
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		err = r.sfile.UploadProfilePicture(respatron.User.ID, multipart)
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
 	}
 
 	utresponse.GeneralSuccessUpdate(
@@ -1032,7 +1266,7 @@ func (r *manageroutes) createIllness(ctx *gin.Context) {
 		req      requests.CreateIllness
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
@@ -1131,7 +1365,7 @@ func (r *manageroutes) updateIllness(ctx *gin.Context) {
 		req      requests.UpdateIllness
 	)
 
-	err := ctx.ShouldBindJSON(&req)
+	err := ctx.ShouldBind(&req)
 	if err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(

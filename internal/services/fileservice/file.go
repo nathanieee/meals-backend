@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"mime/multipart"
 	"project-skbackend/configs"
-	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/imagerepo"
 	"project-skbackend/internal/repositories/userimagerepo"
@@ -40,7 +39,8 @@ type (
 	}
 
 	IFileService interface {
-		Upload(req requests.FileUpload) (string, error)
+		Upload(req utfile.FileMultipart) (string, error)
+		UploadProfilePicture(uid uuid.UUID, fileheader *multipart.FileHeader) error
 	}
 )
 
@@ -91,10 +91,10 @@ func (s *FileService) UploadProfilePicture(uid uuid.UUID, fileheader *multipart.
 	})
 	if err != nil {
 		utlogger.Error(err)
-		return consttypes.ErrFailedToValidateFile
+		return err
 	}
 
-	fileupload := requests.NewFileUpload(fileheader)
+	fileupload := utfile.NewFileUpload(fileheader)
 	url, err := s.Upload(*fileupload)
 	if err != nil {
 		utlogger.Error(err)
@@ -122,7 +122,7 @@ func (s *FileService) UploadProfilePicture(uid uuid.UUID, fileheader *multipart.
 
 func (s *FileService) CheckAndSaveUserImage(u models.User, image models.Image) error {
 	ui, err := s.ruimg.GetByUserID(u.ID)
-	if err != nil {
+	if ui == nil || (err != nil && errors.Is(err, gorm.ErrRecordNotFound)) {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return consttypes.ErrGeneralFailed("get by user id", err.Error())
 		}
@@ -145,7 +145,7 @@ func (s *FileService) CheckAndSaveUserImage(u models.User, image models.Image) e
 	return nil
 }
 
-func (s *FileService) Upload(req requests.FileUpload) (string, error) {
+func (s *FileService) Upload(req utfile.FileMultipart) (string, error) {
 	fileheader := req.File
 
 	// * open the file

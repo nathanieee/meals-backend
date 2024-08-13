@@ -4,7 +4,9 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
+	"project-skbackend/internal/repositories/orderrepo"
 	"project-skbackend/internal/repositories/partnerrepo"
+	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utpagination"
 
@@ -14,6 +16,8 @@ import (
 type (
 	PartnerService struct {
 		rpart partnerrepo.IPartnerRepository
+		rordr orderrepo.IOrderRepository
+		ruser userrepo.IUserRepository
 	}
 
 	IPartnerService interface {
@@ -23,20 +27,25 @@ type (
 		Delete(id uuid.UUID) error
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
 		GetByID(id uuid.UUID) (*responses.Partner, error)
+
+		// * order related
+		OrderConfirmed(oid uuid.UUID, uid uuid.UUID) error
+		OrderBeingPrepared(oid uuid.UUID, uid uuid.UUID) error
+		OrderPrepared(oid uuid.UUID, uid uuid.UUID) error
 	}
 )
 
 func NewPartnerService(
 	rpart partnerrepo.IPartnerRepository,
+	rordr orderrepo.IOrderRepository,
 ) *PartnerService {
 	return &PartnerService{
 		rpart: rpart,
+		rordr: rordr,
 	}
 }
 
 func (s *PartnerService) Create(req requests.CreatePartner) (*responses.Partner, error) {
-	// TODO: upload the image to S3 bucket and get the image url
-
 	user, err := req.User.ToModel(consttypes.UR_PARTNER)
 	if err != nil {
 		return nil, err
@@ -128,4 +137,94 @@ func (s *PartnerService) GetByID(id uuid.UUID) (*responses.Partner, error) {
 	}
 
 	return pres, nil
+}
+
+func (s *PartnerService) OrderConfirmed(oid uuid.UUID, uid uuid.UUID) error {
+	// * get the user who confirms the order
+	user, err := s.ruser.GetByID(uid)
+	if err != nil {
+		return err
+	}
+
+	// * get the corresponding order
+	order, err := s.rordr.GetByID(oid)
+	if err != nil {
+		return err
+	}
+
+	// * could only confirm the order if the order status is "placed"
+	if order.Status != consttypes.OS_PLACED {
+		return consttypes.ErrInvalidOrderStatus
+	}
+
+	// * update the order object to confirm the order
+	conorder := order.OrderConfirmed(*user)
+
+	// * update the order in the database
+	_, err = s.rordr.Update(*conorder)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *PartnerService) OrderBeingPrepared(oid uuid.UUID, uid uuid.UUID) error {
+	// * get the user who confirms the order
+	user, err := s.ruser.GetByID(uid)
+	if err != nil {
+		return err
+	}
+
+	// * get the corresponding order
+	order, err := s.rordr.GetByID(oid)
+	if err != nil {
+		return err
+	}
+
+	// * could only confirm the order if the order status is "confirmed"
+	if order.Status != consttypes.OS_CONFIRMED {
+		return consttypes.ErrInvalidOrderStatus
+	}
+
+	// * update the order object to confirm the order
+	beporder := order.OrderBeingPrepared(*user)
+
+	// * update the order in the database
+	_, err = s.rordr.Update(*beporder)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *PartnerService) OrderPrepared(oid uuid.UUID, uid uuid.UUID) error {
+	// * get the user who confirms the order
+	user, err := s.ruser.GetByID(uid)
+	if err != nil {
+		return err
+	}
+
+	// * get the corresponding order
+	order, err := s.rordr.GetByID(oid)
+	if err != nil {
+		return err
+	}
+
+	// * could only confirm the order if the order status is "being prepared"
+	if order.Status != consttypes.OS_CONFIRMED {
+		return consttypes.ErrInvalidOrderStatus
+	}
+
+	// * update the order object to confirm the order
+	preporder := order.OrderPrepared(*user)
+
+	// * update the order in the database
+	_, err = s.rordr.Update(*preporder)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

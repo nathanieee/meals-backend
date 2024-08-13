@@ -74,8 +74,6 @@ func (s *MemberService) Create(req requests.CreateMember) (*responses.Member, er
 		return nil, consttypes.ErrConvertFailed
 	}
 
-	// TODO: upload the image to S3 bucket and get the image url
-
 	// * if caregiver request is not empty, then convert it to model.
 	if req.Caregiver != nil {
 		caregiver, err = req.Caregiver.FromMemberAddition()

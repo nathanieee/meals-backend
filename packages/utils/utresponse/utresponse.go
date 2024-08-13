@@ -211,13 +211,24 @@ func GeneralInvalidRequest(
 	ve []ValidationErrorMessage,
 	err error,
 ) {
+	// * create new default error data
+	var (
+		errdata = &ErrorData{
+			Debug:  &err,
+			Errors: ve,
+		}
+	)
+
+	// * if ve is empty, then change the
+	// * error to the original error
+	if len(ve) == 0 {
+		errdata.Errors = err.Error()
+	}
+
 	ErrorResponse(ctx, http.StatusBadRequest, ErrorRes{
 		Status:  consttypes.RST_FAIL,
 		Message: fmt.Sprintf("Invalid request on %s", function),
-		Data: &ErrorData{
-			Debug:  &err,
-			Errors: ve,
-		},
+		Data:    errdata,
 	})
 }
 

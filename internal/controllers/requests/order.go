@@ -11,13 +11,7 @@ import (
 
 type (
 	CreateOrder struct {
-		Meals []CreateOrderMeal `json:"meals" form:"meals" binding:"required,dive"`
-	}
-
-	CreateOrderMeal struct {
-		MealID uuid.UUID `json:"meal_id" form:"meal_id" binding:"required"`
-
-		Quantity uint `json:"quantity" form:"quantity" binding:"required"`
+		CartIDs []uuid.UUID `json:"cart_ids" form:"cart_ids" binding:"required"`
 	}
 )
 
@@ -27,7 +21,8 @@ func (req *CreateOrder) ToModel(
 	meals []models.OrderMeal,
 ) (*models.Order, error) {
 	var (
-		order models.Order
+		order  models.Order
+		status = consttypes.OS_PLACED
 	)
 
 	if err := copier.CopyWithOption(&order, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
@@ -38,31 +33,13 @@ func (req *CreateOrder) ToModel(
 	order.MemberID = member.ID
 	order.Member = member
 	order.Meals = meals
-	order.Status = consttypes.OS_PLACED
-	order.History = append(order.History, models.OrderHistory{
-		UserID:      userorder.ID,
-		User:        userorder,
-		Status:      consttypes.OS_PLACED,
-		Description: consttypes.NewOrderHistoryDescription(consttypes.OS_PLACED, userorder.Email),
-	})
+	order.Status = status
+
+	// * create new order history
+	oh := models.NewOrderHistory(userorder, status)
+
+	// * append history
+	order.History = append(order.History, *oh)
 
 	return &order, nil
-}
-
-func (req *CreateOrderMeal) ToModel(meal models.Meal) (*models.OrderMeal, error) {
-	var (
-		omeal models.OrderMeal
-	)
-
-	if err := copier.CopyWithOption(&omeal, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-		utlogger.Error(err)
-		return nil, err
-	}
-
-	omeal.MealID = meal.ID
-	omeal.Meal = meal
-	omeal.PartnerID = meal.PartnerID
-	omeal.Partner = meal.Partner
-
-	return &omeal, nil
 }

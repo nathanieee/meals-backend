@@ -1,20 +1,23 @@
 package controllers
 
 import (
+	"errors"
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
 	"project-skbackend/internal/services/authservice"
 	"project-skbackend/internal/services/cartservice"
+	"project-skbackend/internal/services/fileservice"
 	"project-skbackend/internal/services/memberservice"
 	"project-skbackend/internal/services/orderservice"
 	"project-skbackend/internal/services/userservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/uttoken"
-	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type (
@@ -25,6 +28,7 @@ type (
 		suser   userservice.IUserService
 		sauth   authservice.IAuthService
 		sorder  orderservice.IOrderService
+		sfile   fileservice.IFileService
 	}
 )
 
@@ -36,6 +40,7 @@ func newMemberRoutes(
 	suser userservice.IUserService,
 	sauth authservice.IAuthService,
 	sorder orderservice.IOrderService,
+	sfile fileservice.IFileService,
 ) {
 	r := &memberroutes{
 		cfg:     cfg,
@@ -44,6 +49,7 @@ func newMemberRoutes(
 		suser:   suser,
 		sauth:   sauth,
 		sorder:  sorder,
+		sfile:   sfile,
 	}
 
 	gmemberspub := rg.Group("members")
@@ -74,7 +80,7 @@ func (r *memberroutes) memberRegister(ctx *gin.Context) {
 		err      error
 	)
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
 			function,
@@ -85,14 +91,18 @@ func (r *memberroutes) memberRegister(ctx *gin.Context) {
 		return
 	}
 
-	_, err = r.smember.Create(req)
+	member, err := r.smember.Create(req)
 	if err != nil {
-		if strings.Contains(err.Error(), "SQLSTATE 23505") {
-			utresponse.GeneralDuplicate(
-				"email",
-				ctx,
-				err,
-			)
+		var pgerr *pgconn.PgError
+		if errors.As(err, &pgerr) {
+			if pgerrcode.IsIntegrityConstraintViolation(pgerr.SQLState()) {
+				utresponse.GeneralDuplicate(
+					pgerr.TableName,
+					ctx,
+					pgerr,
+				)
+				return
+			}
 		} else {
 			utresponse.GeneralInternalServerError(
 				function,
@@ -101,6 +111,42 @@ func (r *memberroutes) memberRegister(ctx *gin.Context) {
 			)
 		}
 		return
+	}
+
+	// * define the image request
+	reqimg := req.User.CreateImage
+	// * if the image request is not empty
+	// * validate and upload the image
+	if reqimg != nil {
+		if err := reqimg.Validate(); err != nil {
+			utresponse.GeneralInvalidRequest(
+				function,
+				ctx,
+				nil,
+				err,
+			)
+			return
+		}
+
+		multipart, err := reqimg.GetMultipartFile()
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		err = r.sfile.UploadProfilePicture(member.User.ID, multipart)
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
 	}
 
 	resuser, thead, err := r.sauth.Signin(*req.ToSignin(), ctx)
@@ -149,7 +195,7 @@ func (r *memberroutes) memberCreateCart(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
 			function,
@@ -212,7 +258,7 @@ func (r *memberroutes) memberCreateOrder(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		ve := utresponse.ValidationResponse(err)
 		utresponse.GeneralInvalidRequest(
 			function,

@@ -14,7 +14,7 @@ type (
 	}
 
 	UpdatePartner struct {
-		User UpdateUser `json:"user" form:"user" binding:"dive"`
+		User UpdateUser `json:"user" form:"user" binding:"omitempty,dive"`
 		Name string     `json:"name" form:"name" binding:"-"`
 	}
 )

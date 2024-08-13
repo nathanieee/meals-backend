@@ -30,13 +30,13 @@ func (i *Image) CreateUserImage(
 	user User,
 ) *UserImage {
 	var (
-		userimage = user.Image
+		userimage = UserImage{}
 	)
 
 	userimage.ImageID = i.ID
 	userimage.UserID = user.ID
 
-	return userimage
+	return &userimage
 }
 
 func (i *Image) UpdateUserImage(

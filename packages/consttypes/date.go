@@ -3,6 +3,8 @@ package consttypes
 import (
 	"os"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 const (
@@ -11,7 +13,9 @@ const (
 )
 
 func TimeNow() time.Time {
-	tz, _ := time.LoadLocation(os.Getenv("API_TIMEZONE"))
+	godotenv.Load()
+
+	tz, _ := time.LoadLocation(os.Getenv("TZ"))
 
 	return time.Now().In(tz)
 }

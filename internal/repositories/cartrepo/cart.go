@@ -36,6 +36,7 @@ type (
 		Read() ([]*models.Cart, error)
 		Update(c models.Cart) (*models.Cart, error)
 		Delete(c models.Cart) error
+		DeleteByIDs(ids []uuid.UUID) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		GetByID(id uuid.UUID) (*models.Cart, error)
 		FindByMemberID(mid uuid.UUID) ([]*models.Cart, error)
@@ -133,7 +134,22 @@ func (r *CartRepository) Update(c models.Cart) (*models.Cart, error) {
 
 func (r *CartRepository) Delete(c models.Cart) error {
 	err := r.db.
+		Unscoped().
 		Delete(&c).Error
+
+	if err != nil {
+		utlogger.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *CartRepository) DeleteByIDs(ids []uuid.UUID) error {
+	err := r.db.
+		Unscoped().
+		Where("id IN ?", ids).
+		Delete(&models.Cart{}).Error
 
 	if err != nil {
 		utlogger.Error(err)

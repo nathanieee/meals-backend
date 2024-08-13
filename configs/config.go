@@ -35,7 +35,7 @@ type (
 	API struct {
 		VerifyTokenLength int    `env:"API_VERIFY_TOKEN_LENGTH" env-default:"8"`
 		URL               string `env:"API_URL" env-default:"localhost"`
-		Timezone          string `env:"API_TIMEZONE" env-default:"Asia/Makassar"`
+		Timezone          string `env:"TZ" env-default:"Asia/Makassar"`
 		APIResetPassword
 	}
 	APIResetPassword struct {
@@ -101,6 +101,7 @@ type (
 		TemplateDir string `env:"MAIL_TEMPLATE_DIR" env-default:"../web/templates"`
 		SMTPHost    string `env:"SMTP_HOST" env-default:"smtp.gmail.com"`
 		SMTPPort    int    `env:"SMTP_PORT" env-default:"587"`
+		LogoURL     string `env:"MAIL_LOGO_URL"`
 	}
 
 	JWT struct {

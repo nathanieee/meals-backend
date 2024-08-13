@@ -9,9 +9,10 @@ services:
     ports:
       - "${DB_PORT:-5432}:5432"
     environment:
-      - POSTGRES_USER=${DB_USER:-root}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
-      - POSTGRES_DB=${DB_NAME:-meals-pg}
+      POSTGRES_USER: ${DB_USER:-root}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-meals-pg}
+      TZ: ${TZ:-Asia/Makassar}
     volumes:
       - meals-pg-volume:/var/lib/postgresql/data/
     networks:
@@ -41,6 +42,8 @@ services:
     image: redis:alpine
     ports:
       - '${REDIS_PORT:-6379}:6379'
+    environment:
+      TZ: ${TZ:-Asia/Makassar}
     volumes:
       - meals-redis-volume:/data
     networks:
@@ -59,6 +62,7 @@ services:
       - "15672:15672"  # RabbitMQ Management UI port
     environment:
       RABBITMQ_ERLANG_COOKIE: "secretcookie"  # Change this to a secure value
+      TZ: ${TZ:-Asia/Makassar}
     volumes:
       - meals-rabbit-volume:/var/lib/rabbitmq
     networks:
