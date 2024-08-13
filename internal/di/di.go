@@ -91,7 +91,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 
 	// * internal services
 	sprod := producerservice.NewProducerService(ch, cfg, ctx)
-	suser := userservice.NewUserService(ruser, radmin, rcare, rmemb, rorg, rpart)
+	suser := userservice.NewUserService(ruser, radmin, rcare, rmemb, rorg, rpart, rpatron)
 	spart := partnerservice.NewPartnerService(rpart, rordr)
 	smail := mailservice.NewMailService(cfg, ruser, sprod)
 	sauth := authservice.NewAuthService(cfg, rdb, ruser, smail, suser)
