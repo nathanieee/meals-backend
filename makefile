@@ -11,12 +11,16 @@ endif
 
 .PHONY: local
 
-local:
+clean-local:
 	$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE_LOCAL) --env-file ./.env down --volumes --remove-orphans
+
+local:
 	$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE_LOCAL) --env-file ./.env up --build
 
-prod:
+clean-prod:
 	$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE_PROD) down --volumes --remove-orphans
+
+prod:
 	$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_FILE_PROD) up --build
 
 generate-mockery:

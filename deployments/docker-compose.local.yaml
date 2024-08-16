@@ -5,7 +5,7 @@ networks:
 services:
   meals-pg:
     container_name: meals-pg
-    image: postgres:13-alpine
+    image: postgres:16-alpine
     ports:
       - "${DB_PORT:-5432}:5432"
     environment:
@@ -18,6 +18,12 @@ services:
     networks:
       - meals-network
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d ${DB_NAME:-meals-pg}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   meals-go:
     container_name: meals-go
@@ -30,9 +36,12 @@ services:
     networks:
       - meals-network
     depends_on:
-      - meals-pg
-      - meals-redis
-      - meals-rabbit
+      meals-pg:
+        condition: service_healthy
+      meals-redis:
+        condition: service_healthy
+      meals-rabbit:
+        condition: service_healthy
     volumes:
       - ..:/app:rw,delegated
     restart: always
