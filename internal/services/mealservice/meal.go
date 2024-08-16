@@ -154,7 +154,6 @@ func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.
 		return nil, consttypes.ErrPartnerNotFound
 	}
 
-	// TODO: handle the uploading of meal image
 	meal, err = req.ToModel(*meal, images, illnesses, allergies, *partner)
 	if err != nil {
 		return nil, consttypes.ErrConvertFailed
