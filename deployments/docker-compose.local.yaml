@@ -65,9 +65,9 @@ services:
 
   meals-rabbit:
     container_name: "meals-rabbit"
-    image: "rabbitmq:alpine"
+    image: "rabbitmq:3.13-management"
     ports:
-      - "5672:5672"  # RabbitMQ default port
+      - "${RABBITMQ_PORT:-5672}:5672"  # RabbitMQ default port
       - "15672:15672"  # RabbitMQ Management UI port
     environment:
       RABBITMQ_ERLANG_COOKIE: "secretcookie"  # Change this to a secure value
