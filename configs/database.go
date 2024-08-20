@@ -107,6 +107,7 @@ func (db DB) AutoSeedData(gdb *gorm.DB) error {
 		SeedOrganizationCredentials,
 		SeedPartnerCredentials,
 		SeedMemberCredentials,
+		SeedPatronCredentials,
 
 		/* ---------------------------------- data ---------------------------------- */
 		// * independent
@@ -157,6 +158,7 @@ func (db DB) AutoMigrate(gdb *gorm.DB) error {
 		&models.Caregiver{},
 		&models.Patron{},
 		&models.Donation{},
+		&models.DonationProof{},
 		&models.Illness{},
 		&models.Image{},
 		&models.Meal{},

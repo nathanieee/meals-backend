@@ -29,5 +29,7 @@ func NewRouter(ge *gin.Engine, db *gorm.DB, cfg *configs.Config, di *di.Dependen
 		newPatronRoutes(h, cfg, di.AuthService, di.PatronService, di.FileService)
 		newOrganizationRoutes(h, cfg, di.AuthService, di.OrganizationService)
 		newFileRoutes(h, cfg, di.FileService)
+		newAllergyRoutes(h, cfg, di.AllergyService)
+		newIllnessRoutes(h, cfg, di.IllnessService)
 	}
 }

@@ -12,4 +12,10 @@ type (
 		Value  float64                   `json:"value"`
 		Status consttypes.DonationStatus `json:"status"`
 	}
+
+	DonationProof struct {
+		base.Model
+
+		Image Image `json:"image"`
+	}
 )

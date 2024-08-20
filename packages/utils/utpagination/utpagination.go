@@ -24,6 +24,11 @@ type (
 		CreatedTo   time.Time
 		Meal        Meal
 		Partner     Partner
+		Patron      Patron
+	}
+
+	Patron struct {
+		ID *uuid.UUID `json:"patron_id"`
 	}
 
 	Meal struct {
