@@ -1,8 +1,12 @@
 package models
 
 import (
+	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models/base"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utlogger"
+
+	"github.com/jinzhu/copier"
 )
 
 type (
@@ -14,6 +18,19 @@ type (
 		Allergens   consttypes.Allergens `json:"allergens" gorm:"required; type:allergens_enum" example:"Food"`
 	}
 )
+
+func (all *Allergy) ToResponse() (*responses.Allergy, error) {
+	var (
+		allres = responses.Allergy{}
+	)
+
+	if err := copier.CopyWithOption(&allres, &all, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return &allres, nil
+}
 
 func (ally *Allergy) ToMemberAllergy() *MemberAllergy {
 	return &MemberAllergy{

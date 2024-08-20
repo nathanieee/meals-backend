@@ -20,6 +20,7 @@ import (
 	"project-skbackend/internal/repositories/patronrepo"
 	"project-skbackend/internal/repositories/userimagerepo"
 	"project-skbackend/internal/repositories/userrepo"
+	"project-skbackend/internal/services/allergyservice"
 	"project-skbackend/internal/services/authservice"
 	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/consumerservice"
@@ -59,6 +60,7 @@ type DependencyInjection struct {
 	CronService         *cronservice.CronService
 	IllnessService      *illnessservice.IllnessService
 	FileService         *fileservice.FileService
+	AllergyService      *allergyservice.AllergyService
 
 	// * external services
 	DistanceMatrixService *distancematrixservice.DistanceMatrixService
@@ -109,6 +111,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	scron := cronservice.NewCronService(cfg, rorder)
 	silln := illnessservice.NewIllnessService(rill)
 	sfile := fileservice.NewFileService(cfg, ctx, *minio, ruser, rimg, ruimg, rdona, rdnpr)
+	salle := allergyservice.NewAllergyService(rall)
 
 	return &DependencyInjection{
 		// * internal services
@@ -126,6 +129,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 		CronService:         scron,
 		IllnessService:      silln,
 		FileService:         sfile,
+		AllergyService:      salle,
 
 		// * external services
 		DistanceMatrixService: sdsmx,
