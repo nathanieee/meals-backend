@@ -165,6 +165,7 @@ func SeedDonationStatusEnum(db *gorm.DB) error {
 		"donation_status_enum",
 		consttypes.DS_ACCEPTED.String(),
 		consttypes.DS_REJECTED.String(),
+		consttypes.DS_PENDING.String(),
 	)
 }
 
@@ -174,6 +175,7 @@ func SeedImageTypeEnum(db *gorm.DB) error {
 		consttypes.IT_PROFILE.String(),
 		consttypes.IT_MEAL.String(),
 		consttypes.IT_MEAL_CATEGORY.String(),
+		consttypes.IT_DONATION_PROOF.String(),
 	)
 }
 
@@ -241,6 +243,61 @@ func SeedAdminCredentials(db *gorm.DB) error {
 			}
 
 			err := db.Session(&gorm.Session{FullSaveAssociations: true}).Create(&admins).Error
+			if err != nil {
+				utlogger.Error(err)
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func SeedPatronCredentials(db *gorm.DB) error {
+	if db.Migrator().HasTable(&models.User{}) && db.Migrator().HasTable(&models.Patron{}) {
+		if err := db.First(&models.Patron{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			patrons := []*models.Patron{
+				{
+					Type:  consttypes.PT_PERSONAL,
+					Name:  "Jonathan Vince",
+					Model: base.Model{ID: id},
+					User: models.User{
+						ConfirmedAt: consttypes.TimeNow(),
+						Email:       "patron@test.com",
+						Password:    getGlobalHashedPassword("password"),
+						Role:        consttypes.UR_PATRON,
+						Addresses: []*models.Address{
+							{
+								Name:    "Indian Ocean Address",
+								Address: "Indian Ocean Address, 1st floor,",
+								Note:    "Ocean with the blue water",
+								AddressDetail: &models.AddressDetail{
+									Geolocation: models.Geolocation{
+										Longitude: "-26.10305",
+										Latitude:  "56.91996",
+									},
+									FormattedAddress: "Indian Ocean",
+								},
+							},
+						},
+					},
+					Donations: []models.Donation{
+						{
+							Status: consttypes.DS_PENDING,
+							Proof: &models.DonationProof{
+								Image: models.Image{
+									Name: "donation-proof.png",
+									Path: "donation-proof.png",
+									Type: consttypes.IT_DONATION_PROOF,
+								},
+							},
+							Value: 5000,
+						},
+					},
+				},
+			}
+
+			err := db.Session(&gorm.Session{FullSaveAssociations: true}).Create(&patrons).Error
 			if err != nil {
 				utlogger.Error(err)
 				return err

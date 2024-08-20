@@ -26,6 +26,30 @@ func NewProfileImage(
 	}
 }
 
+func NewDonationProof(
+	name string,
+	path string,
+) *Image {
+	return &Image{
+		Name: name,
+		Path: path,
+		Type: consttypes.IT_DONATION_PROOF,
+	}
+}
+
+func (i *Image) CreateDonationProof(
+	donation Donation,
+) *DonationProof {
+	var (
+		donationproof = DonationProof{}
+	)
+
+	donationproof.ImageID = i.ID
+	donationproof.DonationID = donation.ID
+
+	return &donationproof
+}
+
 func (i *Image) CreateUserImage(
 	user User,
 ) *UserImage {

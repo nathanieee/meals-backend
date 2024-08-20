@@ -6,6 +6,7 @@ type (
 
 const (
 	DS_ACCEPTED DonationStatus = "Accepted"
+	DS_PENDING  DonationStatus = "Pending"
 	DS_REJECTED DonationStatus = "Rejected"
 )
 

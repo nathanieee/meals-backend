@@ -8,6 +8,8 @@ import (
 	"project-skbackend/internal/repositories/allergyrepo"
 	"project-skbackend/internal/repositories/caregiverrepo"
 	"project-skbackend/internal/repositories/cartrepo"
+	"project-skbackend/internal/repositories/donationproofrepo"
+	"project-skbackend/internal/repositories/donationrepo"
 	"project-skbackend/internal/repositories/illnessrepo"
 	"project-skbackend/internal/repositories/imagerepo"
 	"project-skbackend/internal/repositories/mealrepo"
@@ -84,6 +86,8 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	rimg := imagerepo.NewImageRepository(db)
 	ruimg := userimagerepo.NewUserImageRepository(db)
 	rordr := orderrepo.NewOrderRepository(db, *cfg)
+	rdona := donationrepo.NewDonationRepository(db)
+	rdnpr := donationproofrepo.NewDonationProofRepository(db)
 
 	/* --------------------------------- service -------------------------------- */
 	// * external services
@@ -99,12 +103,12 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	smemb := memberservice.NewMemberService(rmemb, ruser, rcare, rall, rill, rorg)
 	scart := cartservice.NewCartService(rcart, rcare, rmemb)
 	scons := consumerservice.NewConsumerService(ch, cfg, smail)
-	spatr := patronservice.NewPatronService(rpatron)
+	spatr := patronservice.NewPatronService(rpatron, rdona)
 	sorga := organizationservice.NewOrganizationService(rorg)
 	sordr := orderservice.NewOrderService(cfg, rorder, rmeal, rmemb, ruser, rcare, rcart)
 	scron := cronservice.NewCronService(cfg, rorder)
 	silln := illnessservice.NewIllnessService(rill)
-	sfile := fileservice.NewFileService(cfg, ctx, *minio, ruser, rimg, ruimg)
+	sfile := fileservice.NewFileService(cfg, ctx, *minio, ruser, rimg, ruimg, rdona, rdnpr)
 
 	return &DependencyInjection{
 		// * internal services

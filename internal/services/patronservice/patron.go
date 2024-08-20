@@ -4,6 +4,7 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
+	"project-skbackend/internal/repositories/donationrepo"
 	"project-skbackend/internal/repositories/patronrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utpagination"
@@ -14,6 +15,7 @@ import (
 type (
 	PatronService struct {
 		rpatr patronrepo.IPatronRepository
+		rdona donationrepo.IDonationRepository
 	}
 
 	IPatronService interface {
@@ -23,14 +25,20 @@ type (
 		Delete(id uuid.UUID) error
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
 		GetByID(id uuid.UUID) (*responses.Patron, error)
+		GetByUserID(uid uuid.UUID) (*responses.Patron, error)
+
+		// * donation transaction
+		CreateDonation(req requests.CreateDonation, pid uuid.UUID) (*responses.Donation, error)
 	}
 )
 
 func NewPatronService(
 	rpatr patronrepo.IPatronRepository,
+	rdona donationrepo.IDonationRepository,
 ) *PatronService {
 	return &PatronService{
 		rpatr: rpatr,
+		rdona: rdona,
 	}
 }
 
@@ -131,4 +139,45 @@ func (s *PatronService) GetByID(id uuid.UUID) (*responses.Patron, error) {
 	}
 
 	return pres, nil
+}
+
+func (s *PatronService) GetByUserID(uid uuid.UUID) (*responses.Patron, error) {
+	patron, err := s.rpatr.GetByUserID(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	patronres, err := patron.ToResponse()
+	if err != nil {
+		return nil, err
+	}
+
+	return patronres, nil
+}
+
+/* -------------------------------------------------------------------------- */
+/*                            donation transaction                            */
+/* -------------------------------------------------------------------------- */
+func (s *PatronService) CreateDonation(req requests.CreateDonation, pid uuid.UUID) (*responses.Donation, error) {
+	patron, err := s.rpatr.GetByID(pid)
+	if err != nil {
+		return nil, err
+	}
+
+	dona, err := req.ToModel(patron.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	dona, err = s.rdona.Create(*dona)
+	if err != nil {
+		return nil, err
+	}
+
+	donares, err := dona.ToResponse()
+	if err != nil {
+		return nil, err
+	}
+
+	return donares, nil
 }
