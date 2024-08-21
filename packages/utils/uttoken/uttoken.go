@@ -180,6 +180,8 @@ func GetToken(ctx *gin.Context) (string, string, error) {
 func DeleteToken(ctx *gin.Context) {
 	ctx.Request.Header.Del(consttypes.T_REFRESH)
 	ctx.Request.Header.Del(consttypes.T_ACCESS)
+	ctx.Request.Header.Del("Authorization")
+	ctx.Request.Header.Del("X-Authorization")
 }
 
 func GetUser(ctx *gin.Context) (*responses.User, error) {
