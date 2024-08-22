@@ -129,7 +129,7 @@ func (r *AllergyRepository) Delete(al models.Allergy) error {
 func (r *AllergyRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {
 	var (
 		al    []models.Allergy
-		alres []responses.Admin
+		alres []responses.Allergy
 	)
 
 	result := r.
