@@ -36,6 +36,7 @@ type (
 		VerifyTokenLength int    `env:"API_VERIFY_TOKEN_LENGTH" env-default:"8"`
 		URL               string `env:"API_URL" env-default:"localhost"`
 		Timezone          string `env:"TZ" env-default:"Asia/Makassar"`
+		Environment       string `env:"API_ENV" env-default:"production"`
 		APIResetPassword
 	}
 	APIResetPassword struct {

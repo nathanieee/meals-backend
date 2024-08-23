@@ -248,8 +248,13 @@ func (s *FileService) Upload(req utfile.FileMultipart) (string, error) {
 
 	utlogger.Info(fmt.Sprintf("Successfully uploaded %s of size %d", objname, info.Size))
 
-	// * construct the permanent URL
-	url := fmt.Sprintf("%s/%s/%s", s.minio.EndpointURL().String(), s.mb, objname)
+	miniourl := fmt.Sprintf("%s/%s/%s", s.minio.EndpointURL().String(), s.mb, objname)
+	environment := s.cfg.API.Environment
 
-	return url, nil
+	// * if its on local, then replace the endpoint url to localhost ip.
+	if environment == "local" {
+		miniourl = fmt.Sprintf("%s/%s/%s", "http://127.0.0.1:9000", s.mb, objname)
+	}
+
+	return miniourl, nil
 }
