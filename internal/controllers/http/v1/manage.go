@@ -5,6 +5,7 @@ import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
+	"project-skbackend/internal/services/allergyservice"
 	"project-skbackend/internal/services/fileservice"
 	"project-skbackend/internal/services/illnessservice"
 	"project-skbackend/internal/services/mealservice"
@@ -31,6 +32,7 @@ type (
 		spatron  patronservice.IPatronService
 		sillness illnessservice.IIllnessService
 		sfile    fileservice.IFileService
+		sallergy allergyservice.IAllergyService
 	}
 )
 
@@ -43,6 +45,7 @@ func newManageRoutes(
 	spatron patronservice.IPatronService,
 	sillness illnessservice.IIllnessService,
 	sfile fileservice.IFileService,
+	sallergy allergyservice.IAllergyService,
 ) {
 	r := &manageroutes{
 		cfg:      cfg,
@@ -52,6 +55,7 @@ func newManageRoutes(
 		spatron:  spatron,
 		sillness: sillness,
 		sfile:    sfile,
+		sallergy: sallergy,
 	}
 
 	gmanage := rg.Group("manages")
@@ -103,6 +107,15 @@ func newManageRoutes(
 			gillness.GET("raw", r.getIllnessesRaw)
 			gillness.PUT("/:iid", r.updateIllness)
 			gillness.DELETE("/:iid", r.deleteIllness)
+		}
+
+		gallergy := gmanage.Group("allergies")
+		{
+			gallergy.POST("", r.createAllergy)
+			gallergy.GET("", r.getAllergies)
+			gallergy.GET("raw", r.getAllergiesRaw)
+			gallergy.PUT("/:aid", r.updateAllergy)
+			gallergy.DELETE("/:aid", r.deleteAllergy)
 		}
 	}
 }
@@ -1478,3 +1491,223 @@ func (r *manageroutes) deleteIllness(ctx *gin.Context) {
 /* -------------------------------------------------------------------------- */
 /*                        end of illness routing group                        */
 /* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+/*                       start of allergy routing group                       */
+/* -------------------------------------------------------------------------- */
+
+func (r *manageroutes) createAllergy(ctx *gin.Context) {
+	var (
+		function = "create allergy"
+		entity   = "allergy"
+		req      requests.CreateAllergy
+	)
+
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	resallergy, err := r.sallergy.Create(req)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessCreate(
+		entity,
+		ctx,
+		resallergy,
+	)
+}
+
+func (r *manageroutes) getAllergies(ctx *gin.Context) {
+	var (
+		entity  = "allergies"
+		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
+	)
+
+	allergies, err := r.sallergy.FindAll(reqpage)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		allergies,
+	)
+}
+
+func (r *manageroutes) getAllergiesRaw(ctx *gin.Context) {
+	var (
+		entity = "allergies"
+	)
+
+	allergies, err := r.sallergy.Read()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		allergies,
+	)
+}
+
+func (r *manageroutes) updateAllergy(ctx *gin.Context) {
+	var (
+		function = "update allergy"
+		entity   = "allergy"
+		req      requests.UpdateAllergy
+	)
+
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	uuid, err := uuid.Parse(ctx.Param("aid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	_, err = r.sallergy.GetByID(uuid)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	resallergy, err := r.sallergy.Update(req, uuid)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessUpdate(
+		entity,
+		ctx,
+		resallergy,
+	)
+}
+
+func (r *manageroutes) deleteAllergy(ctx *gin.Context) {
+	var (
+		function = "delete allergy"
+		entity   = "allergy"
+	)
+
+	uuid, err := uuid.Parse(ctx.Param("aid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	_, err = r.sallergy.GetByID(uuid)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.sallergy.Delete(uuid)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessDelete(
+		entity,
+		ctx,
+		nil,
+	)
+}

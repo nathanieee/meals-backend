@@ -50,7 +50,7 @@ func NewPatronRepository(db *gorm.DB) *PatronRepository {
 func (r *PatronRepository) omit() *gorm.DB {
 	return r.db.
 		Omit(
-			"",
+			"Donations",
 		)
 }
 
@@ -63,7 +63,9 @@ func (r *PatronRepository) preload() *gorm.DB {
 }
 
 func (r *PatronRepository) Create(p models.Patron) (*models.Patron, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Create(&p).Error
 
 	if err != nil {
@@ -100,7 +102,9 @@ func (r *PatronRepository) Read() ([]*models.Patron, error) {
 }
 
 func (r *PatronRepository) Update(p models.Patron) (*models.Patron, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Save(&p).Error
 
 	if err != nil {

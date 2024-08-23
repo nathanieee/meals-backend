@@ -97,7 +97,9 @@ func (r *DonationRepository) Read() ([]*models.Donation, error) {
 }
 
 func (r *DonationRepository) Update(d models.Donation) (*models.Donation, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Save(&d).Error
 
 	if err != nil {

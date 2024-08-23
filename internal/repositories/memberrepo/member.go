@@ -117,7 +117,9 @@ func (r *MemberRepository) Read() ([]*models.Member, error) {
 }
 
 func (r *MemberRepository) Update(m models.Member) (*models.Member, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Save(&m).Error
 
 	if err != nil {

@@ -103,7 +103,9 @@ func (r *CaregiverRepository) Read() ([]*models.Caregiver, error) {
 }
 
 func (r *CaregiverRepository) Update(cg models.Caregiver) (*models.Caregiver, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Save(&cg).Error
 
 	if err != nil {

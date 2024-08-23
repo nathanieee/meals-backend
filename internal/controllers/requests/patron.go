@@ -16,9 +16,9 @@ type (
 	}
 
 	UpdatePatron struct {
-		User UpdateUser            `json:"user" form:"user" binding:"-"`
-		Type consttypes.PatronType `json:"type" form:"type" binding:"-"`
-		Name string                `json:"name" form:"name" binding:"-"`
+		User UpdateUser            `json:"user" form:"user" binding:"dive,omitempty"`
+		Type consttypes.PatronType `json:"type" form:"type" binding:"omitempty"`
+		Name string                `json:"name" form:"name" binding:"omitempty"`
 	}
 )
 
