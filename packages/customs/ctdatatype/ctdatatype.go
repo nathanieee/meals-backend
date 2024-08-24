@@ -12,7 +12,7 @@ type (
 	CDT_DATE struct{ time.Time }
 )
 
-/* -------------------------------- CDT_DATE -------------------------------- */
+// ! -------------------------------- CDT_DATE -------------------------------- ! //
 func (date *CDT_DATE) UnmarshalJSON(data []byte) error {
 	var (
 		datestr string

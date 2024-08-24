@@ -155,9 +155,9 @@ func (s *PatronService) GetByUserID(uid uuid.UUID) (*responses.Patron, error) {
 	return patronres, nil
 }
 
-/* -------------------------------------------------------------------------- */
-/*                            donation transaction                            */
-/* -------------------------------------------------------------------------- */
+// ! -------------------------------------------------------------------------- ! //
+// !                            donation transaction                            ! //
+// ! -------------------------------------------------------------------------- ! //
 func (s *PatronService) CreateDonation(req requests.CreateDonation, pid uuid.UUID) (*responses.Donation, error) {
 	patron, err := s.rpatr.GetByID(pid)
 	if err != nil {
