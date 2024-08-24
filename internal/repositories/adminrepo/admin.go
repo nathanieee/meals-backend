@@ -103,7 +103,9 @@ func (r *AdminRepository) Read() ([]*models.Admin, error) {
 }
 
 func (r *AdminRepository) Update(a models.Admin) (*models.Admin, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Save(&a).Error
 
 	if err != nil {

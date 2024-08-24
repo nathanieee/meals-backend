@@ -5,6 +5,8 @@ import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
+	"project-skbackend/internal/services/allergyservice"
+	"project-skbackend/internal/services/donationservice"
 	"project-skbackend/internal/services/fileservice"
 	"project-skbackend/internal/services/illnessservice"
 	"project-skbackend/internal/services/mealservice"
@@ -24,13 +26,15 @@ import (
 
 type (
 	manageroutes struct {
-		cfg      *configs.Config
-		smeal    mealservice.IMealService
-		smember  memberservice.IMemberService
-		spartner partnerservice.IPartnerService
-		spatron  patronservice.IPatronService
-		sillness illnessservice.IIllnessService
-		sfile    fileservice.IFileService
+		cfg       *configs.Config
+		smeal     mealservice.IMealService
+		smember   memberservice.IMemberService
+		spartner  partnerservice.IPartnerService
+		spatron   patronservice.IPatronService
+		sillness  illnessservice.IIllnessService
+		sfile     fileservice.IFileService
+		sallergy  allergyservice.IAllergyService
+		sdonation donationservice.IDonationService
 	}
 )
 
@@ -43,15 +47,19 @@ func newManageRoutes(
 	spatron patronservice.IPatronService,
 	sillness illnessservice.IIllnessService,
 	sfile fileservice.IFileService,
+	sallergy allergyservice.IAllergyService,
+	sdonation donationservice.IDonationService,
 ) {
 	r := &manageroutes{
-		cfg:      cfg,
-		smeal:    smeal,
-		smember:  smember,
-		spartner: spartner,
-		spatron:  spatron,
-		sillness: sillness,
-		sfile:    sfile,
+		cfg:       cfg,
+		smeal:     smeal,
+		smember:   smember,
+		spartner:  spartner,
+		spatron:   spatron,
+		sillness:  sillness,
+		sfile:     sfile,
+		sallergy:  sallergy,
+		sdonation: sdonation,
 	}
 
 	gmanage := rg.Group("manages")
@@ -104,12 +112,30 @@ func newManageRoutes(
 			gillness.PUT("/:iid", r.updateIllness)
 			gillness.DELETE("/:iid", r.deleteIllness)
 		}
+
+		gallergy := gmanage.Group("allergies")
+		{
+			gallergy.POST("", r.createAllergy)
+			gallergy.GET("", r.getAllergies)
+			gallergy.GET("raw", r.getAllergiesRaw)
+			gallergy.PUT("/:aid", r.updateAllergy)
+			gallergy.DELETE("/:aid", r.deleteAllergy)
+		}
+
+		gdonation := gmanage.Group("donations")
+		{
+			// ! no create donation because admin cannot interfene
+			gdonation.GET("", r.getDonations)
+			gdonation.GET("raw", r.getDonationsRaw)
+			gdonation.PUT("/:did", r.updateDonation)
+			gdonation.DELETE("/:did", r.deleteDonation)
+		}
 	}
 }
 
-/* -------------------------------------------------------------------------- */
-/*                        start of meals routing group                        */
-/* -------------------------------------------------------------------------- */
+// ! -------------------------------------------------------------------------- ! //
+// !                        start of meals routing group                        ! //
+// ! -------------------------------------------------------------------------- ! //
 func (r *manageroutes) createMeal(ctx *gin.Context) {
 	var (
 		function = "create meal"
@@ -326,13 +352,13 @@ func (r *manageroutes) deleteMeal(ctx *gin.Context) {
 	)
 }
 
-/* -------------------------------------------------------------------------- */
-/*                         end of meals routing group                         */
-/* -------------------------------------------------------------------------- */
+// ! -------------------------------------------------------------------------- ! //
+// !                         end of meals routing group                         ! //
+// ! -------------------------------------------------------------------------- ! //
 
-/* -------------------------------------------------------------------------- */
-/*                       start of members routing group                       */
-/* -------------------------------------------------------------------------- */
+// ! -------------------------------------------------------------------------- ! //
+// !                       start of members routing group                       ! //
+// ! -------------------------------------------------------------------------- ! //
 
 func (r *manageroutes) createMember(ctx *gin.Context) {
 	var (
@@ -634,13 +660,13 @@ func (r *manageroutes) deleteMember(ctx *gin.Context) {
 	)
 }
 
-/* -------------------------------------------------------------------------- */
-/*                        end of members routing group                        */
-/* -------------------------------------------------------------------------- */
+// ! -------------------------------------------------------------------------- ! //
+// !                        end of members routing group                        ! //
+// ! -------------------------------------------------------------------------- ! //
 
-/* -------------------------------------------------------------------------- */
-/*                       start of partners routing group                      */
-/* -------------------------------------------------------------------------- */
+// ! -------------------------------------------------------------------------- ! //
+// !                       start of partners routing group                      ! //
+// ! -------------------------------------------------------------------------- ! //
 func (r *manageroutes) createPartner(ctx *gin.Context) {
 	var (
 		function = "create partner"
@@ -943,13 +969,13 @@ func (r *manageroutes) deletePartner(ctx *gin.Context) {
 	)
 }
 
-/* -------------------------------------------------------------------------- */
-/*                        end of partners routing group                       */
-/* -------------------------------------------------------------------------- */
+// ! -------------------------------------------------------------------------- ! //
+// !                        end of partners routing group                       ! //
+// ! -------------------------------------------------------------------------- ! //
 
-/* -------------------------------------------------------------------------- */
-/*                       start of patrons routing group                       */
-/* -------------------------------------------------------------------------- */
+// ! -------------------------------------------------------------------------- ! //
+// !                       start of patrons routing group                       ! //
+// ! -------------------------------------------------------------------------- ! //
 
 func (r *manageroutes) createPatron(ctx *gin.Context) {
 	var (
@@ -1251,13 +1277,13 @@ func (r *manageroutes) deletePatron(ctx *gin.Context) {
 	)
 }
 
-/* -------------------------------------------------------------------------- */
-/*                        end of patrons routing group                        */
-/* -------------------------------------------------------------------------- */
+// ! -------------------------------------------------------------------------- ! //
+// !                        end of patrons routing group                        ! //
+// ! -------------------------------------------------------------------------- ! //
 
-/* -------------------------------------------------------------------------- */
-/*                       start of illness routing group                       */
-/* -------------------------------------------------------------------------- */
+// ! -------------------------------------------------------------------------- ! //
+// !                       start of illness routing group                       ! //
+// ! -------------------------------------------------------------------------- ! //
 
 func (r *manageroutes) createIllness(ctx *gin.Context) {
 	var (
@@ -1475,6 +1501,414 @@ func (r *manageroutes) deleteIllness(ctx *gin.Context) {
 	)
 }
 
-/* -------------------------------------------------------------------------- */
-/*                        end of illness routing group                        */
-/* -------------------------------------------------------------------------- */
+// ! -------------------------------------------------------------------------- ! //
+// !                        end of illness routing group                        ! //
+// ! -------------------------------------------------------------------------- ! //
+
+// ! -------------------------------------------------------------------------- ! //
+// !                       start of allergy routing group                       ! //
+// ! -------------------------------------------------------------------------- ! //
+
+func (r *manageroutes) createAllergy(ctx *gin.Context) {
+	var (
+		function = "create allergy"
+		entity   = "allergy"
+		req      requests.CreateAllergy
+	)
+
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	resallergy, err := r.sallergy.Create(req)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessCreate(
+		entity,
+		ctx,
+		resallergy,
+	)
+}
+
+func (r *manageroutes) getAllergies(ctx *gin.Context) {
+	var (
+		entity  = "allergies"
+		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
+	)
+
+	allergies, err := r.sallergy.FindAll(reqpage)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		allergies,
+	)
+}
+
+func (r *manageroutes) getAllergiesRaw(ctx *gin.Context) {
+	var (
+		entity = "allergies"
+	)
+
+	allergies, err := r.sallergy.Read()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		allergies,
+	)
+}
+
+func (r *manageroutes) updateAllergy(ctx *gin.Context) {
+	var (
+		function = "update allergy"
+		entity   = "allergy"
+		req      requests.UpdateAllergy
+	)
+
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	uuid, err := uuid.Parse(ctx.Param("aid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	_, err = r.sallergy.GetByID(uuid)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	resallergy, err := r.sallergy.Update(req, uuid)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessUpdate(
+		entity,
+		ctx,
+		resallergy,
+	)
+}
+
+func (r *manageroutes) deleteAllergy(ctx *gin.Context) {
+	var (
+		function = "delete allergy"
+		entity   = "allergy"
+	)
+
+	uuid, err := uuid.Parse(ctx.Param("aid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	_, err = r.sallergy.GetByID(uuid)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.sallergy.Delete(uuid)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessDelete(
+		entity,
+		ctx,
+		nil,
+	)
+}
+
+// ! -------------------------------------------------------------------------- ! //
+// !                        end of allergy routing group                        ! //
+// ! -------------------------------------------------------------------------- ! //
+
+// ! -------------------------------------------------------------------------- ! //
+// !                       start of donation routing group                      ! //
+// ! -------------------------------------------------------------------------- ! //
+
+func (r *manageroutes) getDonations(ctx *gin.Context) {
+	var (
+		entity  = "donations"
+		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
+	)
+
+	donations, err := r.sdonation.FindAll(reqpage)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		donations,
+	)
+}
+
+func (r *manageroutes) getDonationsRaw(ctx *gin.Context) {
+	var (
+		entity = "donations"
+	)
+
+	donations, err := r.sdonation.Read()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		donations,
+	)
+}
+
+func (r *manageroutes) updateDonation(ctx *gin.Context) {
+	var (
+		function = "update donation"
+		entity   = "donation"
+		req      requests.UpdateDonation
+	)
+
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	uuid, err := uuid.Parse(ctx.Param("did"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	_, err = r.sdonation.GetByID(uuid)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	resdonation, err := r.sdonation.Update(req, uuid)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessUpdate(
+		entity,
+		ctx,
+		resdonation,
+	)
+}
+
+func (r *manageroutes) deleteDonation(ctx *gin.Context) {
+	var (
+		function = "delete donation"
+		entity   = "donation"
+	)
+
+	uuid, err := uuid.Parse(ctx.Param("did"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	_, err = r.sdonation.GetByID(uuid)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.sdonation.Delete(uuid)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessDelete(
+		entity,
+		ctx,
+		nil,
+	)
+}

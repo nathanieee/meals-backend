@@ -283,6 +283,7 @@ func SeedPatronCredentials(db *gorm.DB) error {
 					},
 					Donations: []models.Donation{
 						{
+							Model:  base.Model{ID: id},
 							Status: consttypes.DS_PENDING,
 							Proof: &models.DonationProof{
 								Image: models.Image{

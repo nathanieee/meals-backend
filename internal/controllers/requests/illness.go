@@ -9,13 +9,13 @@ import (
 
 type (
 	CreateIllness struct {
-		Name        string `json:"name" example:"Cold Sore"`
-		Description string `json:"description" example:"Infection with the herpes simplex virus around the border of the lips."`
+		Name        string `json:"name" example:"Cold Sore" binding:"required"`
+		Description string `json:"description" example:"Infection with the herpes simplex virus around the border of the lips." bind:"required"`
 	}
 
 	UpdateIllness struct {
-		Name        string `json:"name" example:"Cold Sore"`
-		Description string `json:"description" example:"Infection with the herpes simplex virus around the border of the lips."`
+		Name        string `json:"name" example:"Cold Sore" binding:"omitempty"`
+		Description string `json:"description" example:"Infection with the herpes simplex virus around the border of the lips." bind:"omitempty"`
 	}
 )
 

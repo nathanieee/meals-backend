@@ -113,9 +113,10 @@ func (r *CartRepository) Read() ([]*models.Cart, error) {
 }
 
 func (r *CartRepository) Update(c models.Cart) (*models.Cart, error) {
-	err := r.db.
-		Model(&c).
-		Updates(&c).Error
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
+		Save(&c).Error
 
 	if err != nil {
 		utlogger.Error(err)

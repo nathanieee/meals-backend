@@ -61,7 +61,7 @@ func (r *IllnessRepository) Create(ill models.Illness) (*models.Illness, error) 
 	err := r.
 		omit().
 		Session(&gorm.Session{FullSaveAssociations: true}).
-		Create(ill).Error
+		Create(&ill).Error
 
 	if err != nil {
 		utlogger.Error(err)
@@ -97,7 +97,9 @@ func (r *IllnessRepository) Read() ([]*models.Illness, error) {
 }
 
 func (r *IllnessRepository) Update(ill models.Illness) (*models.Illness, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Save(&ill).Error
 
 	if err != nil {

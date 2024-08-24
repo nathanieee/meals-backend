@@ -25,6 +25,7 @@ import (
 	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/consumerservice"
 	"project-skbackend/internal/services/cronservice"
+	"project-skbackend/internal/services/donationservice"
 	"project-skbackend/internal/services/fileservice"
 	"project-skbackend/internal/services/illnessservice"
 	"project-skbackend/internal/services/mailservice"
@@ -61,18 +62,19 @@ type DependencyInjection struct {
 	IllnessService      *illnessservice.IllnessService
 	FileService         *fileservice.FileService
 	AllergyService      *allergyservice.AllergyService
+	DonationService     *donationservice.DonationService
 
 	// * external services
 	DistanceMatrixService *distancematrixservice.DistanceMatrixService
 }
 
 func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, cfg *configs.Config, rdb *redis.Client, minio *minio.Client) *DependencyInjection {
-	/* -------------------------------- database -------------------------------- */
+	// ! -------------------------------- database -------------------------------- ! //
 	if cfg.DB.LogMode {
 		db = db.Debug()
 	}
 
-	/* ------------------------------- repository ------------------------------- */
+	// ! ------------------------------- repository ------------------------------- ! //
 	ruser := userrepo.NewUserRepository(db)
 	rpart := partnerrepo.NewPartnerRepository(db)
 	rcare := caregiverrepo.NewCaregiverRepository(db)
@@ -91,7 +93,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	rdona := donationrepo.NewDonationRepository(db)
 	rdnpr := donationproofrepo.NewDonationProofRepository(db)
 
-	/* --------------------------------- service -------------------------------- */
+	// ! --------------------------------- service -------------------------------- ! //
 	// * external services
 	sdsmx := distancematrixservice.NewDistanceMatrixService(cfg)
 
@@ -112,6 +114,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	silln := illnessservice.NewIllnessService(rill)
 	sfile := fileservice.NewFileService(cfg, ctx, *minio, ruser, rimg, ruimg, rdona, rdnpr)
 	salle := allergyservice.NewAllergyService(rall)
+	sdona := donationservice.NewDonationService(rdona)
 
 	return &DependencyInjection{
 		// * internal services
@@ -130,6 +133,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 		IllnessService:      silln,
 		FileService:         sfile,
 		AllergyService:      salle,
+		DonationService:     sdona,
 
 		// * external services
 		DistanceMatrixService: sdsmx,

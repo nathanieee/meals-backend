@@ -82,21 +82,25 @@ services:
       timeout: 10s   # Adjust as needed
       retries: 3     # Adjust as needed
 
-  meals-ls:
-    container_name: "meals-ls"
-    image: localstack/localstack
+  meals-minio:
+    container_name: "meals-minio"
+    image: "quay.io/minio/minio:RELEASE.2023-11-01T01-57-10Z-cpuv1"
     ports:
-      - "${LOCALSTACK_PORT:-4566}:4566"            # LocalStack Gateway
-      - "4510-4559:4510-4559"  # external services port range
+      - '9000:9000'
+      - '9001:9001'
+    networks:
+      - meals-network
     environment:
-      - DEBUG=${LOCALSTACK_DEBUG:-0} # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
+      - MINIO_ROOT_USER=${MINIO_PUBLIC_ACCESS_KEY:-e703d10a1e860cc2473f08e7}
+      - MINIO_ROOT_PASSWORD=${MINIO_PRIVATE_ACCESS_KEY:-f892a331196c00dcae2ad3b80dd12d33862884}
+      - MINIO_DEFAULT_BUCKETS=${MINIO_BUCKET:-meals-bucket}
     volumes:
-      - "meals-ls-volume:/var/lib/localstack"
-      - "meals-ls-volume:/var/run/docker.sock:/var/run/docker.sock"
-
+      - 'meals-minio-volume:/data'
+    command: server /data --console-address ":9001"
+    
 volumes:
   meals-pg-volume:
   meals-redis-volume:
-  meals-ls-volume:
   meals-rabbit-volume:
+  meals-minio-volume:
     driver: local

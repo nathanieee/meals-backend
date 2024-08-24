@@ -67,7 +67,7 @@ func (db DB) SetupExtension(gdb *gorm.DB) error {
 
 func (db DB) AutoSeedEnum(gdb *gorm.DB) error {
 	seedfuncs := []func(*gorm.DB) error{
-		/* ---------------------------------- enum ---------------------------------- */
+		// ! ---------------------------------- enum ---------------------------------- ! //
 		SeedAllergensEnum,
 		SeedGenderEnum,
 		SeedMealStatusEnum,
@@ -102,14 +102,14 @@ func (db DB) AutoSeedData(gdb *gorm.DB) error {
 		// * dependent
 		SeedMealCategoryData,
 
-		/* ------------------------------- credentials ------------------------------ */
+		// ! ------------------------------- credentials ------------------------------ ! //
 		SeedAdminCredentials,
 		SeedOrganizationCredentials,
 		SeedPartnerCredentials,
 		SeedMemberCredentials,
 		SeedPatronCredentials,
 
-		/* ---------------------------------- data ---------------------------------- */
+		// ! ---------------------------------- data ---------------------------------- ! //
 		// * independent
 		SeedAllergyData,
 		SeedIllnessData,
