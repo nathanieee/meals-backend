@@ -29,6 +29,7 @@ type (
 		Delete(id uuid.UUID) error
 
 		GetByID(id uuid.UUID) (*responses.Cart, error)
+		FindByMemberID(roleres responses.BaseRole) ([]*responses.Cart, error)
 	}
 )
 
@@ -45,6 +46,60 @@ func NewCartService(
 }
 
 func (s *CartService) Create(req requests.CreateCart, roleres responses.BaseRole) (*responses.Cart, error) {
+	var (
+		m   *models.Member
+		err error
+	)
+
+	m, err = s.GetMemberByBaseRole(roleres)
+	if err != nil {
+		return nil, err
+	}
+
+	// * convert request to model
+	cart, err := req.ToModel(*m)
+	if err != nil {
+		utlogger.Error(err)
+		return nil, consttypes.ErrConvertFailed
+	}
+
+	membres, err := m.ToResponse()
+	if err != nil {
+		return nil, consttypes.ErrConvertFailed
+	}
+
+	// * try to get existing cart by meal ID and reference
+	existingcart, err := s.rcart.GetByMealIDAndMemberID(cart.MemberID, cart.MealID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, consttypes.ErrGettingCart
+	}
+
+	// * if an existing cart is found, update its quantity
+	if existingcart != nil {
+		existingcart.Quantity += req.Quantity
+
+		cart, err = s.rcart.Update(*existingcart)
+		if err != nil {
+			return nil, consttypes.ErrFailedToUpdateCart
+		}
+	} else {
+		// * create a new cart
+		cart, err = s.rcart.Create(*cart)
+		if err != nil {
+			return nil, consttypes.ErrFailedToCreateCart
+		}
+	}
+
+	// * convert cart to response
+	cartres, err := cart.ToResponse(membres)
+	if err != nil {
+		return nil, consttypes.ErrConvertFailed
+	}
+
+	return cartres, nil
+}
+
+func (s *CartService) GetMemberByBaseRole(roleres responses.BaseRole) (*models.Member, error) {
 	var (
 		m   *models.Member
 		err error
@@ -67,47 +122,7 @@ func (s *CartService) Create(req requests.CreateCart, roleres responses.BaseRole
 		}
 	}
 
-	// Convert request to model
-	cart, err := req.ToModel(*m)
-	if err != nil {
-		utlogger.Error(err)
-		return nil, consttypes.ErrConvertFailed
-	}
-
-	membres, err := m.ToResponse()
-	if err != nil {
-		return nil, consttypes.ErrConvertFailed
-	}
-
-	// Try to get existing cart by meal ID and reference
-	existingcart, err := s.rcart.GetByMealIDAndMemberID(cart.MemberID, cart.MealID)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, consttypes.ErrGettingCart
-	}
-
-	// If an existing cart is found, update its quantity
-	if existingcart != nil {
-		existingcart.Quantity += req.Quantity
-
-		cart, err = s.rcart.Update(*existingcart)
-		if err != nil {
-			return nil, consttypes.ErrFailedToUpdateCart
-		}
-	} else {
-		// Create a new cart
-		cart, err = s.rcart.Create(*cart)
-		if err != nil {
-			return nil, consttypes.ErrFailedToCreateCart
-		}
-	}
-
-	// Convert cart to response
-	cartres, err := cart.ToResponse(membres)
-	if err != nil {
-		return nil, consttypes.ErrConvertFailed
-	}
-
-	return cartres, nil
+	return m, nil
 }
 
 func (s *CartService) Read() ([]*responses.Cart, error) {
@@ -214,4 +229,36 @@ func (s *CartService) GetByID(id uuid.UUID) (*responses.Cart, error) {
 	}
 
 	return cartres, nil
+}
+
+func (s *CartService) FindByMemberID(roleres responses.BaseRole) ([]*responses.Cart, error) {
+	var (
+		cartreses []*responses.Cart
+	)
+
+	m, err := s.GetMemberByBaseRole(roleres)
+	if err != nil {
+		return nil, consttypes.ErrMemberNotFound
+	}
+
+	mres, err := m.ToResponse()
+	if err != nil {
+		return nil, consttypes.ErrConvertFailed
+	}
+
+	carts, err := s.rcart.FindByMemberID(m.ID)
+	if err != nil {
+		return nil, consttypes.ErrGettingCart
+	}
+
+	for _, cart := range carts {
+		cartres, err := cart.ToResponse(mres)
+		if err != nil {
+			return nil, err
+		}
+
+		cartreses = append(cartreses, cartres)
+	}
+
+	return cartreses, nil
 }
