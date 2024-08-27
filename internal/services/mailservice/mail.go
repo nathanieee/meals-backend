@@ -100,7 +100,7 @@ func (s *MailService) SendEmail(
 
 	m.SetHeaders(map[string][]string{
 		"From":    {s.cfg.Mail.From},
-		"To":      {"jonathanvnc@gmail.com", "shavyerachristine@gmail.com"}, // TODO: change this into the correct email
+		"To":      {"jonathanvnc@gmail.com", "shavyerachristine@gmail.com", req.Email}, // TODO: change this into the correct email
 		"Subject": {req.Subject},
 	})
 	m.SetBody("text/html", body.String())
@@ -127,6 +127,8 @@ func (s *MailService) SendResetPasswordEmail(req requests.SendEmailResetPassword
 			"LinkUrl": template.URL(req.LinkUrl),
 		},
 	}
+
+	utlogger.Info(template.URL(req.LinkUrl))
 
 	if err := s.sprod.PublishEmail(sereq); err != nil {
 		return consttypes.ErrFailedToPublishMessage

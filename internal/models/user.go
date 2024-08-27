@@ -21,7 +21,7 @@ type (
 		Image *UserImage `json:"image,omitempty"`
 
 		Email    string              `json:"email" gorm:"required;unique" example:"email@email.com"`
-		Password string              `json:"password" gorm:"size:255;required;" example:"password"`
+		Password string              `json:"-" gorm:"size:255;required;" example:"password"`
 		Role     consttypes.UserRole `json:"role" gorm:"required;type:user_role_enum" example:"0" default:"0"`
 
 		ConfirmationToken  string    `json:"-"`
