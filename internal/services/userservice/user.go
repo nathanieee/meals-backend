@@ -259,7 +259,7 @@ func (s *UserService) GetRoleDataByUserID(uid uuid.UUID) (*responses.BaseRole, e
 
 		data = p
 	case consttypes.UR_PATRON:
-		p, err := s.rpart.GetByUserID(uid)
+		p, err := s.rpatr.GetByUserID(uid)
 		if err != nil {
 			return nil, err
 		}

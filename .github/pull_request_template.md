@@ -1,16 +1,15 @@
 ### Description
-This PR introduces a new API integration for handling payments via Stripe. It addresses the issue documented in Jira ticket BARTER-701, where the current payment flow was inconsistent and lacked support for advanced features required by our users.
+This PR introduces changes to improve the functionality, performance, or usability of the project. It addresses the issues or enhancements documented in the relevant task or ticket.
 
 ### Details
-- **Jira Ticket:** BARTER-701
-- **Breaking Changes:** None
-- **Assigned Reviewer:** @reviewer_name
+- **Related Ticket:** [Link to the relevant task or issue]
+- **Breaking Changes:** [Yes/No]
+- **Assigned Reviewer:** [@reviewer_name]
 
-### Summary
-- Implemented new API endpoints for initiating and processing Stripe payments.
-- Updated client-side interfaces to integrate with the new API seamlessly.
-- Conducted thorough testing to ensure compatibility across multiple environments.
+### Summary of Changes
+- [List the key changes or features introduced in this PR]
+- [Include any refactoring, optimizations, or fixes implemented]
 
 ### Additional Notes
-- This PR is marked as **WIP** (Work In Progress) until final testing and peer review are completed.
-- If not reviewed within three business days, we'll escalate to @team_lead for prioritized review.
+- This PR is marked as **WIP** (Work In Progress) if it is still under development or pending further review.
+- If this PR is not reviewed within a reasonable timeframe, it may be escalated for prioritized review.

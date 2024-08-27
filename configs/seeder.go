@@ -488,6 +488,15 @@ func SeedMealData(db *gorm.DB) error {
 			meals := []*models.Meal{
 				{
 					Model: base.Model{ID: id},
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
 					Illnesses: []*models.MealIllness{
 						{
 							Illness: illness,
