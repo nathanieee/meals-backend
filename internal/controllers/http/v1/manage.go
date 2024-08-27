@@ -71,8 +71,8 @@ func newManageRoutes(
 		gmeals := gmanage.Group("meals")
 		{
 			gmeals.POST("", r.createMeal)
-			gmeals.GET("", r.getMeals)
-			gmeals.GET("raw", r.getMealsRaw)
+			gmeals.GET("", r.findMeals)
+			gmeals.GET("raw", r.findMealsRaw)
 			gmeals.PUT("/:mid", r.updateMeal)
 			gmeals.DELETE("/:mid", r.deleteMeal)
 		}
@@ -80,8 +80,8 @@ func newManageRoutes(
 		gmember := gmanage.Group("members")
 		{
 			gmember.POST("", r.createMember)
-			gmember.GET("", r.getMembers)
-			gmember.GET("raw", r.getMembersRaw)
+			gmember.GET("", r.findMembers)
+			gmember.GET("raw", r.findMembersRaw)
 			gmember.PUT("/:mid", r.updateMember)
 			gmember.DELETE("/:mid", r.deleteMember)
 		}
@@ -89,8 +89,8 @@ func newManageRoutes(
 		gpartner := gmanage.Group("partners")
 		{
 			gpartner.POST("", r.createPartner)
-			gpartner.GET("", r.getPartners)
-			gpartner.GET("raw", r.getPartnersRaw)
+			gpartner.GET("", r.findPartners)
+			gpartner.GET("raw", r.findPartnersRaw)
 			gpartner.PUT("/:pid", r.updatePartner)
 			gpartner.DELETE("/:pid", r.deletePartner)
 		}
@@ -98,8 +98,8 @@ func newManageRoutes(
 		gpatron := gmanage.Group("patrons")
 		{
 			gpatron.POST("", r.createPatron)
-			gpatron.GET("", r.getPatrons)
-			gpatron.GET("raw", r.getPatronsRaw)
+			gpatron.GET("", r.findPatrons)
+			gpatron.GET("raw", r.findPatronsRaw)
 			gpatron.PUT("/:pid", r.updatePatron)
 			gpatron.DELETE("/:pid", r.deletePatron)
 		}
@@ -107,8 +107,8 @@ func newManageRoutes(
 		gillness := gmanage.Group("illnesses")
 		{
 			gillness.POST("", r.createIllness)
-			gillness.GET("", r.getIllnesses)
-			gillness.GET("raw", r.getIllnessesRaw)
+			gillness.GET("", r.findIllnesses)
+			gillness.GET("raw", r.findIllnessesRaw)
 			gillness.PUT("/:iid", r.updateIllness)
 			gillness.DELETE("/:iid", r.deleteIllness)
 		}
@@ -116,8 +116,8 @@ func newManageRoutes(
 		gallergy := gmanage.Group("allergies")
 		{
 			gallergy.POST("", r.createAllergy)
-			gallergy.GET("", r.getAllergies)
-			gallergy.GET("raw", r.getAllergiesRaw)
+			gallergy.GET("", r.findAllergies)
+			gallergy.GET("raw", r.findAllergiesRaw)
 			gallergy.PUT("/:aid", r.updateAllergy)
 			gallergy.DELETE("/:aid", r.deleteAllergy)
 		}
@@ -125,8 +125,8 @@ func newManageRoutes(
 		gdonation := gmanage.Group("donations")
 		{
 			// ! no create donation because admin cannot interfene
-			gdonation.GET("", r.getDonations)
-			gdonation.GET("raw", r.getDonationsRaw)
+			gdonation.GET("", r.findDonations)
+			gdonation.GET("raw", r.findDonationsRaw)
 			gdonation.PUT("/:did", r.updateDonation)
 			gdonation.DELETE("/:did", r.deleteDonation)
 		}
@@ -172,7 +172,7 @@ func (r *manageroutes) createMeal(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getMeals(ctx *gin.Context) {
+func (r *manageroutes) findMeals(ctx *gin.Context) {
 	var (
 		entity  = "meals"
 		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
@@ -204,7 +204,7 @@ func (r *manageroutes) getMeals(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getMealsRaw(ctx *gin.Context) {
+func (r *manageroutes) findMealsRaw(ctx *gin.Context) {
 	var (
 		entity = "meals"
 	)
@@ -444,7 +444,7 @@ func (r *manageroutes) createMember(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getMembers(ctx *gin.Context) {
+func (r *manageroutes) findMembers(ctx *gin.Context) {
 	var (
 		entity  = "members"
 		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
@@ -476,7 +476,7 @@ func (r *manageroutes) getMembers(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getMembersRaw(ctx *gin.Context) {
+func (r *manageroutes) findMembersRaw(ctx *gin.Context) {
 	var (
 		entity = "members"
 	)
@@ -751,7 +751,7 @@ func (r *manageroutes) createPartner(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getPartners(ctx *gin.Context) {
+func (r *manageroutes) findPartners(ctx *gin.Context) {
 	var (
 		entity  = "partners"
 		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
@@ -785,7 +785,7 @@ func (r *manageroutes) getPartners(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getPartnersRaw(ctx *gin.Context) {
+func (r *manageroutes) findPartnersRaw(ctx *gin.Context) {
 	var (
 		entity = "partners"
 	)
@@ -1061,7 +1061,7 @@ func (r *manageroutes) createPatron(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getPatrons(ctx *gin.Context) {
+func (r *manageroutes) findPatrons(ctx *gin.Context) {
 	var (
 		entity  = "patrons"
 		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
@@ -1093,7 +1093,7 @@ func (r *manageroutes) getPatrons(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getPatronsRaw(ctx *gin.Context) {
+func (r *manageroutes) findPatronsRaw(ctx *gin.Context) {
 	var (
 		entity = "patrons"
 	)
@@ -1321,7 +1321,7 @@ func (r *manageroutes) createIllness(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getIllnesses(ctx *gin.Context) {
+func (r *manageroutes) findIllnesses(ctx *gin.Context) {
 	var (
 		entity  = "illnesses"
 		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
@@ -1353,7 +1353,7 @@ func (r *manageroutes) getIllnesses(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getIllnessesRaw(ctx *gin.Context) {
+func (r *manageroutes) findIllnessesRaw(ctx *gin.Context) {
 	var (
 		entity = "illnesses"
 	)
@@ -1545,7 +1545,7 @@ func (r *manageroutes) createAllergy(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getAllergies(ctx *gin.Context) {
+func (r *manageroutes) findAllergies(ctx *gin.Context) {
 	var (
 		entity  = "allergies"
 		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
@@ -1577,7 +1577,7 @@ func (r *manageroutes) getAllergies(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getAllergiesRaw(ctx *gin.Context) {
+func (r *manageroutes) findAllergiesRaw(ctx *gin.Context) {
 	var (
 		entity = "allergies"
 	)
@@ -1733,7 +1733,7 @@ func (r *manageroutes) deleteAllergy(ctx *gin.Context) {
 // !                       start of donation routing group                      ! //
 // ! -------------------------------------------------------------------------- ! //
 
-func (r *manageroutes) getDonations(ctx *gin.Context) {
+func (r *manageroutes) findDonations(ctx *gin.Context) {
 	var (
 		entity  = "donations"
 		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
@@ -1765,7 +1765,7 @@ func (r *manageroutes) getDonations(ctx *gin.Context) {
 	)
 }
 
-func (r *manageroutes) getDonationsRaw(ctx *gin.Context) {
+func (r *manageroutes) findDonationsRaw(ctx *gin.Context) {
 	var (
 		entity = "donations"
 	)
