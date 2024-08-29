@@ -25,7 +25,7 @@ type (
 
 	IMealService interface {
 		Create(req requests.CreateMeal) (*responses.Meal, error)
-		Read() ([]*models.Meal, error)
+		Read() ([]*responses.Meal, error)
 		Update(id uuid.UUID, req requests.UpdateMeal) (*responses.Meal, error)
 		Delete(id uuid.UUID) error
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
@@ -38,7 +38,6 @@ func NewMealService(
 	rill illnessrepo.IIllnessRepository,
 	rall allergyrepo.IAllergyRepository,
 	rpart partnerrepo.IPartnerRepository,
-
 ) *MealService {
 	return &MealService{
 		rmeal: rmeal,
@@ -103,13 +102,27 @@ func (s *MealService) Create(req requests.CreateMeal) (*responses.Meal, error) {
 	return meres, nil
 }
 
-func (s *MealService) Read() ([]*models.Meal, error) {
+func (s *MealService) Read() ([]*responses.Meal, error) {
+	var (
+		mealreses []*responses.Meal
+		err       error
+	)
+
 	meals, err := s.rmeal.Read()
 	if err != nil {
 		return nil, consttypes.ErrFailedToReadMeals
 	}
 
-	return meals, nil
+	for _, meal := range meals {
+		mealres, err := meal.ToResponse()
+		if err != nil {
+			return nil, consttypes.ErrConvertFailed
+		}
+
+		mealreses = append(mealreses, mealres)
+	}
+
+	return mealreses, nil
 }
 
 func (s *MealService) Update(id uuid.UUID, req requests.UpdateMeal) (*responses.Meal, error) {

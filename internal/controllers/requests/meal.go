@@ -32,6 +32,18 @@ type (
 		Status      consttypes.MealStatus `json:"status" form:"status" binding:"required"`
 		Description string                `json:"description" form:"description" binding:"required"`
 	}
+
+	CreateMealCategory struct {
+		Name string `json:"name" form:"name" binding:"required"`
+
+		*CreateImage
+	}
+
+	UpdateMealCategory struct {
+		Name string `json:"name" form:"name" binding:"required"`
+
+		*CreateImage
+	}
 )
 
 func (req *CreateMeal) ToModel(
@@ -77,4 +89,28 @@ func (req *UpdateMeal) ToModel(
 	meal.Partner = partner
 
 	return &meal, nil
+}
+
+func (req *CreateMealCategory) ToModel() (*models.MealCategory, error) {
+	var (
+		mc models.MealCategory
+	)
+
+	if err := copier.CopyWithOption(&mc, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return &mc, nil
+}
+
+func (req *UpdateMealCategory) ToModel(
+	mc *models.MealCategory,
+) (*models.MealCategory, error) {
+	if err := copier.CopyWithOption(&mc, &req, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return mc, nil
 }

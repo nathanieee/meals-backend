@@ -216,6 +216,13 @@ func SeedAdminCredentials(db *gorm.DB) error {
 				{
 					Model: base.Model{ID: id},
 					User: models.User{
+						Image: &models.UserImage{
+							Image: models.Image{
+								Name: "Profile Image",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/jpeg-01918055-96aa-7a39-bcea-6f7fd1440165.jpg",
+								Type: consttypes.IT_PROFILE,
+							},
+						},
 						ConfirmedAt: consttypes.TimeNow(),
 						Email:       os.Getenv("ADMIN_EMAIL"),
 						Password:    getGlobalHashedPassword(os.Getenv("ADMIN_PASSWORD")),
@@ -262,6 +269,13 @@ func SeedPatronCredentials(db *gorm.DB) error {
 					Name:  "Jonathan Vince",
 					Model: base.Model{ID: id},
 					User: models.User{
+						Image: &models.UserImage{
+							Image: models.Image{
+								Name: "Profile Image",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/jpeg-01918055-96aa-7a39-bcea-6f7fd1440165.jpg",
+								Type: consttypes.IT_PROFILE,
+							},
+						},
 						ConfirmedAt: consttypes.TimeNow(),
 						Email:       "patron@test.com",
 						Password:    getGlobalHashedPassword("password"),
@@ -316,6 +330,13 @@ func SeedMemberCredentials(db *gorm.DB) error {
 				{
 					Model: base.Model{ID: id},
 					User: models.User{
+						Image: &models.UserImage{
+							Image: models.Image{
+								Name: "Profile Image",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/jpeg-01918055-96aa-7a39-bcea-6f7fd1440165.jpg",
+								Type: consttypes.IT_PROFILE,
+							},
+						},
 						ConfirmedAt: consttypes.TimeNow(),
 						Email:       "member@test.com",
 						Password:    getGlobalHashedPassword("password"),
@@ -343,6 +364,13 @@ func SeedMemberCredentials(db *gorm.DB) error {
 					Caregiver: &models.Caregiver{
 						Model: base.Model{ID: id},
 						User: models.User{
+							Image: &models.UserImage{
+								Image: models.Image{
+									Name: "Profile Image",
+									Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/jpeg-01918055-96aa-7a39-bcea-6f7fd1440165.jpg",
+									Type: consttypes.IT_PROFILE,
+								},
+							},
 							ConfirmedAt: consttypes.TimeNow(),
 							Email:       "caregiver@test.com",
 							Password:    getGlobalHashedPassword("password"),
@@ -389,6 +417,13 @@ func SeedOrganizationCredentials(db *gorm.DB) error {
 				{
 					Model: base.Model{ID: id},
 					User: models.User{
+						Image: &models.UserImage{
+							Image: models.Image{
+								Name: "Profile Image",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/jpeg-01918055-96aa-7a39-bcea-6f7fd1440165.jpg",
+								Type: consttypes.IT_PROFILE,
+							},
+						},
 						ConfirmedAt: consttypes.TimeNow(),
 						Email:       "organization@test.com",
 						Password:    getGlobalHashedPassword("password"),
@@ -435,6 +470,13 @@ func SeedPartnerCredentials(db *gorm.DB) error {
 				{
 					Model: base.Model{ID: id},
 					User: models.User{
+						Image: &models.UserImage{
+							Image: models.Image{
+								Name: "Profile Image",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/jpeg-01918055-96aa-7a39-bcea-6f7fd1440165.jpg",
+								Type: consttypes.IT_PROFILE,
+							},
+						},
 						ConfirmedAt: consttypes.TimeNow(),
 						Email:       "partner@test.com",
 						Password:    getGlobalHashedPassword("password"),
@@ -488,6 +530,344 @@ func SeedMealData(db *gorm.DB) error {
 			meals := []*models.Meal{
 				{
 					Model: base.Model{ID: id},
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
+					Images: []*models.MealImage{
+						{
+							Image: models.Image{
+								Name: "Nasi Goyeng",
+								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Type: consttypes.IT_MEAL,
+							},
+						},
+					},
+					Illnesses: []*models.MealIllness{
+						{
+							Illness: illness,
+						},
+					},
+					Allergies: []*models.MealAllergy{
+						{
+							Allergy: allergy,
+						},
+					},
+					PartnerID:   partner.ID,
+					Partner:     partner,
+					Name:        "Nasi Goyeng",
+					Status:      consttypes.MS_ACTIVE,
+					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+				},
+				{
 					Images: []*models.MealImage{
 						{
 							Image: models.Image{
@@ -993,7 +1373,8 @@ func SeedMealCategoryData(db *gorm.DB) error {
 		if err := db.First(&models.MealCategory{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			mealcat := []*models.MealCategory{
 				{
-					Name: "Chicken",
+					Model: base.Model{ID: id},
+					Name:  "Chicken",
 					Image: &models.Image{
 						Name: "chicken.png",
 						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
@@ -1594,6 +1975,11 @@ func SeedMealCategoryData(db *gorm.DB) error {
 				},
 				{
 					Name: "Tamales",
+					Image: &models.Image{
+						Name: "chicken.png",
+						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Type: consttypes.IT_MEAL_CATEGORY,
+					},
 				},
 			}
 

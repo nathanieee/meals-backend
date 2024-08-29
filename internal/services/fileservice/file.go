@@ -46,6 +46,7 @@ type (
 		Upload(req utfile.FileMultipart) (string, error)
 		UploadProfilePicture(uid uuid.UUID, fileheader *multipart.FileHeader) error
 		UploadDonationProof(did uuid.UUID, fileheader *multipart.FileHeader) error
+		UploadMealImages(mid uuid.UUID, fileheader []*multipart.FileHeader) error
 	}
 )
 
@@ -211,6 +212,11 @@ func (s *FileService) CheckAndSaveUserImage(u models.User, image models.Image) e
 		}
 	}
 
+	return nil
+}
+
+func (s *FileService) UploadMealImages(mid uuid.UUID, fileheader []*multipart.FileHeader) error {
+	// TODO: implement uploading meal images
 	return nil
 }
 

@@ -50,4 +50,12 @@ type (
 
 		Allergy Allergy `json:"allergy"`
 	}
+
+	MealCategory struct {
+		base.Model `json:"-"`
+
+		Name string `json:"name" example:"Rice"`
+
+		Image *Image `json:"image"`
+	}
 )

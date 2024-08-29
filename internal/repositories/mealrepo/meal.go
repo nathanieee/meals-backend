@@ -84,7 +84,7 @@ func (r *MealRepository) Create(m models.Meal) (*models.Meal, error) {
 		return nil, err
 	}
 
-	return mnew, err
+	return mnew, nil
 }
 
 func (r *MealRepository) Read() ([]*models.Meal, error) {
@@ -106,7 +106,9 @@ func (r *MealRepository) Read() ([]*models.Meal, error) {
 }
 
 func (r *MealRepository) Update(m models.Meal) (*models.Meal, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Save(&m).Error
 
 	if err != nil {

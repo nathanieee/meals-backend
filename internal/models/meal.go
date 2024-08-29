@@ -75,3 +75,14 @@ func (m *Meal) ToResponse() (*responses.Meal, error) {
 
 	return &mres, nil
 }
+
+func (mc *MealCategory) ToResponse() (*responses.MealCategory, error) {
+	mcres := responses.MealCategory{}
+
+	if err := copier.CopyWithOption(&mcres, &mc, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return &mcres, nil
+}

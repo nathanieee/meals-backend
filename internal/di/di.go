@@ -12,6 +12,7 @@ import (
 	"project-skbackend/internal/repositories/donationrepo"
 	"project-skbackend/internal/repositories/illnessrepo"
 	"project-skbackend/internal/repositories/imagerepo"
+	"project-skbackend/internal/repositories/mealcategoryrepo"
 	"project-skbackend/internal/repositories/mealrepo"
 	"project-skbackend/internal/repositories/memberrepo"
 	"project-skbackend/internal/repositories/orderrepo"
@@ -29,6 +30,7 @@ import (
 	"project-skbackend/internal/services/fileservice"
 	"project-skbackend/internal/services/illnessservice"
 	"project-skbackend/internal/services/mailservice"
+	"project-skbackend/internal/services/mealcategoryservice"
 	"project-skbackend/internal/services/mealservice"
 	"project-skbackend/internal/services/memberservice"
 	"project-skbackend/internal/services/orderservice"
@@ -63,6 +65,7 @@ type DependencyInjection struct {
 	FileService         *fileservice.FileService
 	AllergyService      *allergyservice.AllergyService
 	DonationService     *donationservice.DonationService
+	MealCategoryService *mealcategoryservice.MealCategoryService
 
 	// * external services
 	DistanceMatrixService *distancematrixservice.DistanceMatrixService
@@ -92,6 +95,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	rordr := orderrepo.NewOrderRepository(db, *cfg)
 	rdona := donationrepo.NewDonationRepository(db)
 	rdnpr := donationproofrepo.NewDonationProofRepository(db)
+	rmcat := mealcategoryrepo.NewMealCategoryRepository(db)
 
 	// ! --------------------------------- service -------------------------------- ! //
 	// * external services
@@ -115,6 +119,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	sfile := fileservice.NewFileService(cfg, ctx, *minio, ruser, rimg, ruimg, rdona, rdnpr)
 	salle := allergyservice.NewAllergyService(rall)
 	sdona := donationservice.NewDonationService(rdona)
+	smcat := mealcategoryservice.NewMealCategoryService(rmcat)
 
 	return &DependencyInjection{
 		// * internal services
@@ -134,6 +139,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 		FileService:         sfile,
 		AllergyService:      salle,
 		DonationService:     sdona,
+		MealCategoryService: smcat,
 
 		// * external services
 		DistanceMatrixService: sdsmx,
