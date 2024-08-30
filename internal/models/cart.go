@@ -19,7 +19,7 @@ type (
 		MemberID uuid.UUID `json:"member_id" gorm:"required"`
 		Member   Member    `json:"member"`
 
-		Quantity uint `json:"quantity" gorm:"required"`
+		Quantity int `json:"quantity" gorm:"required"`
 	}
 )
 

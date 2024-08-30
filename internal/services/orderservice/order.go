@@ -28,7 +28,7 @@ type (
 		rcare caregiverrepo.ICaregiverRepository
 		rcart cartrepo.ICartRepository
 
-		maxord uint
+		maxord int
 	}
 
 	IOrderService interface {
@@ -37,6 +37,8 @@ type (
 		Delete(id uuid.UUID) error
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
 		GetByID(id uuid.UUID) (*responses.Order, error)
+
+		GetMemberRemainingOrder(uid uuid.UUID) (*responses.OrderRemaining, error)
 	}
 )
 
@@ -123,10 +125,10 @@ func (s *OrderService) getMemberAndUserOrder(useroderid uuid.UUID) (*models.Memb
 }
 
 // * processes the cart items and calculates the total quantity
-func (s *OrderService) processCarts(cartIDs []uuid.UUID) ([]models.OrderMeal, uint, error) {
+func (s *OrderService) processCarts(cartIDs []uuid.UUID) ([]models.OrderMeal, int, error) {
 	var (
 		omeals []models.OrderMeal
-		qty    uint
+		qty    int
 	)
 
 	for _, cid := range cartIDs {
@@ -144,8 +146,8 @@ func (s *OrderService) processCarts(cartIDs []uuid.UUID) ([]models.OrderMeal, ui
 }
 
 // * checks if the daily order limit has been reached
-func (s *OrderService) checkDailyOrderLimit(memberID uuid.UUID, qty uint) (uint, error) {
-	dailyorder, err := s.rord.GetMemberDailyOrder(memberID)
+func (s *OrderService) checkDailyOrderLimit(mid uuid.UUID, qty int) (int, error) {
+	dailyorder, err := s.rord.GetMemberDailyOrder(mid)
 	if err != nil {
 		return 0, consttypes.ErrFailedToGetDailyOrder
 	}
@@ -243,4 +245,25 @@ func (s *OrderService) GetByID(id uuid.UUID) (*responses.Order, error) {
 	}
 
 	return ordres, nil
+}
+
+func (s *OrderService) GetMemberRemainingOrder(uid uuid.UUID) (*responses.OrderRemaining, error) {
+	member, err := s.getMemberByUserID(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	dailyorder, err := s.rord.GetMemberDailyOrder(member.ID)
+	if err != nil {
+		return nil, consttypes.ErrFailedToGetDailyOrder
+	}
+
+	remorder := s.maxord - dailyorder
+
+	remorderrer, err := responses.NewOrderRemaining(remorder)
+	if err != nil {
+		return nil, err
+	}
+
+	return remorderrer, nil
 }

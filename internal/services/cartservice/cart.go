@@ -168,7 +168,21 @@ func (s *CartService) Update(cid uuid.UUID, req requests.UpdateCart) (*responses
 		return nil, consttypes.ErrConvertFailed
 	}
 
-	cart.Quantity = cart.Quantity + req.Quantity
+	// * check if the result is 0 or not
+	// * if it is 0, then delete the cart
+	tempquantity := int(cart.Quantity) + req.Quantity
+	if tempquantity < 0 || tempquantity == 0 {
+		err := s.rcart.Delete(*cart)
+		if err != nil {
+			return nil, consttypes.ErrFailedToDeleteCart
+		}
+
+		// TODO: implement a correct way to return success deletion
+		return nil, nil
+	}
+
+	// * if the value is not 0, then assign the variable
+	cart.Quantity = tempquantity
 
 	cart, err = s.rcart.Update(*cart)
 	if err != nil {

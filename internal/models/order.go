@@ -35,7 +35,7 @@ type (
 		PartnerID uuid.UUID `json:"partner_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
 		Partner   Partner   `json:"partner"`
 
-		Quantity uint `json:"quantity" gorm:"required" example:"2"`
+		Quantity int `json:"quantity" gorm:"required" example:"2"`
 	}
 
 	OrderHistory struct {
@@ -66,7 +66,7 @@ func (o *Order) ToResponse() (*responses.Order, error) {
 
 func NewCreateOrderMeals(
 	meal Meal,
-	quantity uint,
+	quantity int,
 ) *OrderMeal {
 	return &OrderMeal{
 		MealID:    meal.ID,

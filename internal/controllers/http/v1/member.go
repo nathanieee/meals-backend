@@ -16,8 +16,10 @@ import (
 	"project-skbackend/packages/utils/uttoken"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
+	"gorm.io/gorm"
 )
 
 type (
@@ -63,11 +65,13 @@ func newMemberRoutes(
 		gcart := gmemberspvt.Group("carts")
 		{
 			gcart.POST("", r.memberCreateCart)
+			gcart.PATCH(":cid", r.memberUpdateCart)
 		}
 
 		gorder := gmemberspvt.Group("orders")
 		{
 			gorder.POST("", r.memberCreateOrder)
+			gorder.GET("remaining", r.memberGetRemainingOrder)
 		}
 	}
 }
@@ -241,6 +245,79 @@ func (r *memberroutes) memberCreateCart(ctx *gin.Context) {
 	)
 }
 
+func (r *memberroutes) memberUpdateCart(ctx *gin.Context) {
+	var (
+		function = "update cart"
+		entity   = "cart"
+		req      *requests.UpdateCart
+		err      error
+	)
+
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	if err := ctx.ShouldBind(&req); err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	uuid, err := uuid.Parse(ctx.Param("cid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	roleres, err := r.suser.GetRoleDataByUserID(userres.ID)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	if roleres == nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			consttypes.ErrUserInvalidRole,
+		)
+		return
+	}
+
+	rescart, err := r.scart.Update(uuid, *req)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessUpdate(
+		entity,
+		ctx,
+		rescart,
+	)
+}
+
 func (r *memberroutes) memberCreateOrder(ctx *gin.Context) {
 	var (
 		function = "create order"
@@ -283,5 +360,45 @@ func (r *memberroutes) memberCreateOrder(ctx *gin.Context) {
 		entity,
 		ctx,
 		resorder,
+	)
+}
+
+func (r *memberroutes) memberGetRemainingOrder(ctx *gin.Context) {
+	var (
+		entity = "remaning order"
+	)
+
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	resremorder, err := r.sorder.GetMemberRemainingOrder(userres.ID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		resremorder,
 	)
 }

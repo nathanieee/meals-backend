@@ -116,7 +116,9 @@ func (r *CartRepository) Update(c models.Cart) (*models.Cart, error) {
 	err := r.
 		omit().
 		Session(&gorm.Session{FullSaveAssociations: true}).
-		Save(&c).Error
+		Model(&models.Cart{}).
+		Where("id = ?", c.ID).
+		Updates(&c).Error
 
 	if err != nil {
 		utlogger.Error(err)

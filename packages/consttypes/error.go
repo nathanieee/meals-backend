@@ -29,7 +29,7 @@ func ErrGeneralFailed(function string, err string) error {
 	return fmt.Errorf("failed to %s, error: %s", function, err)
 }
 
-func ErrDailyMaxOrderReached(maxord uint) error {
+func ErrDailyMaxOrderReached(maxord int) error {
 	return fmt.Errorf("daily max order of %v reached", maxord)
 }
 

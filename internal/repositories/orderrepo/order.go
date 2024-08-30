@@ -47,7 +47,7 @@ type (
 		GetByID(id uuid.UUID) (*models.Order, error)
 		GetByMemberID(id uuid.UUID) ([]*models.Order, error)
 		GetByMealID(id uuid.UUID) ([]*models.Order, error)
-		GetMemberDailyOrder(id uuid.UUID) (uint, error)
+		GetMemberDailyOrder(id uuid.UUID) (int, error)
 
 		// * this is used by cron service for automation
 		UpdateAutomaticallyStatus(status consttypes.OrderStatus, bufferminutes int, trigger []consttypes.OrderStatus) error
@@ -325,10 +325,10 @@ func (r *OrderRepository) UpdateAutomaticallyStatus(status consttypes.OrderStatu
 	return nil
 }
 
-func (r *OrderRepository) GetMemberDailyOrder(id uuid.UUID) (uint, error) {
+func (r *OrderRepository) GetMemberDailyOrder(id uuid.UUID) (int, error) {
 	var (
 		orders []models.Order
-		qty    uint = 0
+		qty    int = 0
 	)
 
 	err := r.

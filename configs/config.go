@@ -54,7 +54,7 @@ type (
 		AutomaticallyDelivered      int `env:"ORDER_AUTOMATICALLY_DELIVERED" env-default:"10"`
 	}
 	OrderMax struct {
-		Member uint `env:"ORDER_MAX_MEMBER" env-default:"3"`
+		Member int `env:"ORDER_MAX_MEMBER" env-default:"3"`
 	}
 
 	App struct {
