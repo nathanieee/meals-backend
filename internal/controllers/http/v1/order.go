@@ -3,7 +3,7 @@ package controllers
 import (
 	"project-skbackend/configs"
 	"project-skbackend/internal/middlewares"
-	"project-skbackend/internal/services/cartservice"
+	"project-skbackend/internal/services/orderservice"
 	"project-skbackend/internal/services/userservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utresponse"
@@ -13,36 +13,36 @@ import (
 )
 
 type (
-	cartroutes struct {
+	orderroutes struct {
 		cfg   *configs.Config
-		scart cartservice.ICartService
+		sordr orderservice.IOrderService
 		suser userservice.IUserService
 	}
 )
 
-func newCartRoutes(
+func newOrderRoutes(
 	rg *gin.RouterGroup,
 	cfg *configs.Config,
-	scart cartservice.ICartService,
+	sordr orderservice.IOrderService,
 	suser userservice.IUserService,
 ) {
-	r := &cartroutes{
+	r := &orderroutes{
 		cfg:   cfg,
-		scart: scart,
+		sordr: sordr,
 		suser: suser,
 	}
 
-	gcartspvt := rg.Group("carts")
-	gcartspvt.Use(middlewares.JWTAuthMiddleware(cfg, consttypes.UR_MEMBER, consttypes.UR_CAREGIVER))
+	gordrpvt := rg.Group("orders")
+	gordrpvt.Use(middlewares.JWTAuthMiddleware(cfg, consttypes.UR_MEMBER, consttypes.UR_CAREGIVER))
 	{
-		gcartspvt.GET("own", r.getOwnCart)
+		gordrpvt.GET("own", r.getOwnOrder)
 	}
 }
 
-func (r *cartroutes) getOwnCart(ctx *gin.Context) {
+func (r *orderroutes) getOwnOrder(ctx *gin.Context) {
 	var (
-		function = "get cart"
-		entity   = "cart"
+		function = "get order"
+		entity   = "order"
 		err      error
 	)
 
@@ -73,7 +73,7 @@ func (r *cartroutes) getOwnCart(ctx *gin.Context) {
 		return
 	}
 
-	rescart, err := r.scart.FindByRoleRes(*roleres)
+	resorder, err := r.sordr.FindByRoleRes(*roleres)
 	if err != nil {
 		utresponse.GeneralInternalServerError(
 			function,
@@ -86,6 +86,6 @@ func (r *cartroutes) getOwnCart(ctx *gin.Context) {
 	utresponse.GeneralSuccessFetch(
 		entity,
 		ctx,
-		rescart,
+		resorder,
 	)
 }

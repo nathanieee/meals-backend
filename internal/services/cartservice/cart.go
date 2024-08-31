@@ -7,9 +7,9 @@ import (
 	"project-skbackend/internal/repositories/caregiverrepo"
 	"project-skbackend/internal/repositories/cartrepo"
 	"project-skbackend/internal/repositories/memberrepo"
+	"project-skbackend/internal/services/baseroleservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
-	"project-skbackend/packages/utils/utrole"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -20,6 +20,8 @@ type (
 		rcart cartrepo.ICartRepository
 		rcare caregiverrepo.ICaregiverRepository
 		rmemb memberrepo.IMemberRepository
+
+		sbsrl baseroleservice.IBaseRoleService
 	}
 
 	ICartService interface {
@@ -29,7 +31,7 @@ type (
 		Delete(id uuid.UUID) error
 
 		GetByID(id uuid.UUID) (*responses.Cart, error)
-		FindByMemberID(roleres responses.BaseRole) ([]*responses.Cart, error)
+		FindByRoleRes(roleres responses.BaseRole) ([]*responses.Cart, error)
 	}
 )
 
@@ -37,11 +39,14 @@ func NewCartService(
 	rcart cartrepo.ICartRepository,
 	rcare caregiverrepo.ICaregiverRepository,
 	rmemb memberrepo.IMemberRepository,
+	sbsrl baseroleservice.IBaseRoleService,
 ) *CartService {
 	return &CartService{
 		rcart: rcart,
 		rcare: rcare,
 		rmemb: rmemb,
+
+		sbsrl: sbsrl,
 	}
 }
 
@@ -51,7 +56,7 @@ func (s *CartService) Create(req requests.CreateCart, roleres responses.BaseRole
 		err error
 	)
 
-	m, err = s.GetMemberByBaseRole(roleres)
+	m, err = s.sbsrl.GetMemberByBaseRole(roleres)
 	if err != nil {
 		return nil, err
 	}
@@ -97,32 +102,6 @@ func (s *CartService) Create(req requests.CreateCart, roleres responses.BaseRole
 	}
 
 	return cartres, nil
-}
-
-func (s *CartService) GetMemberByBaseRole(roleres responses.BaseRole) (*models.Member, error) {
-	var (
-		m   *models.Member
-		err error
-	)
-
-	rid, rtype, ok := utrole.CartRoleCheck(roleres)
-	if !ok {
-		return nil, consttypes.ErrUserInvalidRole
-	}
-
-	if rtype == consttypes.UR_CAREGIVER {
-		m, err = s.rmemb.GetByCaregiverID(rid)
-		if err != nil {
-			return nil, consttypes.ErrMemberNotFound
-		}
-	} else if rtype == consttypes.UR_MEMBER {
-		m, err = s.rmemb.GetByID(rid)
-		if err != nil {
-			return nil, consttypes.ErrMemberNotFound
-		}
-	}
-
-	return m, nil
 }
 
 func (s *CartService) Read() ([]*responses.Cart, error) {
@@ -245,12 +224,12 @@ func (s *CartService) GetByID(id uuid.UUID) (*responses.Cart, error) {
 	return cartres, nil
 }
 
-func (s *CartService) FindByMemberID(roleres responses.BaseRole) ([]*responses.Cart, error) {
+func (s *CartService) FindByRoleRes(roleres responses.BaseRole) ([]*responses.Cart, error) {
 	var (
 		cartreses []*responses.Cart
 	)
 
-	m, err := s.GetMemberByBaseRole(roleres)
+	m, err := s.sbsrl.GetMemberByBaseRole(roleres)
 	if err != nil {
 		return nil, consttypes.ErrMemberNotFound
 	}

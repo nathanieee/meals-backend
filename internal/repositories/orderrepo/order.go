@@ -88,7 +88,8 @@ func (r *OrderRepository) preload() *gorm.DB {
 		Preload("Member.Organization").
 		Preload("Member.Allergies.Allergy").
 		Preload("Member.Illnesses.Illness").
-		Preload("Meals.Meal").
+		Preload("Meals.Meal.Partner.User").
+		Preload("Meals.Meal.Images.Image").
 		Preload("History.User.Image.Image").
 		Preload("History.User.Addresses.AddressDetail")
 }

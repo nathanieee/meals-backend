@@ -23,6 +23,7 @@ import (
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/allergyservice"
 	"project-skbackend/internal/services/authservice"
+	"project-skbackend/internal/services/baseroleservice"
 	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/consumerservice"
 	"project-skbackend/internal/services/cronservice"
@@ -66,6 +67,7 @@ type DependencyInjection struct {
 	AllergyService      *allergyservice.AllergyService
 	DonationService     *donationservice.DonationService
 	MealCategoryService *mealcategoryservice.MealCategoryService
+	BaseRoleService     *baseroleservice.BaseRoleService
 
 	// * external services
 	DistanceMatrixService *distancematrixservice.DistanceMatrixService
@@ -102,6 +104,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	sdsmx := distancematrixservice.NewDistanceMatrixService(cfg)
 
 	// * internal services
+	sbsrl := baseroleservice.NewBaseRoleService(rmemb)
 	sprod := producerservice.NewProducerService(ch, cfg, ctx)
 	suser := userservice.NewUserService(ruser, radmin, rcare, rmemb, rorg, rpart, rpatron)
 	spart := partnerservice.NewPartnerService(rpart, rordr)
@@ -109,11 +112,11 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	sauth := authservice.NewAuthService(cfg, rdb, ruser, smail, suser)
 	smeal := mealservice.NewMealService(rmeal, rill, rall, rpart)
 	smemb := memberservice.NewMemberService(rmemb, ruser, rcare, rall, rill, rorg)
-	scart := cartservice.NewCartService(rcart, rcare, rmemb)
+	scart := cartservice.NewCartService(rcart, rcare, rmemb, sbsrl)
 	scons := consumerservice.NewConsumerService(ch, cfg, smail)
 	spatr := patronservice.NewPatronService(rpatron, rdona)
 	sorga := organizationservice.NewOrganizationService(rorg)
-	sordr := orderservice.NewOrderService(cfg, rorder, rmeal, rmemb, ruser, rcare, rcart)
+	sordr := orderservice.NewOrderService(cfg, rorder, rmeal, rmemb, ruser, rcare, rcart, sbsrl)
 	scron := cronservice.NewCronService(cfg, rorder)
 	silln := illnessservice.NewIllnessService(rill)
 	sfile := fileservice.NewFileService(cfg, ctx, *minio, ruser, rimg, ruimg, rdona, rdnpr)
@@ -140,6 +143,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 		AllergyService:      salle,
 		DonationService:     sdona,
 		MealCategoryService: smcat,
+		BaseRoleService:     sbsrl,
 
 		// * external services
 		DistanceMatrixService: sdsmx,

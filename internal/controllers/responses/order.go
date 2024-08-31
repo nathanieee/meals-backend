@@ -11,11 +11,11 @@ type (
 
 		Member Member `json:"member"`
 
-		Meals []OrderMeal `json:"meal" gorm:"foreignKey:OrderID"`
+		Meals []OrderMeal `json:"meals" gorm:"foreignKey:OrderID"`
 
 		Status consttypes.OrderStatus `json:"status" gorm:"required; type:order_status_enum" example:"Pending"`
 
-		History []OrderHistory `json:"history" gorm:"foreignKey:OrderID"`
+		History []OrderHistory `json:"histories" gorm:"foreignKey:OrderID"`
 	}
 
 	OrderMeal struct {

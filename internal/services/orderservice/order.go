@@ -11,6 +11,7 @@ import (
 	"project-skbackend/internal/repositories/memberrepo"
 	"project-skbackend/internal/repositories/orderrepo"
 	"project-skbackend/internal/repositories/userrepo"
+	"project-skbackend/internal/services/baseroleservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
@@ -28,6 +29,8 @@ type (
 		rcare caregiverrepo.ICaregiverRepository
 		rcart cartrepo.ICartRepository
 
+		sbsrl baseroleservice.IBaseRoleService
+
 		maxord int
 	}
 
@@ -39,6 +42,7 @@ type (
 		GetByID(id uuid.UUID) (*responses.Order, error)
 
 		GetMemberRemainingOrder(uid uuid.UUID) (*responses.OrderRemaining, error)
+		FindByRoleRes(roleres responses.BaseRole) ([]*responses.Order, error)
 	}
 )
 
@@ -50,6 +54,7 @@ func NewOrderService(
 	ruser userrepo.IUserRepository,
 	rcare caregiverrepo.ICaregiverRepository,
 	rcart cartrepo.ICartRepository,
+	sbsrl baseroleservice.IBaseRoleService,
 ) *OrderService {
 	return &OrderService{
 		rord:  rord,
@@ -58,6 +63,8 @@ func NewOrderService(
 		ruser: ruser,
 		rcare: rcare,
 		rcart: rcart,
+
+		sbsrl: sbsrl,
 
 		maxord: cfg.OrderMax.Member,
 	}
@@ -266,4 +273,31 @@ func (s *OrderService) GetMemberRemainingOrder(uid uuid.UUID) (*responses.OrderR
 	}
 
 	return remorderrer, nil
+}
+
+func (s *OrderService) FindByRoleRes(roleres responses.BaseRole) ([]*responses.Order, error) {
+	var (
+		orderreses []*responses.Order
+	)
+
+	m, err := s.sbsrl.GetMemberByBaseRole(roleres)
+	if err != nil {
+		return nil, err
+	}
+
+	orders, err := s.rord.GetByMemberID(m.ID)
+	if err != nil {
+		return nil, consttypes.ErrFailedToReadOrder
+	}
+
+	for _, order := range orders {
+		ordres, err := order.ToResponse()
+		if err != nil {
+			return nil, consttypes.ErrConvertFailed
+		}
+
+		orderreses = append(orderreses, ordres)
+	}
+
+	return orderreses, nil
 }

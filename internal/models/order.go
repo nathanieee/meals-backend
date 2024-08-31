@@ -17,11 +17,11 @@ type (
 		MemberID uuid.UUID `json:"member_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
 		Member   Member    `json:"member"`
 
-		Meals []OrderMeal `json:"meal" gorm:"foreignKey:OrderID"`
+		Meals []OrderMeal `json:"meals" gorm:"foreignKey:OrderID"`
 
 		Status consttypes.OrderStatus `json:"status" gorm:"required; type:order_status_enum" example:"Pending"`
 
-		History []OrderHistory `json:"history" gorm:"foreignKey:OrderID"`
+		History []OrderHistory `json:"histories" gorm:"foreignKey:OrderID"`
 	}
 
 	OrderMeal struct {
