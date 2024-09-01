@@ -109,8 +109,10 @@ func (s *AuthService) ResetPassword(req requests.ResetPassword) error {
 		return consttypes.ErrTokenMismatch
 	}
 
-	if !consttypes.TimeNow().Before(user.ResetPasswordSentAt.Add(time.Minute * time.Duration(s.cfg.APIResetPassword.Cooldown))) {
-		return consttypes.ErrTokenExpired
+	duration := consttypes.TimeNow().Sub(user.ResetPasswordSentAt)
+
+	if int(duration.Minutes()) > 5 && int(duration.Nanoseconds()) > 0 {
+		return consttypes.ErrTokenIsExpired
 	}
 
 	user, err = req.ToUserModel(*user)
@@ -177,7 +179,7 @@ func (s *AuthService) RefreshAuthToken(trefresh string, ctx *gin.Context) (*resp
 	}
 
 	if now.Unix() >= tparsed.Expires.Unix() {
-		return nil, nil, consttypes.ErrTokenExpired
+		return nil, nil, consttypes.ErrTokenIsExpired
 	}
 
 	userres, err := user.ToResponse()
@@ -267,7 +269,9 @@ func (s *AuthService) SendVerificationEmail(id uuid.UUID) error {
 		return consttypes.ErrUserNotFound
 	}
 
-	if consttypes.TimeNow().Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
+	duration := consttypes.TimeNow().Sub(user.ConfirmationSentAt)
+
+	if duration < 5*time.Minute && duration > 0 {
 		return consttypes.ErrTooQuickSendEmail
 	}
 
@@ -310,7 +314,9 @@ func (s *AuthService) VerifyToken(req requests.VerifyToken, ctx *gin.Context) (*
 		return nil, nil, consttypes.ErrUserNotFound
 	}
 
-	if !consttypes.TimeNow().Before(user.ConfirmationSentAt.Add(time.Minute * 5)) {
+	duration := consttypes.TimeNow().Sub(user.ConfirmationSentAt)
+
+	if duration < 5*time.Minute && duration > 0 {
 		return nil, nil, consttypes.ErrTokenIsExpired
 	}
 
@@ -322,7 +328,7 @@ func (s *AuthService) VerifyToken(req requests.VerifyToken, ctx *gin.Context) (*
 		return nil, nil, consttypes.ErrTokenIsNotTheSame
 	}
 
-	user.ConfirmationSentAt = consttypes.TimeNow()
+	user.ConfirmedAt = consttypes.TimeNow()
 	user.ConfirmationToken = ""
 
 	user, err = s.ruser.Update(*user)

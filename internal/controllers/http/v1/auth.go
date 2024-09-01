@@ -265,13 +265,10 @@ func (r *authroutes) sendVerifyEmail(ctx *gin.Context) {
 
 	err = r.sauth.SendVerificationEmail(user.ID)
 	if err != nil {
-		var (
-			entity = "user"
-		)
-		utresponse.GeneralNotFound(
-			entity,
+		utresponse.GeneralInternalServerError(
+			function,
 			ctx,
-			consttypes.ErrUserNotFound,
+			err,
 		)
 		return
 	}
