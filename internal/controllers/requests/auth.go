@@ -16,7 +16,7 @@ type (
 
 	VerifyToken struct {
 		Token string `json:"token" form:"token" binding:"required"`
-		Email string `json:"email" form:"email" binding:"required;email"`
+		Email string `json:"email" form:"email" binding:"required,email"`
 	}
 
 	ForgotPassword struct {
