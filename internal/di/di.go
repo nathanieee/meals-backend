@@ -15,6 +15,7 @@ import (
 	"project-skbackend/internal/repositories/mealcategoryrepo"
 	"project-skbackend/internal/repositories/mealrepo"
 	"project-skbackend/internal/repositories/memberrepo"
+	"project-skbackend/internal/repositories/ordermealrepo"
 	"project-skbackend/internal/repositories/orderrepo"
 	"project-skbackend/internal/repositories/organizationrepo"
 	"project-skbackend/internal/repositories/partnerrepo"
@@ -98,6 +99,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	rdona := donationrepo.NewDonationRepository(db)
 	rdnpr := donationproofrepo.NewDonationProofRepository(db)
 	rmcat := mealcategoryrepo.NewMealCategoryRepository(db)
+	rorme := ordermealrepo.NewOrderMealRepository(db, cfg)
 
 	// ! --------------------------------- service -------------------------------- ! //
 	// * external services
@@ -107,7 +109,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	sbsrl := baseroleservice.NewBaseRoleService(rmemb)
 	sprod := producerservice.NewProducerService(ch, cfg, ctx)
 	suser := userservice.NewUserService(ruser, radmin, rcare, rmemb, rorg, rpart, rpatron)
-	spart := partnerservice.NewPartnerService(rpart, rordr)
+	spart := partnerservice.NewPartnerService(rpart, rordr, rorme)
 	smail := mailservice.NewMailService(cfg, ruser, sprod)
 	sauth := authservice.NewAuthService(cfg, rdb, ruser, smail, suser)
 	smeal := mealservice.NewMealService(rmeal, rill, rall, rpart)

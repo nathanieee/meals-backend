@@ -4,6 +4,7 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
+	"project-skbackend/internal/repositories/ordermealrepo"
 	"project-skbackend/internal/repositories/orderrepo"
 	"project-skbackend/internal/repositories/partnerrepo"
 	"project-skbackend/internal/repositories/userrepo"
@@ -18,6 +19,7 @@ type (
 		rpart partnerrepo.IPartnerRepository
 		rordr orderrepo.IOrderRepository
 		ruser userrepo.IUserRepository
+		rorme ordermealrepo.IOrderMealRepository
 	}
 
 	IPartnerService interface {
@@ -29,6 +31,7 @@ type (
 		GetByID(id uuid.UUID) (*responses.Partner, error)
 
 		// * order related
+		FindOwnOrders(uid uuid.UUID, preq utpagination.Pagination) (*utpagination.Pagination, error)
 		OrderConfirmed(oid uuid.UUID, uid uuid.UUID) error
 		OrderBeingPrepared(oid uuid.UUID, uid uuid.UUID) error
 		OrderPrepared(oid uuid.UUID, uid uuid.UUID) error
@@ -38,10 +41,12 @@ type (
 func NewPartnerService(
 	rpart partnerrepo.IPartnerRepository,
 	rordr orderrepo.IOrderRepository,
+	rorme ordermealrepo.IOrderMealRepository,
 ) *PartnerService {
 	return &PartnerService{
 		rpart: rpart,
 		rordr: rordr,
+		rorme: rorme,
 	}
 }
 
@@ -137,6 +142,23 @@ func (s *PartnerService) GetByID(id uuid.UUID) (*responses.Partner, error) {
 	}
 
 	return pres, nil
+}
+
+func (s *PartnerService) FindOwnOrders(uid uuid.UUID, preq utpagination.Pagination) (*utpagination.Pagination, error) {
+	partner, err := s.rpart.GetByUserID(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	// * assigning partner id to the filter
+	preq.Filter.Partner.ID = &partner.ID
+
+	ordermeals, err := s.rorme.FindAll(preq)
+	if err != nil {
+		return nil, err
+	}
+
+	return ordermeals, nil
 }
 
 func (s *PartnerService) OrderConfirmed(oid uuid.UUID, uid uuid.UUID) error {

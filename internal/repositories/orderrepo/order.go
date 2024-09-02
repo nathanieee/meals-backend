@@ -192,7 +192,7 @@ func (r *OrderRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagi
 	result = result.
 		Group("id").
 		Scopes(paginationrepo.Paginate(&o, &p, result)).
-		Find(&ores)
+		Find(&o)
 
 	if err := result.Error; err != nil {
 		utlogger.Error(err)
