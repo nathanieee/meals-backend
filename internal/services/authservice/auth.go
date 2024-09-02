@@ -316,7 +316,7 @@ func (s *AuthService) VerifyToken(req requests.VerifyToken, ctx *gin.Context) (*
 
 	duration := consttypes.TimeNow().Sub(user.ConfirmationSentAt)
 
-	if duration < 5*time.Minute && duration > 0 {
+	if duration > 5*time.Minute && duration > 0 {
 		return nil, nil, consttypes.ErrTokenIsExpired
 	}
 
