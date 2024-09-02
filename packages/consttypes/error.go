@@ -71,7 +71,6 @@ var (
 	ErrFieldInvalidEmailAddress = fmt.Errorf("invalid email address format")
 
 	// * tokens
-	ErrTokenExpired               = fmt.Errorf("token is expired")
 	ErrTokenUnverifiable          = fmt.Errorf("token is unverifiable")
 	ErrTokenMismatch              = fmt.Errorf("token is mismatch")
 	ErrTokenIsNotTheSame          = fmt.Errorf("token is not the same")

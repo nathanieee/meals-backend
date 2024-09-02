@@ -25,6 +25,8 @@ var (
 		reset_password_token,
 		reset_password_sent_at,
 		confirmed_at,
+		confirmation_token,
+		confirmation_sent_at,
 		created_at,
 		updated_at
 	`

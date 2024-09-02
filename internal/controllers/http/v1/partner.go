@@ -9,6 +9,7 @@ import (
 	"project-skbackend/internal/services/fileservice"
 	"project-skbackend/internal/services/partnerservice"
 	"project-skbackend/packages/consttypes"
+	"project-skbackend/packages/utils/utrequest"
 	"project-skbackend/packages/utils/utresponse"
 	"project-skbackend/packages/utils/uttoken"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
+	"gorm.io/gorm"
 )
 
 type (
@@ -51,6 +53,7 @@ func newPartnerRoutes(
 	{
 		gorder := gpartnerspvt.Group("orders")
 		{
+			gorder.GET("own", r.findOwnOrders)
 			gorder.PATCH(":oid/confirmed", r.orderConfirmed)
 			gorder.PATCH(":oid/being-prepared", r.orderBeingPrepared)
 			gorder.PATCH(":oid/prepared", r.orderPrepared)
@@ -160,6 +163,47 @@ func (r *partnerroutes) partnerRegister(ctx *gin.Context) {
 		ctx,
 		resauth,
 		thead,
+	)
+}
+
+func (r *partnerroutes) findOwnOrders(ctx *gin.Context) {
+	var (
+		entity  = "orders"
+		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
+	)
+
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	orders, err := r.spartner.FindOwnOrders(userres.ID, reqpage)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		orders,
 	)
 }
 
