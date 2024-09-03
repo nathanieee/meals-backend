@@ -529,12 +529,11 @@ func SeedMealData(db *gorm.DB) error {
 
 			meals := []*models.Meal{
 				{
-					Model: base.Model{ID: id},
 					Images: []*models.MealImage{
 						{
 							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Name: "Nasi Goreng",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/fried-rice.jpg",
 								Type: consttypes.IT_MEAL,
 							},
 						},
@@ -551,16 +550,16 @@ func SeedMealData(db *gorm.DB) error {
 					},
 					PartnerID:   partner.ID,
 					Partner:     partner,
-					Name:        "Nasi Goyeng",
+					Name:        "Nasi Goreng",
 					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+					Description: "Nasi goreng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
 				},
 				{
 					Images: []*models.MealImage{
 						{
 							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Name: "Sate Ayam",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/satay.jpg",
 								Type: consttypes.IT_MEAL,
 							},
 						},
@@ -577,16 +576,16 @@ func SeedMealData(db *gorm.DB) error {
 					},
 					PartnerID:   partner.ID,
 					Partner:     partner,
-					Name:        "Nasi Goyeng",
+					Name:        "Sate Ayam",
 					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+					Description: "Sate ayam adalah hidangan Indonesia yang terdiri dari potongan daging ayam yang ditusuk dengan tusuk sate, kemudian dipanggang atau dibakar. Sate ayam biasanya disajikan dengan saus kacang yang gurih dan manis, serta dilengkapi dengan nasi atau lontong.",
 				},
 				{
 					Images: []*models.MealImage{
 						{
 							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Name: "Rendang",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/rendang.jpg",
 								Type: consttypes.IT_MEAL,
 							},
 						},
@@ -603,16 +602,16 @@ func SeedMealData(db *gorm.DB) error {
 					},
 					PartnerID:   partner.ID,
 					Partner:     partner,
-					Name:        "Nasi Goyeng",
+					Name:        "Rendang",
 					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+					Description: "Rendang adalah hidangan daging tradisional dari Indonesia, yang terkenal dengan bumbu rempah yang kuat dan proses memasak yang lama. Daging dimasak dengan santan dan berbagai bumbu, menghasilkan hidangan yang lezat dan tahan lama.",
 				},
 				{
 					Images: []*models.MealImage{
 						{
 							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Name: "Gado-Gado",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/gado-gado.jpg",
 								Type: consttypes.IT_MEAL,
 							},
 						},
@@ -629,16 +628,16 @@ func SeedMealData(db *gorm.DB) error {
 					},
 					PartnerID:   partner.ID,
 					Partner:     partner,
-					Name:        "Nasi Goyeng",
+					Name:        "Gado-Gado",
 					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+					Description: "Gado-gado adalah salad tradisional Indonesia yang terdiri dari berbagai sayuran rebus, tahu, tempe, telur, dan lontong, yang disajikan dengan saus kacang yang kaya dan gurih.",
 				},
 				{
 					Images: []*models.MealImage{
 						{
 							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Name: "Bakso",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/bakso.jpg",
 								Type: consttypes.IT_MEAL,
 							},
 						},
@@ -655,16 +654,16 @@ func SeedMealData(db *gorm.DB) error {
 					},
 					PartnerID:   partner.ID,
 					Partner:     partner,
-					Name:        "Nasi Goyeng",
+					Name:        "Bakso",
 					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+					Description: "Bakso adalah hidangan bola daging yang sangat populer di Indonesia. Bakso biasanya terbuat dari campuran daging sapi dan tepung tapioka, dan disajikan dalam kuah kaldu dengan mie, bihun, tahu, dan sayuran.",
 				},
 				{
 					Images: []*models.MealImage{
 						{
 							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Name: "Nasi Padang",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/nasi-padang.jpeg",
 								Type: consttypes.IT_MEAL,
 							},
 						},
@@ -681,16 +680,16 @@ func SeedMealData(db *gorm.DB) error {
 					},
 					PartnerID:   partner.ID,
 					Partner:     partner,
-					Name:        "Nasi Goyeng",
+					Name:        "Nasi Padang",
 					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+					Description: "Nasi Padang adalah masakan khas Sumatera Barat, terdiri dari nasi putih yang disajikan dengan berbagai macam lauk seperti rendang, ayam pop, gulai, dan sambal lado. Makanan ini terkenal dengan rasa yang kuat dan pedas.",
 				},
 				{
 					Images: []*models.MealImage{
 						{
 							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Name: "Soto Ayam",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/soto-ayam.jpeg",
 								Type: consttypes.IT_MEAL,
 							},
 						},
@@ -707,16 +706,16 @@ func SeedMealData(db *gorm.DB) error {
 					},
 					PartnerID:   partner.ID,
 					Partner:     partner,
-					Name:        "Nasi Goyeng",
+					Name:        "Soto Ayam",
 					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+					Description: "Soto Ayam adalah sup ayam khas Indonesia yang kaya akan rempah-rempah. Soto ayam disajikan dengan mie, telur, dan daun seledri, serta ditaburi dengan bawang goreng.",
 				},
 				{
 					Images: []*models.MealImage{
 						{
 							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Name: "Mie Goreng",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/mie-goreng.jpeg",
 								Type: consttypes.IT_MEAL,
 							},
 						},
@@ -733,16 +732,16 @@ func SeedMealData(db *gorm.DB) error {
 					},
 					PartnerID:   partner.ID,
 					Partner:     partner,
-					Name:        "Nasi Goyeng",
+					Name:        "Mie Goreng",
 					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+					Description: "Mie Goreng adalah hidangan mie yang digoreng dengan berbagai bumbu dan bahan tambahan seperti daging, telur, udang, dan sayuran. Mie goreng memiliki rasa yang gurih dan sedikit manis.",
 				},
 				{
 					Images: []*models.MealImage{
 						{
 							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
+								Name: "Nasi Uduk",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/nasi-uduk.jpeg",
 								Type: consttypes.IT_MEAL,
 							},
 						},
@@ -759,139 +758,9 @@ func SeedMealData(db *gorm.DB) error {
 					},
 					PartnerID:   partner.ID,
 					Partner:     partner,
-					Name:        "Nasi Goyeng",
+					Name:        "Nasi Uduk",
 					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
-				},
-				{
-					Images: []*models.MealImage{
-						{
-							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
-								Type: consttypes.IT_MEAL,
-							},
-						},
-					},
-					Illnesses: []*models.MealIllness{
-						{
-							Illness: illness,
-						},
-					},
-					Allergies: []*models.MealAllergy{
-						{
-							Allergy: allergy,
-						},
-					},
-					PartnerID:   partner.ID,
-					Partner:     partner,
-					Name:        "Nasi Goyeng",
-					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
-				},
-				{
-					Images: []*models.MealImage{
-						{
-							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
-								Type: consttypes.IT_MEAL,
-							},
-						},
-					},
-					Illnesses: []*models.MealIllness{
-						{
-							Illness: illness,
-						},
-					},
-					Allergies: []*models.MealAllergy{
-						{
-							Allergy: allergy,
-						},
-					},
-					PartnerID:   partner.ID,
-					Partner:     partner,
-					Name:        "Nasi Goyeng",
-					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
-				},
-				{
-					Images: []*models.MealImage{
-						{
-							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
-								Type: consttypes.IT_MEAL,
-							},
-						},
-					},
-					Illnesses: []*models.MealIllness{
-						{
-							Illness: illness,
-						},
-					},
-					Allergies: []*models.MealAllergy{
-						{
-							Allergy: allergy,
-						},
-					},
-					PartnerID:   partner.ID,
-					Partner:     partner,
-					Name:        "Nasi Goyeng",
-					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
-				},
-				{
-					Images: []*models.MealImage{
-						{
-							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
-								Type: consttypes.IT_MEAL,
-							},
-						},
-					},
-					Illnesses: []*models.MealIllness{
-						{
-							Illness: illness,
-						},
-					},
-					Allergies: []*models.MealAllergy{
-						{
-							Allergy: allergy,
-						},
-					},
-					PartnerID:   partner.ID,
-					Partner:     partner,
-					Name:        "Nasi Goyeng",
-					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
-				},
-				{
-					Images: []*models.MealImage{
-						{
-							Image: models.Image{
-								Name: "Nasi Goyeng",
-								Path: "https://lifeloveandgoodfood.com/wp-content/uploads/2023/03/chicken_fried_rice00032a-1200x1200-1.jpg",
-								Type: consttypes.IT_MEAL,
-							},
-						},
-					},
-					Illnesses: []*models.MealIllness{
-						{
-							Illness: illness,
-						},
-					},
-					Allergies: []*models.MealAllergy{
-						{
-							Allergy: allergy,
-						},
-					},
-					PartnerID:   partner.ID,
-					Partner:     partner,
-					Name:        "Nasi Goyeng",
-					Status:      consttypes.MS_ACTIVE,
-					Description: "Nasi goyeng adalah masakan Indonesia yang populer, terkenal karena rasa yang kaya dan beragam. Ini adalah hidangan nasi yang digoreng dengan bumbu-bumbu khas Indonesia dan seringkali ditambahkan dengan berbagai jenis bahan tambahan seperti daging, ayam, udang, telur, sayuran, dan rempah-rempah.",
+					Description: "Nasi Uduk adalah hidangan nasi yang dimasak dengan santan dan berbagai rempah, menghasilkan rasa yang gurih dan lezat. Nasi uduk biasanya disajikan dengan ayam goreng, telur, tempe, dan sambal.",
 				},
 			}
 
@@ -1377,607 +1246,135 @@ func SeedMealCategoryData(db *gorm.DB) error {
 					Name:  "Chicken",
 					Image: &models.Image{
 						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-chicken.jpg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Rice",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "rice.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-rice.jpg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Snack",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "snack.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-snack.jpeg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Fast Food",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "fast_food.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-fast-food.png",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Satay",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "satay.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-satay.jpg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Korean",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "korean.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-korean.jpg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Indonesian",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Breakfast",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "indonesian.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-indonesian.jpg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Noodles",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "noodles.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-noodles.jpg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Vegetarian",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "vegetarian.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-vegetarian.webp",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Desserts",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "desserts.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-desserts.jpg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Seafood",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Italian",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Mexican",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Japanese",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "seafood.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-seafood.jpg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Chinese",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Indian",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Barbecue",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Pizza",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Burgers",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "chinese.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-chinese.jpeg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Salads",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "salads.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-salad.jpg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Sandwiches",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "sandwiches.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-sandwich.jpg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Sushi",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Vegan",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "sushi.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-sushi.webp",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Thai",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Middle Eastern",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Greek",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "French",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Spanish",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Tapas",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Brunch",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Soups",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Steakhouse",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Gluten-Free",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Healthy",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Comfort Food",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "thai.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-thai.jpg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
 				{
 					Name: "Bakery",
 					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Coffee",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Ice Cream",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Smoothies",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Wings",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Pasta",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Dim Sum",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Wraps",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Hot Dogs",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Tacos",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Pancakes",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Crepes",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Donuts",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Boba Tea",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Ramen",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Pho",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Shawarma",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Kebabs",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Curry",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Poke",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "BBQ",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Subs",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Cheesesteaks",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Gyros",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Falafel",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Quesadillas",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Empanadas",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Churros",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Mozzarella Sticks",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Mac and Cheese",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Fried Rice",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Stir Fry",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Teriyaki",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Hot Pot",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Tapas",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Sashimi",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Tandoori",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Biryani",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Tortas",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
-						Type: consttypes.IT_MEAL_CATEGORY,
-					},
-				},
-				{
-					Name: "Tamales",
-					Image: &models.Image{
-						Name: "chicken.png",
-						Path: "https://assets.epicurious.com/photos/568eb0bf7dc604b44b5355ee/16:9/w_2560%2Cc_limit/rice.jpg",
+						Name: "bakery.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-bakery.png",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
