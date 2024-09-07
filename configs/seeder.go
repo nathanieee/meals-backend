@@ -15,6 +15,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var (
@@ -202,8 +203,6 @@ func SeedOrderStatusEnum(db *gorm.DB) error {
 		consttypes.OS_BEING_PREPARED.String(),
 		consttypes.OS_PREPARED.String(),
 		consttypes.OS_PICKED_UP.String(),
-		consttypes.OS_OUT_FOR_DELIVERY.String(),
-		consttypes.OS_DELIVERED.String(),
 		consttypes.OS_COMPLETED.String(),
 		consttypes.OS_CANCELLED.String(),
 	)
@@ -508,6 +507,48 @@ func SeedPartnerCredentials(db *gorm.DB) error {
 				utlogger.Error(err)
 				return err
 			}
+
+			for i := 0; i < 10; i++ {
+				partner := models.Partner{
+					User: models.User{
+						Image: &models.UserImage{
+							Image: models.Image{
+								Name: "Profile Image",
+								Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/jpeg-01918055-96aa-7a39-bcea-6f7fd1440165.jpg",
+								Type: consttypes.IT_PROFILE,
+							},
+						},
+						ConfirmedAt: consttypes.TimeNow(),
+						Email:       fmt.Sprintf("partner+%v@test.com", i),
+						Password:    getGlobalHashedPassword("password"),
+						Role:        consttypes.UR_PARTNER,
+						Addresses: []*models.Address{
+							{
+								Name:    "Address",
+								Address: "Pine Road",
+								Note:    "Gated community, use code 5678 at the gate.",
+								AddressDetail: &models.AddressDetail{
+									Geolocation: models.Geolocation{
+										Longitude: "-27.05171",
+										Latitude:  "125.11016",
+									},
+									FormattedAddress: "Lake Wells WA 6440, Australia",
+									PostCode:         "6440",
+									Country:          "Australia",
+								},
+							},
+						},
+					},
+					MealCategories: mealcategories,
+					Name:           fmt.Sprintf("Partner %v", i),
+				}
+
+				err = db.Session(&gorm.Session{FullSaveAssociations: true}).Create(&partner).Error
+				if err != nil {
+					utlogger.Error(err)
+					return err
+				}
+			}
 		}
 	}
 
@@ -529,6 +570,7 @@ func SeedMealData(db *gorm.DB) error {
 
 			meals := []*models.Meal{
 				{
+					Model: base.Model{ID: id},
 					Images: []*models.MealImage{
 						{
 							Image: models.Image{
@@ -1400,16 +1442,18 @@ func SeedCartData(db *gorm.DB) error {
 			)
 
 			db.First(&member)
-			db.First(&meal)
+			db.Preload(clause.Associations).First(&meal)
 
 			carts := []*models.Cart{
 				{
-					Model:    base.Model{ID: id},
-					MealID:   meal.ID,
-					Meal:     meal,
-					MemberID: member.ID,
-					Member:   member,
-					Quantity: 1,
+					Model:     base.Model{ID: id},
+					MealID:    meal.ID,
+					Meal:      meal,
+					PartnerID: meal.PartnerID,
+					Partner:   meal.Partner,
+					MemberID:  member.ID,
+					Member:    member,
+					Quantity:  1,
 				},
 			}
 

@@ -35,6 +35,7 @@ type (
 		OrderConfirmed(oid uuid.UUID, uid uuid.UUID) error
 		OrderBeingPrepared(oid uuid.UUID, uid uuid.UUID) error
 		OrderPrepared(oid uuid.UUID, uid uuid.UUID) error
+		OrderPickedUp(oid uuid.UUID, uid uuid.UUID) error
 	}
 )
 
@@ -235,12 +236,42 @@ func (s *PartnerService) OrderPrepared(oid uuid.UUID, uid uuid.UUID) error {
 	}
 
 	// * could only confirm the order if the order status is "being prepared"
-	if order.Status != consttypes.OS_CONFIRMED {
+	if order.Status != consttypes.OS_BEING_PREPARED {
 		return consttypes.ErrInvalidOrderStatus
 	}
 
 	// * update the order object to confirm the order
 	preporder := order.OrderPrepared(*user)
+
+	// * update the order in the database
+	_, err = s.rordr.Update(*preporder)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *PartnerService) OrderPickedUp(oid uuid.UUID, uid uuid.UUID) error {
+	// * get the user who confirms the order
+	user, err := s.ruser.GetByID(uid)
+	if err != nil {
+		return err
+	}
+
+	// * get the corresponding order
+	order, err := s.rordr.GetByID(oid)
+	if err != nil {
+		return err
+	}
+
+	// * could only confirm the order if the order status is "being prepared"
+	if order.Status != consttypes.OS_PREPARED {
+		return consttypes.ErrInvalidOrderStatus
+	}
+
+	// * update the order object to confirm the order
+	preporder := order.OrderPickedUp(*user)
 
 	// * update the order in the database
 	_, err = s.rordr.Update(*preporder)

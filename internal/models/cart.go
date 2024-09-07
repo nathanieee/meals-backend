@@ -16,6 +16,9 @@ type (
 		MealID uuid.UUID `json:"meal_id" gorm:"required"`
 		Meal   Meal      `json:"meal"`
 
+		PartnerID uuid.UUID `json:"partner_id" gorm:"required"`
+		Partner   Partner   `json:"partner"`
+
 		MemberID uuid.UUID `json:"member_id" gorm:"required"`
 		Member   Member    `json:"member"`
 

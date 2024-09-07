@@ -67,21 +67,6 @@ func (s *CronService) orderSchedule(gsch gocron.Scheduler) {
 		errs = append(errs, err)
 	}
 
-	err = s.scheduleOrderPickedUp(gsch)
-	if err != nil {
-		errs = append(errs, err)
-	}
-
-	err = s.scheduleOrderOutForDelivery(gsch)
-	if err != nil {
-		errs = append(errs, err)
-	}
-
-	err = s.scheduleOrderDelivered(gsch)
-	if err != nil {
-		errs = append(errs, err)
-	}
-
 	if len(errs) != 0 {
 		utlogger.Error(err)
 	}
@@ -112,93 +97,6 @@ func (s *CronService) scheduleOrderCancelled(gsch gocron.Scheduler) error {
 	}
 
 	utlogger.Info(fmt.Sprintf("Service for Cron %s Running!", "Update Order Expired"))
-
-	return nil
-}
-
-func (s *CronService) scheduleOrderPickedUp(gsch gocron.Scheduler) error {
-	_, err := gsch.NewJob(
-		gocron.DurationJob(
-			// TODO: use the env variable
-			time.Duration(1)*time.Minute,
-		),
-		gocron.NewTask(
-			func() error {
-				err := s.rodr.UpdateAutomaticallyStatus(consttypes.OS_PICKED_UP, s.cfg.OrderBuffer.AutomaticallyBeingPickedUp, []consttypes.OrderStatus{consttypes.OS_PREPARED})
-				if err != nil {
-					utlogger.Error(err)
-					return err
-				}
-
-				return nil
-			},
-		),
-	)
-
-	if err != nil {
-		utlogger.Error(err)
-		return err
-	}
-
-	utlogger.Info(fmt.Sprintf("Service for Cron %s Running!", "Update Order Picked Up"))
-
-	return nil
-}
-
-func (s *CronService) scheduleOrderOutForDelivery(gsch gocron.Scheduler) error {
-	_, err := gsch.NewJob(
-		gocron.DurationJob(
-			// TODO: use the env variable
-			time.Duration(1)*time.Minute,
-		),
-		gocron.NewTask(
-			func() error {
-				err := s.rodr.UpdateAutomaticallyStatus(consttypes.OS_OUT_FOR_DELIVERY, s.cfg.OrderBuffer.AutomaticallyOutForDelivery, []consttypes.OrderStatus{consttypes.OS_PICKED_UP})
-				if err != nil {
-					utlogger.Error(err)
-					return err
-				}
-
-				return nil
-			},
-		),
-	)
-
-	if err != nil {
-		utlogger.Error(err)
-		return err
-	}
-
-	utlogger.Info(fmt.Sprintf("Service for Cron %s Running!", "Update Order Out for Delivery"))
-
-	return nil
-}
-
-func (s *CronService) scheduleOrderDelivered(gsch gocron.Scheduler) error {
-	_, err := gsch.NewJob(
-		gocron.DurationJob(
-			// TODO: use the env variable
-			time.Duration(1)*time.Minute,
-		),
-		gocron.NewTask(
-			func() error {
-				err := s.rodr.UpdateAutomaticallyStatus(consttypes.OS_DELIVERED, s.cfg.OrderBuffer.AutomaticallyDelivered, []consttypes.OrderStatus{consttypes.OS_OUT_FOR_DELIVERY})
-				if err != nil {
-					utlogger.Error(err)
-					return err
-				}
-
-				return nil
-			},
-		),
-	)
-
-	if err != nil {
-		utlogger.Error(err)
-		return err
-	}
-
-	utlogger.Info(fmt.Sprintf("Service for Cron %s Running!", "Update Order Delivered"))
 
 	return nil
 }

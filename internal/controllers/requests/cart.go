@@ -20,7 +20,7 @@ type (
 	}
 )
 
-func (req *CreateCart) ToModel(member models.Member) (*models.Cart, error) {
+func (req *CreateCart) ToModel(member models.Member, meal models.Meal) (*models.Cart, error) {
 	var (
 		cart models.Cart
 	)
@@ -32,6 +32,9 @@ func (req *CreateCart) ToModel(member models.Member) (*models.Cart, error) {
 
 	cart.MemberID = member.ID
 	cart.Member = member
+
+	cart.PartnerID = meal.PartnerID
+	cart.Partner = meal.Partner
 
 	return &cart, nil
 }

@@ -6,6 +6,7 @@ import (
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/caregiverrepo"
 	"project-skbackend/internal/repositories/cartrepo"
+	"project-skbackend/internal/repositories/mealrepo"
 	"project-skbackend/internal/repositories/memberrepo"
 	"project-skbackend/internal/services/baseroleservice"
 	"project-skbackend/packages/consttypes"
@@ -20,6 +21,7 @@ type (
 		rcart cartrepo.ICartRepository
 		rcare caregiverrepo.ICaregiverRepository
 		rmemb memberrepo.IMemberRepository
+		rmeal mealrepo.IMealRepository
 
 		sbsrl baseroleservice.IBaseRoleService
 	}
@@ -39,12 +41,14 @@ func NewCartService(
 	rcart cartrepo.ICartRepository,
 	rcare caregiverrepo.ICaregiverRepository,
 	rmemb memberrepo.IMemberRepository,
+	rmeal mealrepo.IMealRepository,
 	sbsrl baseroleservice.IBaseRoleService,
 ) *CartService {
 	return &CartService{
 		rcart: rcart,
 		rcare: rcare,
 		rmemb: rmemb,
+		rmeal: rmeal,
 
 		sbsrl: sbsrl,
 	}
@@ -61,8 +65,13 @@ func (s *CartService) Create(req requests.CreateCart, roleres responses.BaseRole
 		return nil, err
 	}
 
+	meal, err := s.rmeal.GetByID(req.MealID)
+	if err != nil {
+		return nil, err
+	}
+
 	// * convert request to model
-	cart, err := req.ToModel(*m)
+	cart, err := req.ToModel(*m, *meal)
 	if err != nil {
 		utlogger.Error(err)
 		return nil, consttypes.ErrConvertFailed

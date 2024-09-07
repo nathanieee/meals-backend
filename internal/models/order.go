@@ -131,3 +131,18 @@ func (o *Order) OrderPrepared(user User) *Order {
 	o.History = append(o.History, *oh)
 	return o
 }
+
+func (o *Order) OrderPickedUp(user User) *Order {
+	var (
+		status = consttypes.OS_PICKED_UP
+	)
+
+	o.Status = status
+
+	// * create new order history
+	oh := NewOrderHistory(user, status)
+
+	// * append history
+	o.History = append(o.History, *oh)
+	return o
+}

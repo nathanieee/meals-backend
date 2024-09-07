@@ -114,7 +114,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	sauth := authservice.NewAuthService(cfg, rdb, ruser, smail, suser)
 	smeal := mealservice.NewMealService(rmeal, rill, rall, rpart)
 	smemb := memberservice.NewMemberService(rmemb, ruser, rcare, rall, rill, rorg)
-	scart := cartservice.NewCartService(rcart, rcare, rmemb, sbsrl)
+	scart := cartservice.NewCartService(rcart, rcare, rmemb, rmeal, sbsrl)
 	scons := consumerservice.NewConsumerService(ch, cfg, smail)
 	spatr := patronservice.NewPatronService(rpatron, rdona)
 	sorga := organizationservice.NewOrganizationService(rorg)
