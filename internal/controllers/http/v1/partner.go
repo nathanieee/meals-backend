@@ -46,6 +46,7 @@ func newPartnerRoutes(
 	gpartnerspub := rg.Group("partners")
 	{
 		gpartnerspub.POST("register", r.partnerRegister)
+		gpartnerspub.GET("", r.findPartners)
 	}
 
 	gpartnerspvt := rg.Group("partners")
@@ -57,8 +58,41 @@ func newPartnerRoutes(
 			gorder.PATCH(":oid/confirmed", r.orderConfirmed)
 			gorder.PATCH(":oid/being-prepared", r.orderBeingPrepared)
 			gorder.PATCH(":oid/prepared", r.orderPrepared)
+			gorder.PATCH(":oid/picked-up", r.OrderPickedUp)
 		}
 	}
+}
+
+func (r *partnerroutes) findPartners(ctx *gin.Context) {
+	var (
+		entity  = "partners"
+		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
+	)
+
+	partners, err := r.spartner.FindAll(reqpage)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		partners,
+	)
 }
 
 func (r *partnerroutes) partnerRegister(ctx *gin.Context) {
@@ -324,6 +358,50 @@ func (r *partnerroutes) orderPrepared(ctx *gin.Context) {
 	}
 
 	err = r.spartner.OrderPrepared(oid, user.ID)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccess(
+		function,
+		ctx,
+		nil,
+	)
+}
+
+func (r *partnerroutes) OrderPickedUp(ctx *gin.Context) {
+	var (
+		function = "order picked up"
+		err      error
+	)
+
+	user, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			nil,
+			err,
+		)
+		return
+	}
+
+	oid, err := uuid.Parse(ctx.Param("oid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.spartner.OrderPickedUp(oid, user.ID)
 	if err != nil {
 		utresponse.GeneralInternalServerError(
 			function,
