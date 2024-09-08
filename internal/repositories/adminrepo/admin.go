@@ -149,9 +149,12 @@ func (r *AdminRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagi
 	if p.Search != "" {
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
-			Where(r.db.
-				Where("first_name LIKE ?", p.Search).
-				Or("last_name LIKE ?", p.Search),
+			Where(
+				r.db.Where(`
+					first_name ILIKE ?
+						OR 
+					last_name ILIKE ? 
+			`, p.Search, p.Search),
 			)
 	}
 

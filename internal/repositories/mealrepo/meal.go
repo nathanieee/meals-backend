@@ -146,15 +146,19 @@ func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 
 	result := r.
 		preload().
+		Debug().
 		Model(&m).
 		Select(SELECTED_FIELDS)
 
 	if p.Search != "" {
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
-			Where(r.db.
-				Where("name LIKE ?", p.Search).
-				Or("description LIKE ?", p.Search),
+			Where(
+				r.db.Where(`
+					name ILIKE ?
+						OR 
+					description ILIKE ? 
+			`, p.Search, p.Search),
 			)
 	}
 

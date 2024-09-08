@@ -146,8 +146,10 @@ func (r *PartnerRepository) FindAll(p utpagination.Pagination) (*utpagination.Pa
 	if p.Search != "" {
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
-			Where(r.db.
-				Where("name LIKE ?", p.Search),
+			Where(
+				r.db.Where(`
+					name ILIKE ?
+			`, p.Search),
 			)
 	}
 

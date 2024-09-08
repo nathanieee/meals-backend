@@ -47,6 +47,8 @@ func newPartnerRoutes(
 	{
 		gpartnerspub.POST("register", r.partnerRegister)
 		gpartnerspub.GET("", r.findPartners)
+		gpartnerspub.GET("raw", r.findPartnersRaw)
+		gpartnerspub.GET(":pid", r.getPartner)
 	}
 
 	gpartnerspvt := rg.Group("partners")
@@ -58,7 +60,7 @@ func newPartnerRoutes(
 			gorder.PATCH(":oid/confirmed", r.orderConfirmed)
 			gorder.PATCH(":oid/being-prepared", r.orderBeingPrepared)
 			gorder.PATCH(":oid/prepared", r.orderPrepared)
-			gorder.PATCH(":oid/picked-up", r.OrderPickedUp)
+			gorder.PATCH(":oid/picked-up", r.orderPickedUp)
 		}
 	}
 }
@@ -92,6 +94,79 @@ func (r *partnerroutes) findPartners(ctx *gin.Context) {
 		entity,
 		ctx,
 		partners,
+	)
+}
+
+func (r *partnerroutes) findPartnersRaw(ctx *gin.Context) {
+	var (
+		entity = "partners"
+	)
+
+	partners, err := r.spartner.Read()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		partners,
+	)
+}
+
+func (r *partnerroutes) getPartner(ctx *gin.Context) {
+	var (
+		function = "get partner"
+		entity   = "partner"
+	)
+
+	uuid, err := uuid.Parse(ctx.Param("pid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	respart, err := r.spartner.GetByID(uuid)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		respart,
 	)
 }
 
@@ -374,7 +449,7 @@ func (r *partnerroutes) orderPrepared(ctx *gin.Context) {
 	)
 }
 
-func (r *partnerroutes) OrderPickedUp(ctx *gin.Context) {
+func (r *partnerroutes) orderPickedUp(ctx *gin.Context) {
 	var (
 		function = "order picked up"
 		err      error
