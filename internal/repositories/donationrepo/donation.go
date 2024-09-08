@@ -142,11 +142,7 @@ func (r *DonationRepository) FindAll(p utpagination.Pagination) (*utpagination.P
 
 	if p.Search != "" {
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
-		result = result.
-			Where(r.db.
-				Where("name LIKE ?", p.Search).
-				Or("description LIKE ?", p.Search),
-			)
+		// TODO: add a like query here
 	}
 
 	if !p.Filter.CreatedFrom.IsZero() && !p.Filter.CreatedTo.IsZero() {

@@ -142,8 +142,10 @@ func (r *UserRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 	if p.Search != "" {
 		p.Search = fmt.Sprintf("%%%s%%", p.Search)
 		result = result.
-			Where(r.db.
-				Where("email LIKE ?", p.Search),
+			Where(
+				r.db.Where(`
+					email ILIKE ?
+		`, p.Search),
 			)
 	}
 
