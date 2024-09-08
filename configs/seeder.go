@@ -566,7 +566,7 @@ func SeedMealData(db *gorm.DB) error {
 
 			db.First(&illness)
 			db.First(&allergy)
-			db.First(&partner)
+			db.Where("id = ?", id).First(&partner)
 
 			meals := []*models.Meal{
 				{
@@ -1442,7 +1442,7 @@ func SeedCartData(db *gorm.DB) error {
 			)
 
 			db.First(&member)
-			db.Preload(clause.Associations).First(&meal)
+			db.Preload(clause.Associations).Where("partner_id = ?", id).Preload("Partner").First(&meal)
 
 			carts := []*models.Cart{
 				{

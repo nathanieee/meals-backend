@@ -10,11 +10,13 @@ import (
 	"project-skbackend/internal/repositories/mealrepo"
 	"project-skbackend/internal/repositories/memberrepo"
 	"project-skbackend/internal/repositories/orderrepo"
+	"project-skbackend/internal/repositories/partnerrepo"
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/internal/services/baseroleservice"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
+	"project-skbackend/packages/utils/utslice"
 
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -28,6 +30,7 @@ type (
 		ruser userrepo.IUserRepository
 		rcare caregiverrepo.ICaregiverRepository
 		rcart cartrepo.ICartRepository
+		rpart partnerrepo.IPartnerRepository
 
 		sbsrl baseroleservice.IBaseRoleService
 
@@ -54,6 +57,7 @@ func NewOrderService(
 	ruser userrepo.IUserRepository,
 	rcare caregiverrepo.ICaregiverRepository,
 	rcart cartrepo.ICartRepository,
+	rpart partnerrepo.IPartnerRepository,
 	sbsrl baseroleservice.IBaseRoleService,
 ) *OrderService {
 	return &OrderService{
@@ -63,6 +67,7 @@ func NewOrderService(
 		ruser: ruser,
 		rcare: rcare,
 		rcart: rcart,
+		rpart: rpart,
 
 		sbsrl: sbsrl,
 
@@ -78,7 +83,7 @@ func (s *OrderService) Create(req requests.CreateOrder, useroderid uuid.UUID) (*
 	}
 
 	// * processes the cart items and calculates the total quantity
-	omeals, qty, err := s.processCarts(req.CartIDs)
+	omeals, partner, qty, err := s.processCarts(req.CartIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +95,7 @@ func (s *OrderService) Create(req requests.CreateOrder, useroderid uuid.UUID) (*
 	}
 
 	// * converts the request to an order model
-	order, err := req.ToModel(*member, *userorder, omeals)
+	order, err := req.ToModel(*member, *userorder, omeals, *partner)
 	if err != nil {
 		return nil, consttypes.ErrConvertFailed
 	}
@@ -132,24 +137,41 @@ func (s *OrderService) getMemberAndUserOrder(useroderid uuid.UUID) (*models.Memb
 }
 
 // * processes the cart items and calculates the total quantity
-func (s *OrderService) processCarts(cartIDs []uuid.UUID) ([]models.OrderMeal, int, error) {
+func (s *OrderService) processCarts(cartIDs []uuid.UUID) ([]models.OrderMeal, *models.Partner, int, error) {
 	var (
 		omeals []models.OrderMeal
 		qty    int
+		pids   []uuid.UUID
 	)
 
 	for _, cid := range cartIDs {
 		cart, err := s.rcart.GetByID(cid)
 		if err != nil {
-			return nil, 0, consttypes.ErrCartNotFound
+			return nil, nil, 0, consttypes.ErrCartNotFound
 		}
+
+		utlogger.Info(cart)
+
+		// * append all of the cart partner ids
+		pids = append(pids, cart.PartnerID)
 
 		omeal := models.NewCreateOrderMeals(cart.Meal, cart.Quantity)
 		omeals = append(omeals, *omeal)
 		qty += cart.Quantity
 	}
 
-	return omeals, qty, nil
+	// * check if the order has different partner in 1 order
+	if isdiffpartner := utslice.HasDifferentElements(pids); isdiffpartner {
+		return nil, nil, 0, consttypes.ErrOrderShouldBeSamePartner
+	}
+
+	// * get the partner
+	partner, err := s.rpart.GetByID(pids[0])
+	if err != nil {
+		return nil, nil, 0, consttypes.ErrPartnerNotFound
+	}
+
+	return omeals, partner, qty, nil
 }
 
 // * checks if the daily order limit has been reached
@@ -278,6 +300,28 @@ func (s *OrderService) GetMemberRemainingOrder(uid uuid.UUID) (*responses.OrderR
 func (s *OrderService) FindByRoleRes(roleres responses.BaseRole) ([]*responses.Order, error) {
 	var (
 		orderreses []*responses.Order
+		err        error
+	)
+
+	switch roleres.Role {
+	case consttypes.UR_MEMBER:
+		orderreses, err = s.FindMemberOrder(roleres)
+	case consttypes.UR_PARTNER:
+		orderreses, err = s.FindPartnerOrder(roleres)
+	default:
+		return nil, consttypes.ErrFailedToReadOrder
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return orderreses, nil
+}
+
+func (s *OrderService) FindMemberOrder(roleres responses.BaseRole) ([]*responses.Order, error) {
+	var (
+		orderreses []*responses.Order
 	)
 
 	m, err := s.sbsrl.GetMemberByBaseRole(roleres)
@@ -285,7 +329,34 @@ func (s *OrderService) FindByRoleRes(roleres responses.BaseRole) ([]*responses.O
 		return nil, err
 	}
 
-	orders, err := s.rord.GetByMemberID(m.ID)
+	orders, err := s.rord.FindByMemberID(m.ID)
+	if err != nil {
+		return nil, consttypes.ErrFailedToReadOrder
+	}
+
+	for _, order := range orders {
+		ordres, err := order.ToResponse()
+		if err != nil {
+			return nil, consttypes.ErrConvertFailed
+		}
+
+		orderreses = append(orderreses, ordres)
+	}
+
+	return orderreses, nil
+}
+
+func (s *OrderService) FindPartnerOrder(roleres responses.BaseRole) ([]*responses.Order, error) {
+	var (
+		orderreses []*responses.Order
+	)
+
+	p, err := s.sbsrl.GetPartnerByBaseRole(roleres)
+	if err != nil {
+		return nil, err
+	}
+
+	orders, err := s.rord.FindByPartnerID(p.ID)
 	if err != nil {
 		return nil, consttypes.ErrFailedToReadOrder
 	}

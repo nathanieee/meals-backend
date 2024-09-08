@@ -11,6 +11,8 @@ type (
 
 		Member Member `json:"member"`
 
+		Partner Partner `json:"partner"`
+
 		Meals []OrderMeal `json:"meals" gorm:"foreignKey:OrderID"`
 
 		Status consttypes.OrderStatus `json:"status" gorm:"required; type:order_status_enum" example:"Pending"`

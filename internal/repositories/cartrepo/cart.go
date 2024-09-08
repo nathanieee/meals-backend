@@ -20,6 +20,7 @@ var (
 		id, 
 		meal_id,
 		member_id,
+		partner_id,
 		quantity,
 		created_at,
 		updated_at
@@ -53,6 +54,7 @@ func (r *CartRepository) omit() *gorm.DB {
 	return r.db.Omit(
 		"Meal",
 		"Member",
+		"Partner",
 	)
 }
 
