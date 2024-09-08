@@ -99,8 +99,9 @@ var (
 	ErrFailedToFindAllMembers = fmt.Errorf("failed to find all members")
 
 	// * orders
-	ErrFailedToGetDailyOrder = fmt.Errorf("failed to get daily order")
-	ErrInvalidOrderStatus    = fmt.Errorf("invalid order status")
+	ErrFailedToGetDailyOrder    = fmt.Errorf("failed to get daily order")
+	ErrInvalidOrderStatus       = fmt.Errorf("invalid order status")
+	ErrOrderShouldBeSamePartner = fmt.Errorf("order should be from the same partner")
 
 	// * caregivers
 	ErrCaregiverNotFound = fmt.Errorf("caregiver not found")

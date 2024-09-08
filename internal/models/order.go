@@ -17,6 +17,9 @@ type (
 		MemberID uuid.UUID `json:"member_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
 		Member   Member    `json:"member"`
 
+		PartnerID uuid.UUID `json:"partner_id" gorm:"required" example:"f7fbfa0d-5f95-42e0-839c-d43f0ca757a4"`
+		Partner   Partner   `json:"partner"`
+
 		Meals []OrderMeal `json:"meals" gorm:"foreignKey:OrderID"`
 
 		Status consttypes.OrderStatus `json:"status" gorm:"required; type:order_status_enum" example:"Pending"`

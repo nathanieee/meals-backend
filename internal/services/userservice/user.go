@@ -224,42 +224,42 @@ func (s *UserService) GetRoleDataByUserID(uid uuid.UUID) (*responses.BaseRole, e
 
 	switch user.Role {
 	case consttypes.UR_ADMIN:
-		a, err := s.radmn.GetByUserID(uid)
+		a, err := s.radmn.GetByUserID(user.ID)
 		if err != nil {
 			return nil, err
 		}
 
 		data = a
 	case consttypes.UR_CAREGIVER:
-		c, err := s.rcare.GetByUserID(uid)
+		c, err := s.rcare.GetByUserID(user.ID)
 		if err != nil {
 			return nil, err
 		}
 
 		data = c
 	case consttypes.UR_MEMBER:
-		m, err := s.rmemb.GetByUserID(uid)
+		m, err := s.rmemb.GetByUserID(user.ID)
 		if err != nil {
 			return nil, err
 		}
 
 		data = m
 	case consttypes.UR_ORGANIZATION:
-		o, err := s.rorga.GetByUserID(uid)
+		o, err := s.rorga.GetByUserID(user.ID)
 		if err != nil {
 			return nil, err
 		}
 
 		data = o
 	case consttypes.UR_PARTNER:
-		p, err := s.rpart.GetByUserID(uid)
+		p, err := s.rpart.GetByUserID(user.ID)
 		if err != nil {
 			return nil, err
 		}
 
 		data = p
 	case consttypes.UR_PATRON:
-		p, err := s.rpatr.GetByUserID(uid)
+		p, err := s.rpatr.GetByUserID(user.ID)
 		if err != nil {
 			return nil, err
 		}

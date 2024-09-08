@@ -106,7 +106,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	sdsmx := distancematrixservice.NewDistanceMatrixService(cfg)
 
 	// * internal services
-	sbsrl := baseroleservice.NewBaseRoleService(rmemb)
+	sbsrl := baseroleservice.NewBaseRoleService(rmemb, rpart)
 	sprod := producerservice.NewProducerService(ch, cfg, ctx)
 	suser := userservice.NewUserService(ruser, radmin, rcare, rmemb, rorg, rpart, rpatron)
 	spart := partnerservice.NewPartnerService(rpart, rordr, rorme)
@@ -118,7 +118,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	scons := consumerservice.NewConsumerService(ch, cfg, smail)
 	spatr := patronservice.NewPatronService(rpatron, rdona)
 	sorga := organizationservice.NewOrganizationService(rorg)
-	sordr := orderservice.NewOrderService(cfg, rorder, rmeal, rmemb, ruser, rcare, rcart, sbsrl)
+	sordr := orderservice.NewOrderService(cfg, rorder, rmeal, rmemb, ruser, rcare, rcart, rpart, sbsrl)
 	scron := cronservice.NewCronService(cfg, rorder)
 	silln := illnessservice.NewIllnessService(rill)
 	sfile := fileservice.NewFileService(cfg, ctx, *minio, ruser, rimg, ruimg, rdona, rdnpr)

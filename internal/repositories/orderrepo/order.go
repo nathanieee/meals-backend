@@ -23,6 +23,7 @@ var (
 		created_at,
 		updated_at,
 		member_id,
+		partner_id,
 		status
 	`
 )
@@ -45,7 +46,8 @@ type (
 		Delete(o models.Order) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		GetByID(id uuid.UUID) (*models.Order, error)
-		GetByMemberID(id uuid.UUID) ([]*models.Order, error)
+		FindByMemberID(id uuid.UUID) ([]*models.Order, error)
+		FindByPartnerID(id uuid.UUID) ([]*models.Order, error)
 		GetByMealID(id uuid.UUID) ([]*models.Order, error)
 		GetMemberDailyOrder(id uuid.UUID) (int, error)
 
@@ -91,7 +93,10 @@ func (r *OrderRepository) preload() *gorm.DB {
 		Preload("Meals.Meal.Partner.User").
 		Preload("Meals.Meal.Images.Image").
 		Preload("History.User.Image.Image").
-		Preload("History.User.Addresses.AddressDetail")
+		Preload("History.User.Addresses.AddressDetail").
+		Preload("Partner.User.Image.Image").
+		Preload("Partner.User.Addresses.AddressDetail").
+		Preload("Partner.MealCategories")
 }
 
 func (r *OrderRepository) Create(o models.Order) (*models.Order, error) {
@@ -244,7 +249,7 @@ func (r *OrderRepository) GetByMealID(id uuid.UUID) ([]*models.Order, error) {
 	return o, nil
 }
 
-func (r *OrderRepository) GetByMemberID(id uuid.UUID) ([]*models.Order, error) {
+func (r *OrderRepository) FindByMemberID(id uuid.UUID) ([]*models.Order, error) {
 	var (
 		o []*models.Order
 	)
@@ -253,6 +258,26 @@ func (r *OrderRepository) GetByMemberID(id uuid.UUID) ([]*models.Order, error) {
 		preload().
 		Select(SELECTED_FIELDS).
 		Where("member_id = ?", id).
+		Find(&o).Error
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return o, nil
+}
+
+func (r *OrderRepository) FindByPartnerID(id uuid.UUID) ([]*models.Order, error) {
+	var (
+		o []*models.Order
+	)
+
+	err := r.
+		preload().
+		Debug().
+		Select(SELECTED_FIELDS).
+		Where("partner_id = ?", id).
 		Find(&o).Error
 
 	if err != nil {

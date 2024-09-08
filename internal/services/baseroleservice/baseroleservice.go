@@ -4,6 +4,7 @@ import (
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
 	"project-skbackend/internal/repositories/memberrepo"
+	"project-skbackend/internal/repositories/partnerrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utrole"
 )
@@ -11,18 +12,22 @@ import (
 type (
 	BaseRoleService struct {
 		rmemb memberrepo.IMemberRepository
+		rpart partnerrepo.IPartnerRepository
 	}
 
 	IBaseRoleService interface {
 		GetMemberByBaseRole(roleres responses.BaseRole) (*models.Member, error)
+		GetPartnerByBaseRole(roleres responses.BaseRole) (*models.Partner, error)
 	}
 )
 
 func NewBaseRoleService(
 	rmemb memberrepo.IMemberRepository,
+	rpart partnerrepo.IPartnerRepository,
 ) *BaseRoleService {
 	return &BaseRoleService{
 		rmemb: rmemb,
+		rpart: rpart,
 	}
 }
 
@@ -32,7 +37,7 @@ func (s *BaseRoleService) GetMemberByBaseRole(roleres responses.BaseRole) (*mode
 		err error
 	)
 
-	rid, rtype, ok := utrole.CartRoleCheck(roleres)
+	rid, rtype, ok := utrole.RoleTranslate(roleres)
 	if !ok {
 		return nil, consttypes.ErrUserInvalidRole
 	}
@@ -50,4 +55,27 @@ func (s *BaseRoleService) GetMemberByBaseRole(roleres responses.BaseRole) (*mode
 	}
 
 	return m, nil
+}
+
+func (s *BaseRoleService) GetPartnerByBaseRole(roleres responses.BaseRole) (*models.Partner, error) {
+	var (
+		p   *models.Partner
+		err error
+	)
+
+	rid, rtype, ok := utrole.RoleTranslate(roleres)
+	if !ok {
+		return nil, consttypes.ErrUserInvalidRole
+	}
+
+	switch rtype {
+	case consttypes.UR_PARTNER:
+		p, err = s.rpart.GetByID(rid)
+	}
+
+	if err != nil {
+		return nil, consttypes.ErrPartnerNotFound
+	}
+
+	return p, nil
 }

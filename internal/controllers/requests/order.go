@@ -19,6 +19,7 @@ func (req *CreateOrder) ToModel(
 	member models.Member,
 	userorder models.User,
 	meals []models.OrderMeal,
+	partner models.Partner,
 ) (*models.Order, error) {
 	var (
 		order  models.Order
@@ -34,6 +35,8 @@ func (req *CreateOrder) ToModel(
 	order.Member = member
 	order.Meals = meals
 	order.Status = status
+	order.PartnerID = partner.ID
+	order.Partner = partner
 
 	// * create new order history
 	oh := models.NewOrderHistory(userorder, status)

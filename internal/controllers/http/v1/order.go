@@ -33,7 +33,7 @@ func newOrderRoutes(
 	}
 
 	gordrpvt := rg.Group("orders")
-	gordrpvt.Use(middlewares.JWTAuthMiddleware(cfg, consttypes.UR_MEMBER, consttypes.UR_CAREGIVER))
+	gordrpvt.Use(middlewares.JWTAuthMiddleware(cfg, consttypes.UR_MEMBER, consttypes.UR_CAREGIVER, consttypes.UR_PARTNER))
 	{
 		gordrpvt.GET("own", r.getOwnOrder)
 	}
