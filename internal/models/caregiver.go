@@ -25,13 +25,15 @@ type (
 	}
 )
 
-func (c *Caregiver) ToResponse() *responses.Caregiver {
-	cres := responses.Caregiver{}
+func (c *Caregiver) ToResponse() (*responses.Caregiver, error) {
+	var (
+		cres responses.Caregiver
+	)
 
 	if err := copier.CopyWithOption(&cres, &c, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		utlogger.Error(err)
-		return nil
+		return nil, err
 	}
 
-	return &cres
+	return &cres, nil
 }

@@ -6,6 +6,8 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/middlewares"
 	"project-skbackend/internal/services/authservice"
+	"project-skbackend/internal/services/baseroleservice"
+	"project-skbackend/internal/services/caregiverservice"
 	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/fileservice"
 	"project-skbackend/internal/services/memberservice"
@@ -31,6 +33,8 @@ type (
 		sauth   authservice.IAuthService
 		sorder  orderservice.IOrderService
 		sfile   fileservice.IFileService
+		sbase   baseroleservice.IBaseRoleService
+		scare   caregiverservice.ICaregiverService
 	}
 )
 
@@ -43,6 +47,8 @@ func newMemberRoutes(
 	sauth authservice.IAuthService,
 	sorder orderservice.IOrderService,
 	sfile fileservice.IFileService,
+	sbase baseroleservice.IBaseRoleService,
+	scare caregiverservice.ICaregiverService,
 ) {
 	r := &memberroutes{
 		cfg:     cfg,
@@ -52,6 +58,8 @@ func newMemberRoutes(
 		sauth:   sauth,
 		sorder:  sorder,
 		sfile:   sfile,
+		sbase:   sbase,
+		scare:   scare,
 	}
 
 	gmemberspub := rg.Group("members")
@@ -72,6 +80,11 @@ func newMemberRoutes(
 		{
 			gorder.POST("", r.memberCreateOrder)
 			gorder.GET("remaining", r.memberGetRemainingOrder)
+		}
+
+		gcare := gmemberspvt.Group("caregivers")
+		{
+			gcare.GET("own", r.memberGetOwnCaregiver)
 		}
 	}
 }
@@ -400,5 +413,74 @@ func (r *memberroutes) memberGetRemainingOrder(ctx *gin.Context) {
 		entity,
 		ctx,
 		resremorder,
+	)
+}
+
+func (r *memberroutes) memberGetOwnCaregiver(ctx *gin.Context) {
+	var (
+		function = "get own caregiver"
+		entity   = "own caregiver"
+	)
+
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	roleres, err := r.suser.GetRoleDataByUserID(userres.ID)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	if roleres == nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			consttypes.ErrUserInvalidRole,
+		)
+		return
+	}
+
+	resmem, err := r.sbase.GetMemberByBaseRole(*roleres)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	rescare, err := r.scare.GetByID(*resmem.CaregiverID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		rescare,
 	)
 }
