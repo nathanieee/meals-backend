@@ -25,6 +25,7 @@ import (
 	"project-skbackend/internal/services/allergyservice"
 	"project-skbackend/internal/services/authservice"
 	"project-skbackend/internal/services/baseroleservice"
+	"project-skbackend/internal/services/caregiverservice"
 	"project-skbackend/internal/services/cartservice"
 	"project-skbackend/internal/services/consumerservice"
 	"project-skbackend/internal/services/cronservice"
@@ -69,6 +70,7 @@ type DependencyInjection struct {
 	DonationService     *donationservice.DonationService
 	MealCategoryService *mealcategoryservice.MealCategoryService
 	BaseRoleService     *baseroleservice.BaseRoleService
+	CaregiverService    *caregiverservice.CaregiverService
 
 	// * external services
 	DistanceMatrixService *distancematrixservice.DistanceMatrixService
@@ -125,6 +127,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	salle := allergyservice.NewAllergyService(rall)
 	sdona := donationservice.NewDonationService(rdona)
 	smcat := mealcategoryservice.NewMealCategoryService(rmcat)
+	scare := caregiverservice.NewCaregiverService(rcare)
 
 	return &DependencyInjection{
 		// * internal services
@@ -146,6 +149,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 		DonationService:     sdona,
 		MealCategoryService: smcat,
 		BaseRoleService:     sbsrl,
+		CaregiverService:    scare,
 
 		// * external services
 		DistanceMatrixService: sdsmx,
