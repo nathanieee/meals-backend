@@ -150,8 +150,6 @@ func (s *OrderService) processCarts(cartIDs []uuid.UUID) ([]models.OrderMeal, *m
 			return nil, nil, 0, consttypes.ErrCartNotFound
 		}
 
-		utlogger.Info(cart)
-
 		// * append all of the cart partner ids
 		pids = append(pids, cart.PartnerID)
 

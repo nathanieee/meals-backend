@@ -74,6 +74,7 @@ func newMemberRoutes(
 		{
 			gcart.POST("", r.memberCreateCart)
 			gcart.PATCH(":cid", r.memberUpdateCart)
+			gcart.DELETE(":cid", r.memberDeleteCart)
 		}
 
 		gorder := gmemberspvt.Group("orders")
@@ -482,5 +483,39 @@ func (r *memberroutes) memberGetOwnCaregiver(ctx *gin.Context) {
 		entity,
 		ctx,
 		rescare,
+	)
+}
+
+func (r *memberroutes) memberDeleteCart(ctx *gin.Context) {
+	var (
+		function = "delete cart"
+		entity   = "cart"
+		err      error
+	)
+
+	uuid, err := uuid.Parse(ctx.Param("cid"))
+	if err != nil {
+		utresponse.GeneralInputRequiredError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.scart.Delete(uuid)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessDelete(
+		entity,
+		ctx,
+		nil,
 	)
 }
