@@ -1360,7 +1360,7 @@ func SeedMealCategoryData(db *gorm.DB) error {
 					Name: "Desserts",
 					Image: &models.Image{
 						Name: "desserts.jpg",
-						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-desserts.jpg",
+						Path: "https://meals-minio-api.103.127.137.58.nip.io/meals-bucket/image/meals/categories/mc-dessert.jpg",
 						Type: consttypes.IT_MEAL_CATEGORY,
 					},
 				},
