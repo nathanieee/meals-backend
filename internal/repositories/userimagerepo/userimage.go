@@ -90,7 +90,9 @@ func (r *UserImageRepository) Read() ([]*models.UserImage, error) {
 }
 
 func (r *UserImageRepository) Update(ui models.UserImage) (*models.UserImage, error) {
-	err := r.db.
+	err := r.
+		omit().
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Save(&ui).Error
 
 	if err != nil {

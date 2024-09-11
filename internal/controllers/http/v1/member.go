@@ -86,6 +86,7 @@ func newMemberRoutes(
 		gcare := gmemberspvt.Group("caregivers")
 		{
 			gcare.GET("own", r.memberGetOwnCaregiver)
+			gcare.PATCH("", r.memberUpdateOwnCaregiver)
 		}
 	}
 }
@@ -517,5 +518,136 @@ func (r *memberroutes) memberDeleteCart(ctx *gin.Context) {
 		entity,
 		ctx,
 		nil,
+	)
+}
+
+func (r *memberroutes) memberUpdateOwnCaregiver(ctx *gin.Context) {
+	var (
+		function = "update own caregiver"
+		entity   = "own caregiver"
+		req      *requests.UpdateCaregiver
+		err      error
+	)
+
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	if err := ctx.ShouldBind(&req); err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	roleres, err := r.suser.GetRoleDataByUserID(userres.ID)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	if roleres == nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			consttypes.ErrUserInvalidRole,
+		)
+		return
+	}
+
+	memres, err := r.sbase.GetMemberByBaseRole(*roleres)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	rescare, err := r.smember.UpdateOwnCaregiver(memres.ID, *req)
+	if err != nil {
+		var pgerr *pgconn.PgError
+		if errors.As(err, &pgerr) {
+			if pgerrcode.IsIntegrityConstraintViolation(pgerr.SQLState()) {
+				utresponse.GeneralDuplicate(
+					pgerr.TableName,
+					ctx,
+					pgerr,
+				)
+				return
+			}
+		} else {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+		}
+		return
+	}
+
+	// * define the image request
+	reqimg := req.User.UpdateImage
+	// * if the image request is not empty
+	// * validate and upload the image
+	if reqimg != nil {
+		if err := reqimg.Validate(); err != nil {
+			utresponse.GeneralInvalidRequest(
+				function,
+				ctx,
+				nil,
+				err,
+			)
+			return
+		}
+
+		multipart, err := reqimg.GetMultipartFile()
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		err = r.sfile.UploadProfilePicture(rescare.User.ID, multipart)
+		if err != nil {
+			utresponse.GeneralInternalServerError(
+				function,
+				ctx,
+				err,
+			)
+			return
+		}
+	}
+
+	rescare, err = r.scare.GetByID(rescare.ID)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessUpdate(
+		entity,
+		ctx,
+		rescare,
 	)
 }

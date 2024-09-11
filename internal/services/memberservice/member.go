@@ -37,6 +37,8 @@ type (
 		FindAll(preq utpagination.Pagination) (*utpagination.Pagination, error)
 		GetByID(id uuid.UUID) (*responses.Member, error)
 		GetByCaregiverID(cgid uuid.UUID) (*responses.Member, error)
+
+		UpdateOwnCaregiver(mid uuid.UUID, req requests.UpdateCaregiver) (*responses.Caregiver, error)
 	}
 )
 
@@ -325,4 +327,43 @@ func (s *MemberService) GetByCaregiverID(cgid uuid.UUID) (*responses.Member, err
 	}
 
 	return mres, nil
+}
+
+func (s *MemberService) UpdateOwnCaregiver(mid uuid.UUID, req requests.UpdateCaregiver) (*responses.Caregiver, error) {
+	var (
+		caregiver *models.Caregiver
+	)
+
+	member, err := s.rmemb.GetByID(mid)
+	if err != nil {
+		return nil, consttypes.ErrMemberNotFound
+	}
+
+	if member.Caregiver != nil {
+		if member.Caregiver.User.Email != req.User.Email {
+			return nil, consttypes.ErrCannotChangeEmail
+		}
+
+		caregiver, err = s.rcare.GetByID(*member.CaregiverID)
+		if err != nil {
+			return nil, consttypes.ErrCaregiverNotFound
+		}
+	}
+
+	caregiver, err = req.ToModel(caregiver)
+	if err != nil {
+		return nil, consttypes.ErrConvertFailed
+	}
+
+	caregiver, err = s.rcare.Update(*caregiver)
+	if err != nil {
+		return nil, err
+	}
+
+	cres, err := caregiver.ToResponse()
+	if err != nil {
+		return nil, consttypes.ErrConvertFailed
+	}
+
+	return cres, nil
 }

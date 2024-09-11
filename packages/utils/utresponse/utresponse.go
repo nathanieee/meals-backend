@@ -305,3 +305,17 @@ func GeneralDuplicate(
 		},
 	})
 }
+
+func GeneralForbidden(
+	ctx *gin.Context,
+	err error,
+) {
+	ErrorResponse(ctx, http.StatusForbidden, ErrorRes{
+		Status:  consttypes.RST_FAIL,
+		Message: fmt.Sprintf("You are not allowed to do this request"),
+		Data: &ErrorData{
+			Debug:  &err,
+			Errors: err.Error(),
+		},
+	})
+}
