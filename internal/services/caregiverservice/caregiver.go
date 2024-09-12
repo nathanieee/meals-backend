@@ -15,6 +15,7 @@ type (
 
 	ICaregiverService interface {
 		GetByID(id uuid.UUID) (*responses.Caregiver, error)
+		GetByUserID(uid uuid.UUID) (*responses.Caregiver, error)
 	}
 )
 
@@ -35,6 +36,25 @@ func (s *CaregiverService) GetByID(id uuid.UUID) (*responses.Caregiver, error) {
 	)
 
 	caremod, err := s.rcare.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	careres, err = caremod.ToResponse()
+	if err != nil {
+		return nil, err
+	}
+
+	return careres, nil
+}
+
+func (s *CaregiverService) GetByUserID(uid uuid.UUID) (*responses.Caregiver, error) {
+	var (
+		careres *responses.Caregiver
+		err     error
+	)
+
+	caremod, err := s.rcare.GetByUserID(uid)
 	if err != nil {
 		return nil, err
 	}
