@@ -67,6 +67,7 @@ func (i *Image) UpdateUserImage(
 	userimage UserImage,
 ) *UserImage {
 	userimage.ImageID = i.ID
+	userimage.Image = *i
 
 	return &userimage
 }

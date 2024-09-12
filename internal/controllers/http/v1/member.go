@@ -87,6 +87,7 @@ func newMemberRoutes(
 		{
 			gcare.GET("own", r.memberGetOwnCaregiver)
 			gcare.PATCH("", r.memberUpdateOwnCaregiver)
+			gcare.PATCH("profile-picture", r.memberUpdateOwnCaregiverProfilePicture)
 		}
 	}
 }
@@ -649,5 +650,99 @@ func (r *memberroutes) memberUpdateOwnCaregiver(ctx *gin.Context) {
 		entity,
 		ctx,
 		rescare,
+	)
+}
+
+func (r *memberroutes) memberUpdateOwnCaregiverProfilePicture(ctx *gin.Context) {
+	var (
+		function = "update caregiver profile picture"
+		entity   = "caregiver profile picture"
+		req      *requests.UpdateImage
+	)
+
+	if err := ctx.ShouldBind(&req); err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	// * get the current logged in user
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	roleres, err := r.suser.GetRoleDataByUserID(userres.ID)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	if roleres == nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			consttypes.ErrUserInvalidRole,
+		)
+		return
+	}
+
+	memres, err := r.sbase.GetMemberByBaseRole(*roleres)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	// * validate and upload the image
+	if err := req.Validate(); err != nil {
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			nil,
+			err,
+		)
+		return
+	}
+
+	multipart, err := req.GetMultipartFile()
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.sfile.UploadProfilePicture(memres.Caregiver.UserID, multipart)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessUpdate(
+		entity,
+		ctx,
+		nil,
 	)
 }

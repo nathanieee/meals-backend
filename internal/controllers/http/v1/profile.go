@@ -53,6 +53,16 @@ func newProfileRoutes(
 		consttypes.UR_PATRON,
 	))
 	{
+		// * global route
+		gprofilepvt.GET("me", r.getOwnProfile)
+
+		// * picture's route
+		gpicture := gprofilepvt.Group("pictures")
+		{
+			gpicture.PATCH("", r.updateProfilePicture)
+		}
+
+		// * member's route
 		gprofilemem := gprofilepvt.Group("members")
 		gprofilemem.Use(middlewares.JWTAuthMiddleware(
 			cfg,
@@ -61,8 +71,6 @@ func newProfileRoutes(
 		{
 			gprofilemem.PATCH("own", r.updateOwnMemberProfile)
 		}
-
-		gprofilepvt.GET("me", r.getOwnProfile)
 	}
 }
 
@@ -241,5 +249,71 @@ func (r *profileroutes) updateOwnMemberProfile(ctx *gin.Context) {
 		entity,
 		ctx,
 		resmem,
+	)
+}
+
+func (r *profileroutes) updateProfilePicture(ctx *gin.Context) {
+	var (
+		function = "update profile picture"
+		entity   = "profile picture"
+		req      *requests.UpdateImage
+	)
+
+	if err := ctx.ShouldBind(&req); err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	// * get the current logged in user
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	// * validate and upload the image
+	if err := req.Validate(); err != nil {
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			nil,
+			err,
+		)
+		return
+	}
+
+	multipart, err := req.GetMultipartFile()
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	err = r.sfile.UploadProfilePicture(userres.ID, multipart)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessUpdate(
+		entity,
+		ctx,
+		nil,
 	)
 }
