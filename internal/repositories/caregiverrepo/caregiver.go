@@ -113,7 +113,14 @@ func (r *CaregiverRepository) Update(cg models.Caregiver) (*models.Caregiver, er
 		return nil, err
 	}
 
-	return &cg, nil
+	cgnew, err := r.GetByID(cg.ID)
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return cgnew, nil
 }
 
 func (r *CaregiverRepository) Delete(cg models.Caregiver) error {

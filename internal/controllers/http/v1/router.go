@@ -34,7 +34,7 @@ func NewRouter(ge *gin.Engine, db *gorm.DB, cfg *configs.Config, di *di.Dependen
 		newDonationRoutes(h, cfg, di.DonationService)
 		newCartRoutes(h, cfg, di.CartService, di.UserService)
 		newMealRoutes(h, cfg, di.MealService, di.MealCategoryService)
-		newProfileRoutes(h, cfg, di.UserService)
+		newProfileRoutes(h, cfg, di.UserService, di.MemberService, di.FileService, di.BaseRoleService)
 		newOrderRoutes(h, cfg, di.OrderService, di.UserService)
 	}
 }
