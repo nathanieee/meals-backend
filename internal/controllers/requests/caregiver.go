@@ -20,12 +20,12 @@ type (
 	}
 
 	UpdateCaregiver struct {
-		User UpdateUser `json:"user" form:"user" binding:"omitempty,dive"`
+		User *UpdateUser `json:"user" form:"user" binding:"omitempty,dive"`
 
-		Gender      consttypes.Gender   `json:"gender" form:"gender" binding:"required"`
-		FirstName   string              `json:"first_name" form:"first_name" binding:"required"`
-		LastName    string              `json:"last_name" form:"last_name" binding:"required"`
-		DateOfBirth ctdatatype.CDT_DATE `json:"date_of_birth" form:"date_of_birth" binding:"required"`
+		Gender      consttypes.Gender   `json:"gender" form:"gender" binding:"omitempty"`
+		FirstName   string              `json:"first_name" form:"first_name" binding:"omitempty"`
+		LastName    string              `json:"last_name" form:"last_name" binding:"omitempty"`
+		DateOfBirth ctdatatype.CDT_DATE `json:"date_of_birth" form:"date_of_birth" binding:"omitempty"`
 	}
 )
 
@@ -107,6 +107,13 @@ func (req *UpdateCaregiver) ToModel(
 		return caregiver, nil
 	}
 
+	// * convert the caregiver user request to user model
+	user, err := req.User.ToModel(caregiver.User, consttypes.UR_CAREGIVER)
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
 	// * if member does have a caregiver
 	// * then copy the new data to the old data
 	// * and return the new data
@@ -114,6 +121,9 @@ func (req *UpdateCaregiver) ToModel(
 		utlogger.Error(err)
 		return nil, err
 	}
+
+	// * assign the user model to the caregiver
+	caregiver.User = *user
 
 	return caregiver, nil
 }

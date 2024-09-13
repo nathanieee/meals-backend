@@ -9,6 +9,7 @@ import (
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
+	"project-skbackend/packages/utils/utstring"
 
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -46,6 +47,8 @@ type (
 		GetByID(id uuid.UUID) (*models.User, error)
 		GetByEmail(email string) (*models.User, error)
 		FirstOrCreate(u models.User) (*models.User, error)
+
+		UpdatePassword(id uuid.UUID, password string) (*models.User, error)
 	}
 )
 
@@ -222,4 +225,29 @@ func (r *UserRepository) FirstOrCreate(u models.User) (*models.User, error) {
 	}
 
 	return &u, nil
+}
+
+func (r *UserRepository) UpdatePassword(id uuid.UUID, password string) (*models.User, error) {
+	password, err := utstring.HashPassword(password)
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	err = r.db.
+		Model(&models.User{Model: base.Model{ID: id}}).
+		Update("password", password).Error
+
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	u, err := r.GetByID(id)
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
+	return u, nil
 }
