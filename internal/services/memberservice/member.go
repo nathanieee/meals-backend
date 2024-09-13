@@ -340,8 +340,10 @@ func (s *MemberService) UpdateOwnCaregiver(mid uuid.UUID, req requests.UpdateCar
 	}
 
 	if member.Caregiver != nil {
-		if member.Caregiver.User.Email != req.User.Email {
-			return nil, consttypes.ErrCannotChangeEmail
+		if req.User != nil {
+			if member.Caregiver.User.Email != req.User.Email {
+				return nil, consttypes.ErrCannotChangeEmail
+			}
 		}
 
 		caregiver, err = s.rcare.GetByID(*member.CaregiverID)

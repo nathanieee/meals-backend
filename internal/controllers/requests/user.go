@@ -26,9 +26,9 @@ type (
 	UpdateUser struct {
 		*UpdateImage
 
-		Email           string `json:"email" form:"email" binding:"email"`
-		Password        string `json:"password" form:"password" binding:"-"`
-		ConfirmPassword string `json:"confirm_password" form:"confirm_password" binding:"required,eqfield=Password"`
+		Email           string `json:"email" form:"email" binding:"omitempty"`
+		Password        string `json:"password" form:"password" binding:"omitempty"`
+		ConfirmPassword string `json:"confirm_password" form:"confirm_password" binding:"omitempty,eqfield=Password"`
 	}
 )
 

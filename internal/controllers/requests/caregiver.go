@@ -20,12 +20,12 @@ type (
 	}
 
 	UpdateCaregiver struct {
-		User UpdateUser `json:"user" form:"user" binding:"omitempty,dive"`
+		User *UpdateUser `json:"user" form:"user" binding:"omitempty,dive"`
 
-		Gender      consttypes.Gender   `json:"gender" form:"gender" binding:"required"`
-		FirstName   string              `json:"first_name" form:"first_name" binding:"required"`
-		LastName    string              `json:"last_name" form:"last_name" binding:"required"`
-		DateOfBirth ctdatatype.CDT_DATE `json:"date_of_birth" form:"date_of_birth" binding:"required"`
+		Gender      consttypes.Gender   `json:"gender" form:"gender" binding:"omitempty"`
+		FirstName   string              `json:"first_name" form:"first_name" binding:"omitempty"`
+		LastName    string              `json:"last_name" form:"last_name" binding:"omitempty"`
+		DateOfBirth ctdatatype.CDT_DATE `json:"date_of_birth" form:"date_of_birth" binding:"omitempty"`
 	}
 )
 

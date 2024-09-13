@@ -601,38 +601,40 @@ func (r *memberroutes) memberUpdateOwnCaregiver(ctx *gin.Context) {
 	}
 
 	// * define the image request
-	reqimg := req.User.UpdateImage
-	// * if the image request is not empty
-	// * validate and upload the image
-	if reqimg != nil {
-		if err := reqimg.Validate(); err != nil {
-			utresponse.GeneralInvalidRequest(
-				function,
-				ctx,
-				nil,
-				err,
-			)
-			return
-		}
+	if req.User != nil {
+		reqimg := req.User.UpdateImage
+		// * if the image request is not empty
+		// * validate and upload the image
+		if reqimg != nil {
+			if err := reqimg.Validate(); err != nil {
+				utresponse.GeneralInvalidRequest(
+					function,
+					ctx,
+					nil,
+					err,
+				)
+				return
+			}
 
-		multipart, err := reqimg.GetMultipartFile()
-		if err != nil {
-			utresponse.GeneralInternalServerError(
-				function,
-				ctx,
-				err,
-			)
-			return
-		}
+			multipart, err := reqimg.GetMultipartFile()
+			if err != nil {
+				utresponse.GeneralInternalServerError(
+					function,
+					ctx,
+					err,
+				)
+				return
+			}
 
-		err = r.sfile.UploadProfilePicture(rescare.User.ID, multipart)
-		if err != nil {
-			utresponse.GeneralInternalServerError(
-				function,
-				ctx,
-				err,
-			)
-			return
+			err = r.sfile.UploadProfilePicture(rescare.User.ID, multipart)
+			if err != nil {
+				utresponse.GeneralInternalServerError(
+					function,
+					ctx,
+					err,
+				)
+				return
+			}
 		}
 	}
 
