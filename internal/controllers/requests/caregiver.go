@@ -107,6 +107,13 @@ func (req *UpdateCaregiver) ToModel(
 		return caregiver, nil
 	}
 
+	// * convert the caregiver user request to user model
+	user, err := req.User.ToModel(caregiver.User, consttypes.UR_CAREGIVER)
+	if err != nil {
+		utlogger.Error(err)
+		return nil, err
+	}
+
 	// * if member does have a caregiver
 	// * then copy the new data to the old data
 	// * and return the new data
@@ -114,6 +121,9 @@ func (req *UpdateCaregiver) ToModel(
 		utlogger.Error(err)
 		return nil, err
 	}
+
+	// * assign the user model to the caregiver
+	caregiver.User = *user
 
 	return caregiver, nil
 }
