@@ -87,7 +87,7 @@ func newMemberRoutes(
 		{
 			gcare.GET("own", r.memberGetOwnCaregiver)
 			gcare.PATCH("", r.memberUpdateOwnCaregiver)
-			gcare.PATCH("profile-picture", r.memberUpdateOwnCaregiverProfilePicture)
+			gcare.PATCH("password", r.memberUpdateOwnCaregiverPassword)
 		}
 	}
 }
@@ -655,12 +655,22 @@ func (r *memberroutes) memberUpdateOwnCaregiver(ctx *gin.Context) {
 	)
 }
 
-func (r *memberroutes) memberUpdateOwnCaregiverProfilePicture(ctx *gin.Context) {
+func (r *memberroutes) memberUpdateOwnCaregiverPassword(ctx *gin.Context) {
 	var (
-		function = "update caregiver profile picture"
-		entity   = "caregiver profile picture"
-		req      *requests.UpdateImage
+		function = "update own caregiver password"
+		entity   = "own caregiver password"
+		req      *requests.UpdatePassword
+		err      error
 	)
+
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
 
 	if err := ctx.ShouldBind(&req); err != nil {
 		ve := utresponse.ValidationResponse(err)
@@ -668,16 +678,6 @@ func (r *memberroutes) memberUpdateOwnCaregiverProfilePicture(ctx *gin.Context) 
 			function,
 			ctx,
 			ve,
-			err,
-		)
-		return
-	}
-
-	// * get the current logged in user
-	userres, err := uttoken.GetUser(ctx)
-	if err != nil {
-		utresponse.GeneralUnauthorized(
-			ctx,
 			err,
 		)
 		return
@@ -711,28 +711,7 @@ func (r *memberroutes) memberUpdateOwnCaregiverProfilePicture(ctx *gin.Context) 
 		return
 	}
 
-	// * validate and upload the image
-	if err := req.Validate(); err != nil {
-		utresponse.GeneralInvalidRequest(
-			function,
-			ctx,
-			nil,
-			err,
-		)
-		return
-	}
-
-	multipart, err := req.GetMultipartFile()
-	if err != nil {
-		utresponse.GeneralInternalServerError(
-			function,
-			ctx,
-			err,
-		)
-		return
-	}
-
-	err = r.sfile.UploadProfilePicture(memres.Caregiver.UserID, multipart)
+	err = r.smember.UpdateOwnCaregiverPassword(memres.ID, *req)
 	if err != nil {
 		utresponse.GeneralInternalServerError(
 			function,

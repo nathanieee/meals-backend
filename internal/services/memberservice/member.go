@@ -14,6 +14,7 @@ import (
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
+	"project-skbackend/packages/utils/utstring"
 
 	"github.com/google/uuid"
 )
@@ -39,6 +40,7 @@ type (
 		GetByCaregiverID(cgid uuid.UUID) (*responses.Member, error)
 
 		UpdateOwnCaregiver(mid uuid.UUID, req requests.UpdateCaregiver) (*responses.Caregiver, error)
+		UpdateOwnCaregiverPassword(mid uuid.UUID, req requests.UpdatePassword) error
 	}
 )
 
@@ -368,4 +370,31 @@ func (s *MemberService) UpdateOwnCaregiver(mid uuid.UUID, req requests.UpdateCar
 	}
 
 	return cres, nil
+}
+
+func (s *MemberService) UpdateOwnCaregiverPassword(mid uuid.UUID, req requests.UpdatePassword) error {
+	// * get the member by its id
+	member, err := s.rmemb.GetByID(mid)
+	if err != nil {
+		return err
+	}
+
+	// * check if the caregiver exist or not
+	if member.Caregiver == nil {
+		return consttypes.ErrCaregiverNotFound
+	}
+
+	// * check if the old password is correct
+	ok := utstring.CheckPasswordHash(req.OldPassword, member.Caregiver.User.Password)
+	if !ok {
+		return consttypes.ErrInvalidEmailOrPassword
+	}
+
+	// * update the caregiver's password
+	_, err = s.ruser.UpdatePassword(member.Caregiver.User.ID, req.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

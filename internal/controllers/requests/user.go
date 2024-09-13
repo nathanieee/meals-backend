@@ -30,6 +30,12 @@ type (
 		Password        string `json:"password" form:"password" binding:"omitempty"`
 		ConfirmPassword string `json:"confirm_password" form:"confirm_password" binding:"omitempty,eqfield=Password"`
 	}
+
+	UpdatePassword struct {
+		OldPassword        string `json:"old_password" form:"old_password" binding:"required"`
+		NewPassword        string `json:"new_password" form:"new_password" binding:"required"`
+		ConfirmNewPassword string `json:"confirm_new_password" form:"confirm_new_password" binding:"required,eqfield=NewPassword"`
+	}
 )
 
 func (req *CreateUser) ToModel(
