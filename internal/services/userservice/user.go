@@ -15,6 +15,7 @@ import (
 	"project-skbackend/internal/repositories/userrepo"
 	"project-skbackend/packages/consttypes"
 	"project-skbackend/packages/utils/utpagination"
+	"project-skbackend/packages/utils/utstring"
 
 	"github.com/google/uuid"
 )
@@ -38,6 +39,8 @@ type (
 		Update(req requests.UpdateUser, uid uuid.UUID) (*responses.User, error)
 		GetUserName(uid uuid.UUID) (string, string, error)
 		GetRoleDataByUserID(uid uuid.UUID) (*responses.BaseRole, error)
+
+		UpdateOwnPassword(uid uuid.UUID, req requests.UpdatePassword) error
 	}
 )
 
@@ -273,4 +276,23 @@ func (s *UserService) GetRoleDataByUserID(uid uuid.UUID) (*responses.BaseRole, e
 		Data: data,
 		Role: user.Role,
 	}, nil
+}
+
+func (s *UserService) UpdateOwnPassword(uid uuid.UUID, req requests.UpdatePassword) error {
+	user, err := s.ruser.GetByID(uid)
+	if err != nil {
+		return err
+	}
+
+	ok := utstring.CheckPasswordHash(req.OldPassword, user.Password)
+	if !ok {
+		return consttypes.ErrInvalidEmailOrPassword
+	}
+
+	_, err = s.ruser.UpdatePassword(uid, req.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

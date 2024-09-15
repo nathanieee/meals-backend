@@ -85,6 +85,10 @@ func (req *UpdateMember) ToModel(
 		return nil, err
 	}
 
+	// * reset the allergies and illnesses
+	member.Allergies = nil
+	member.Illnesses = nil
+
 	member.User = user
 	member.Caregiver = caregiver
 	member.Allergies = allergies

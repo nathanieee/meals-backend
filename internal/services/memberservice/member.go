@@ -7,6 +7,8 @@ import (
 	"project-skbackend/internal/repositories/allergyrepo"
 	"project-skbackend/internal/repositories/caregiverrepo"
 	"project-skbackend/internal/repositories/illnessrepo"
+	"project-skbackend/internal/repositories/memberallergyrepo"
+	"project-skbackend/internal/repositories/memberillnessrepo"
 	"project-skbackend/internal/repositories/memberrepo"
 	"project-skbackend/internal/repositories/organizationrepo"
 	"project-skbackend/internal/repositories/userrepo"
@@ -28,6 +30,8 @@ type (
 		rall  allergyrepo.IAllergyRepository
 		rill  illnessrepo.IIllnessRepository
 		rorg  organizationrepo.IOrganizationRepository
+		rmill memberillnessrepo.IMemberIllnessRepository
+		rmall memberallergyrepo.IMemberAllergyRepository
 	}
 
 	IMemberService interface {
@@ -52,6 +56,8 @@ func NewMemberService(
 	rall allergyrepo.IAllergyRepository,
 	rill illnessrepo.IIllnessRepository,
 	rorg organizationrepo.IOrganizationRepository,
+	rmill memberillnessrepo.IMemberIllnessRepository,
+	rmall memberallergyrepo.IMemberAllergyRepository,
 ) *MemberService {
 	return &MemberService{
 		// * repository
@@ -61,6 +67,8 @@ func NewMemberService(
 		rall:  rall,
 		rill:  rill,
 		rorg:  rorg,
+		rmill: rmill,
+		rmall: rmall,
 	}
 }
 
@@ -208,58 +216,45 @@ func (s *MemberService) Update(id uuid.UUID, req requests.UpdateMember) (*respon
 		}
 	}
 
+	// * delete the existing illnesses and allergies
+	mills, _ := s.rmill.GetByMemberID(member.ID)
+	for _, mill := range mills {
+		err = s.rmill.Delete(*mill)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	malls, _ := s.rmall.GetByMemberID(member.ID)
+	for _, mall := range malls {
+		err = s.rmall.Delete(*mall)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// * find illness object and append to the array.
 	for _, ill := range req.IllnessID {
-		var (
-			found = false
-		)
-
-		for _, mill := range member.Illnesses {
-			if *ill == mill.Illness.ID {
-				found = true
-				continue
-			}
+		illness, err := s.rill.GetByID(*ill)
+		if err != nil {
+			return nil, consttypes.ErrIllnessNotFound
 		}
 
-		if found {
-			continue
-		} else {
-			illness, err := s.rill.GetByID(*ill)
-			if err != nil {
-				return nil, consttypes.ErrIllnessNotFound
-			}
+		millness := illness.ToMemberIllness()
 
-			millness := illness.ToMemberIllness()
-
-			illnesses = append(illnesses, millness)
-		}
+		illnesses = append(illnesses, millness)
 	}
 
 	// * find allergy object and append to the array.
 	for _, all := range req.AllergyID {
-		var (
-			found = false
-		)
-
-		for _, mall := range member.Allergies {
-			if *all == mall.Allergy.ID {
-				found = true
-				continue
-			}
+		allergy, err := s.rall.GetByID(*all)
+		if err != nil {
+			return nil, consttypes.ErrAllergiesNotFound
 		}
 
-		if found {
-			continue
-		} else {
-			allergy, err := s.rall.GetByID(*all)
-			if err != nil {
-				return nil, consttypes.ErrAllergiesNotFound
-			}
+		mallergy := allergy.ToMemberAllergy()
 
-			mallergy := allergy.ToMemberAllergy()
-
-			allergies = append(allergies, mallergy)
-		}
+		allergies = append(allergies, mallergy)
 	}
 
 	// * copy the request to the member model.

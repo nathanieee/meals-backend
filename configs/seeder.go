@@ -358,6 +358,8 @@ func SeedMemberCredentials(db *gorm.DB) error {
 					},
 					FirstName:   "John",
 					LastName:    "Doe",
+					Height:      5.8,
+					Weight:      60.0,
 					Gender:      consttypes.G_MALE,
 					DateOfBirth: ctdatatype.CDT_DATE{Time: consttypes.TimeNow()},
 					Caregiver: &models.Caregiver{
@@ -936,11 +938,6 @@ func SeedAllergyData(db *gorm.DB) error {
 				},
 				// ! start of medical allergen
 				{
-					Name:        "Balsam of Peru",
-					Description: "Balsam of Peru is a resinous substance that comes from the Myroxylon balsamum tree, which is native to Central America. Despite its name, it is not a true balsam. The resin is extracted from the tree trunk and branches. Balsam of Peru is often used in perfumes, flavorings, and various cosmetic and medicinal products.",
-					Allergens:   consttypes.A_MEDICAL,
-				},
-				{
 					Name:        "Tetracycline",
 					Description: "Tetracycline, sold under various brand names, is an oral antibiotic in the tetracyclines family of medications, used to treat a number of infections, including acne, cholera, brucellosis, plague, malaria, and syphilis.",
 					Allergens:   consttypes.A_MEDICAL,
@@ -989,27 +986,27 @@ func SeedAllergyData(db *gorm.DB) error {
 				{
 					Name:        "Dimethylaminopropylamine",
 					Description: "Dimethylaminopropylamine (DMAPA) is a diamine used in the preparation of some surfactants, such as cocamidopropyl betaine which is an ingredient in many personal care products including soaps, shampoos, and cosmetics. BASF, a major producer, claims that DMAPA-derivatives do not sting the eyes and makes a fine-bubble foam, making it appropriate in shampoos.",
-					Allergens:   consttypes.A_MEDICAL,
+					Allergens:   consttypes.A_CONTACT,
 				},
 				{
 					Name:        "Latex",
 					Description: "Latex is an emulsion of polymer microparticles in water. Latexes are found in nature, but synthetic latexes are common as well.",
-					Allergens:   consttypes.A_MEDICAL,
+					Allergens:   consttypes.A_CONTACT,
 				},
 				{
 					Name:        "Paraphenylenediamine",
 					Description: "p-Phenylenediamine (PPD) is an organic compound with the formula C6H4(NH2)2. This derivative of aniline is a white solid, but samples can darken due to air oxidation. It is mainly used as a component of engineering polymers and composites like kevlar. It is also an ingredient in hair dyes and is occasionally used as a substitute for henna.",
-					Allergens:   consttypes.A_MEDICAL,
+					Allergens:   consttypes.A_CONTACT,
 				},
 				{
 					Name:        "Glyceryl monothioglycolate",
 					Description: "Glyceryl monothioglycolate is a chemical compound primarily used in hair products, particularly in hair waving or straightening solutions. It's an ingredient commonly found in hair relaxers or perms.",
-					Allergens:   consttypes.A_MEDICAL,
+					Allergens:   consttypes.A_CONTACT,
 				},
 				{
 					Name:        "Toluenesulfonamide formaldehyde ",
 					Description: "There are three isomers of toluidine, which are organic compounds. These isomers are o-toluidine, m-toluidine, and p-toluidine, with the prefixed letter abbreviating, respectively, ortho; meta; and para. All three are aryl amines whose chemical structures are similar to aniline except that a methyl group is substituted onto the benzene ring. The difference between these three isomers is the position where the methyl group (-CH3) is bonded to the ring relative to the amino functional group (-NH2); see illustration of the chemical structures below.",
-					Allergens:   consttypes.A_MEDICAL,
+					Allergens:   consttypes.A_CONTACT,
 				},
 				// ! start of environmental allergen
 				{

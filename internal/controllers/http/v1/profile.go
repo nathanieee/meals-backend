@@ -62,6 +62,11 @@ func newProfileRoutes(
 			gpicture.PATCH("", r.updateProfilePicture)
 		}
 
+		gpassword := gprofilepvt.Group("passwords")
+		{
+			gpassword.PATCH("own", r.updateOwnPassword)
+		}
+
 		// * member's route
 		gprofilemem := gprofilepvt.Group("members")
 		gprofilemem.Use(middlewares.JWTAuthMiddleware(
@@ -302,6 +307,51 @@ func (r *profileroutes) updateProfilePicture(ctx *gin.Context) {
 	}
 
 	err = r.sfile.UploadProfilePicture(userres.ID, multipart)
+	if err != nil {
+		utresponse.GeneralInternalServerError(
+			function,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessUpdate(
+		entity,
+		ctx,
+		nil,
+	)
+}
+
+func (r *profileroutes) updateOwnPassword(ctx *gin.Context) {
+	var (
+		function = "update own password"
+		entity   = "own password"
+		req      *requests.UpdatePassword
+		err      error
+	)
+
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	if err := ctx.ShouldBind(&req); err != nil {
+		ve := utresponse.ValidationResponse(err)
+		utresponse.GeneralInvalidRequest(
+			function,
+			ctx,
+			ve,
+			err,
+		)
+		return
+	}
+
+	err = r.suser.UpdateOwnPassword(userres.ID, *req)
 	if err != nil {
 		utresponse.GeneralInternalServerError(
 			function,
