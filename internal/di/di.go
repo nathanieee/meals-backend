@@ -14,6 +14,8 @@ import (
 	"project-skbackend/internal/repositories/imagerepo"
 	"project-skbackend/internal/repositories/mealcategoryrepo"
 	"project-skbackend/internal/repositories/mealrepo"
+	"project-skbackend/internal/repositories/memberallergyrepo"
+	"project-skbackend/internal/repositories/memberillnessrepo"
 	"project-skbackend/internal/repositories/memberrepo"
 	"project-skbackend/internal/repositories/ordermealrepo"
 	"project-skbackend/internal/repositories/orderrepo"
@@ -102,6 +104,8 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	rdnpr := donationproofrepo.NewDonationProofRepository(db)
 	rmcat := mealcategoryrepo.NewMealCategoryRepository(db)
 	rorme := ordermealrepo.NewOrderMealRepository(db, cfg)
+	rmill := memberillnessrepo.NewMemberIllnessRepository(db)
+	rmall := memberallergyrepo.NewMemberAllergyRepository(db)
 
 	// ! --------------------------------- service -------------------------------- ! //
 	// * external services
@@ -115,7 +119,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	smail := mailservice.NewMailService(cfg, ruser, sprod)
 	sauth := authservice.NewAuthService(cfg, rdb, ruser, smail, suser)
 	smeal := mealservice.NewMealService(rmeal, rill, rall, rpart)
-	smemb := memberservice.NewMemberService(rmemb, ruser, rcare, rall, rill, rorg)
+	smemb := memberservice.NewMemberService(rmemb, ruser, rcare, rall, rill, rorg, rmill, rmall)
 	scart := cartservice.NewCartService(rcart, rcare, rmemb, rmeal, sbsrl)
 	scons := consumerservice.NewConsumerService(ch, cfg, smail)
 	spatr := patronservice.NewPatronService(rpatron, rdona)
