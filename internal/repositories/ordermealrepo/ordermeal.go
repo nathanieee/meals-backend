@@ -10,6 +10,7 @@ import (
 	"project-skbackend/packages/utils/utlogger"
 	"project-skbackend/packages/utils/utpagination"
 
+	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -92,7 +93,7 @@ func (r *OrderMealRepository) FindAll(p utpagination.Pagination) (*utpagination.
 			)
 	}
 
-	if p.Filter.Partner.ID != nil {
+	if p.Filter.Partner.ID != nil && *p.Filter.Partner.ID != uuid.Nil {
 		result = result.
 			Where("partner_id = ?",
 				p.Filter.Partner.ID,

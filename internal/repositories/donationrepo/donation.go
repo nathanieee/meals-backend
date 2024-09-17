@@ -153,9 +153,11 @@ func (r *DonationRepository) FindAll(p utpagination.Pagination) (*utpagination.P
 			)
 	}
 
-	if p.Filter.Patron.ID != nil {
+	if p.Filter.Patron.ID != nil && *p.Filter.Patron.ID != uuid.Nil {
 		result = result.
-			Where(&models.Donation{PatronID: *p.Filter.Patron.ID})
+			Where("patron_id = ?",
+				*p.Filter.Patron.ID,
+			)
 	}
 
 	result = result.
