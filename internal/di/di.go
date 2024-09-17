@@ -115,7 +115,7 @@ func NewDependencyInjection(ctx context.Context, db *gorm.DB, ch *amqp.Channel, 
 	sbsrl := baseroleservice.NewBaseRoleService(rmemb, rpart)
 	sprod := producerservice.NewProducerService(ch, cfg, ctx)
 	suser := userservice.NewUserService(ruser, radmin, rcare, rmemb, rorg, rpart, rpatron)
-	spart := partnerservice.NewPartnerService(rpart, rordr, rorme)
+	spart := partnerservice.NewPartnerService(rpart, rordr, rorme, rmeal)
 	smail := mailservice.NewMailService(cfg, ruser, sprod)
 	sauth := authservice.NewAuthService(cfg, rdb, ruser, smail, suser)
 	smeal := mealservice.NewMealService(rmeal, rill, rall, rpart)

@@ -54,6 +54,12 @@ func newPartnerRoutes(
 	gpartnerspvt := rg.Group("partners")
 	gpartnerspvt.Use(middlewares.JWTAuthMiddleware(cfg, consttypes.UR_PARTNER))
 	{
+		gmeal := gpartnerspvt.Group("meals")
+		{
+			gmeal.GET("own", r.findOwnMeals)
+			gmeal.GET("own/raw", r.findOwnMealsRaw)
+		}
+
 		gorder := gpartnerspvt.Group("orders")
 		{
 			gorder.GET("own", r.findOwnOrders)
@@ -490,5 +496,86 @@ func (r *partnerroutes) orderPickedUp(ctx *gin.Context) {
 		function,
 		ctx,
 		nil,
+	)
+}
+
+func (r *partnerroutes) findOwnMeals(ctx *gin.Context) {
+	var (
+		entity  = "own meals"
+		reqpage = utrequest.GeneratePaginationFromRequest(ctx)
+	)
+
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	meals, err := r.spartner.FindOwnMeals(userres.ID, reqpage)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		meals,
+	)
+}
+
+func (r *partnerroutes) findOwnMealsRaw(ctx *gin.Context) {
+	var (
+		entity = "own meals"
+	)
+
+	userres, err := uttoken.GetUser(ctx)
+	if err != nil {
+		utresponse.GeneralUnauthorized(
+			ctx,
+			err,
+		)
+		return
+	}
+
+	meals, err := r.spartner.ReadOwnMeal(userres.ID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utresponse.GeneralNotFound(
+				entity,
+				ctx,
+				err,
+			)
+			return
+		}
+
+		utresponse.GeneralInternalServerError(
+			entity,
+			ctx,
+			err,
+		)
+		return
+	}
+
+	utresponse.GeneralSuccessFetch(
+		entity,
+		ctx,
+		meals,
 	)
 }

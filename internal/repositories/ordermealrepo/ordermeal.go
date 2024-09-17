@@ -59,7 +59,12 @@ func (r *OrderMealRepository) preload() *gorm.DB {
 	return r.db.
 		Preload(clause.Associations).
 		Preload("Meal.Images.Image").
-		Preload("Partner.User.Image.Image")
+		Preload("Meal.Illnesses.Illness").
+		Preload("Meal.Allergies.Allergy").
+		Preload("Meal.Partner.User.Image.Image").
+		Preload("Meal.Partner.User.Addresses.AddressDetail").
+		Preload("Partner.User.Image.Image").
+		Preload("Partner.User.Addresses.AddressDetail")
 }
 
 func (r *OrderMealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagination, error) {

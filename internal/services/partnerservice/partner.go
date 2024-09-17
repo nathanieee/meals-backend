@@ -4,6 +4,7 @@ import (
 	"project-skbackend/internal/controllers/requests"
 	"project-skbackend/internal/controllers/responses"
 	"project-skbackend/internal/models"
+	"project-skbackend/internal/repositories/mealrepo"
 	"project-skbackend/internal/repositories/ordermealrepo"
 	"project-skbackend/internal/repositories/orderrepo"
 	"project-skbackend/internal/repositories/partnerrepo"
@@ -20,6 +21,7 @@ type (
 		rordr orderrepo.IOrderRepository
 		ruser userrepo.IUserRepository
 		rorme ordermealrepo.IOrderMealRepository
+		rmeal mealrepo.IMealRepository
 	}
 
 	IPartnerService interface {
@@ -36,6 +38,10 @@ type (
 		OrderBeingPrepared(oid uuid.UUID, uid uuid.UUID) error
 		OrderPrepared(oid uuid.UUID, uid uuid.UUID) error
 		OrderPickedUp(oid uuid.UUID, uid uuid.UUID) error
+
+		// * meal related
+		ReadOwnMeal(uid uuid.UUID) ([]*responses.Meal, error)
+		FindOwnMeals(uid uuid.UUID, preq utpagination.Pagination) (*utpagination.Pagination, error)
 	}
 )
 
@@ -43,11 +49,13 @@ func NewPartnerService(
 	rpart partnerrepo.IPartnerRepository,
 	rordr orderrepo.IOrderRepository,
 	rorme ordermealrepo.IOrderMealRepository,
+	rmeal mealrepo.IMealRepository,
 ) *PartnerService {
 	return &PartnerService{
 		rpart: rpart,
 		rordr: rordr,
 		rorme: rorme,
+		rmeal: rmeal,
 	}
 }
 
@@ -280,4 +288,48 @@ func (s *PartnerService) OrderPickedUp(oid uuid.UUID, uid uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (s *PartnerService) ReadOwnMeal(uid uuid.UUID) ([]*responses.Meal, error) {
+	var (
+		mealreses []*responses.Meal
+	)
+
+	partner, err := s.rpart.GetByUserID(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	mealsmodels, err := s.rmeal.ReadByPartnerID(partner.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, meal := range mealsmodels {
+		mealres, err := meal.ToResponse()
+		if err != nil {
+			return nil, err
+		}
+
+		mealreses = append(mealreses, mealres)
+	}
+
+	return mealreses, nil
+}
+
+func (s *PartnerService) FindOwnMeals(uid uuid.UUID, preq utpagination.Pagination) (*utpagination.Pagination, error) {
+	partner, err := s.rpart.GetByUserID(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	// * assigning partner id to the filter
+	preq.Filter.Partner.ID = &partner.ID
+
+	meals, err := s.rmeal.FindAll(preq)
+	if err != nil {
+		return nil, err
+	}
+
+	return meals, nil
 }
