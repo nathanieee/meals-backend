@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gobeam/stringy"
+	"github.com/google/uuid"
 )
 
 func CheckWhitelistUrl(url string) bool {
@@ -29,6 +30,7 @@ func GeneratePaginationFromRequest(ctx *gin.Context) utpagination.Pagination {
 		direction   = "asc"
 		createdFrom time.Time
 		createdTo   time.Time
+		partnerID   = uuid.UUID{}
 	)
 
 	query := ctx.Request.URL.Query()
@@ -68,6 +70,14 @@ func GeneratePaginationFromRequest(ctx *gin.Context) utpagination.Pagination {
 					createdTo = date
 				}
 			}
+		case "partner-id":
+			queryValue = strings.ToLower(queryValue)
+			if queryValue != "" {
+				uuid, err := uuid.Parse(queryValue)
+				if err == nil {
+					partnerID = uuid
+				}
+			}
 		}
 	}
 
@@ -80,6 +90,10 @@ func GeneratePaginationFromRequest(ctx *gin.Context) utpagination.Pagination {
 		Filter: utpagination.Filter{
 			CreatedFrom: createdFrom,
 			CreatedTo:   createdTo,
+
+			Partner: utpagination.Partner{
+				ID: &partnerID,
+			},
 		},
 	}
 }

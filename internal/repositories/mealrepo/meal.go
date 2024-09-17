@@ -40,7 +40,7 @@ type (
 		Delete(m models.Meal) error
 		FindAll(p utpagination.Pagination) (*utpagination.Pagination, error)
 		GetByID(id uuid.UUID) (*models.Meal, error)
-		FindByPartnerID(pid uuid.UUID) ([]models.Meal, error)
+		ReadByPartnerID(pid uuid.UUID) ([]models.Meal, error)
 	}
 )
 
@@ -172,7 +172,7 @@ func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 
 	if p.Filter.Partner.ID != nil {
 		result = result.
-			Where(&models.Meal{PartnerID: *p.Filter.Partner.ID})
+			Where("partner_id = ?", p.Filter.Partner.ID)
 	}
 
 	result = result.
@@ -211,7 +211,7 @@ func (r *MealRepository) GetByID(id uuid.UUID) (*models.Meal, error) {
 	return m, nil
 }
 
-func (r *MealRepository) FindByPartnerID(pid uuid.UUID) ([]models.Meal, error) {
+func (r *MealRepository) ReadByPartnerID(pid uuid.UUID) ([]models.Meal, error) {
 	var (
 		m []models.Meal
 	)
