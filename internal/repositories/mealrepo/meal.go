@@ -170,9 +170,11 @@ func (r *MealRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagin
 			)
 	}
 
-	if p.Filter.Partner.ID != nil {
+	if p.Filter.Partner.ID != nil && *p.Filter.Partner.ID != uuid.Nil {
 		result = result.
-			Where("partner_id = ?", p.Filter.Partner.ID)
+			Where("partner_id = ?",
+				p.Filter.Partner.ID,
+			)
 	}
 
 	result = result.

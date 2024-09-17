@@ -162,7 +162,7 @@ func (s *PartnerService) FindOwnOrders(uid uuid.UUID, preq utpagination.Paginati
 	// * assigning partner id to the filter
 	preq.Filter.Partner.ID = &partner.ID
 
-	ordermeals, err := s.rorme.FindAll(preq)
+	ordermeals, err := s.rordr.FindAll(preq)
 	if err != nil {
 		return nil, err
 	}

@@ -194,6 +194,13 @@ func (r *OrderRepository) FindAll(p utpagination.Pagination) (*utpagination.Pagi
 			)
 	}
 
+	if p.Filter.Partner.ID != nil && *p.Filter.Partner.ID != uuid.Nil {
+		result = result.
+			Where("partner_id = ?",
+				p.Filter.Partner.ID,
+			)
+	}
+
 	result = result.
 		Group("id").
 		Scopes(paginationrepo.Paginate(&o, &p, result)).
